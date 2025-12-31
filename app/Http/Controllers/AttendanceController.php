@@ -133,10 +133,21 @@ class AttendanceController extends Controller
             })
             ->orderBy('name')
             ->get();
+        
+        $oldAttendences = StudentAttendance::where(
+                [
+                    'paper_master_id' => $assignment->paper_master_id,
+                    'course_id'       => $assignment->course_id,
+                    'semester_id'     => $assignment->semester_id,
+                    'month'=>$month,
+                    'year'=>$year
+                ]
+            )->get()->keyBy('student_id');
+
 
         return view(
             'pages.teacher.attendance.fill',
-            compact('assignment', 'students', 'month', 'year')
+            compact('assignment', 'students', 'month', 'year','oldAttendences')
         );
     }
 

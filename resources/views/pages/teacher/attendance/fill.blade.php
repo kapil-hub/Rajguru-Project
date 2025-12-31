@@ -108,6 +108,7 @@
                                    min="0" max="31">
                             <input type="number"
                                    name="attendance[{{ $s->id }}][lecture][present]"
+                                    value="{{ $oldAttendences[$s->id]['lecture_present_days'] ?? '' }}"
                                    class="w-16 text-center border rounded-lg"
                                    min="0" max="31">
                         </td>
@@ -122,6 +123,7 @@
                                    min="0" max="31">
                             <input type="number"
                                    name="attendance[{{ $s->id }}][tute][present]"
+                                   value="{{ $oldAttendences[$s->id]['tute_present_days'] ?? '' }}"
                                    class="w-16 text-center border rounded-lg"
                                    min="0" max="31">
                         </td>
@@ -136,6 +138,7 @@
                                    min="0" max="31">
                             <input type="number"
                                    name="attendance[{{ $s->id }}][practical][present]"
+                                   value="{{ $oldAttendences[$s->id]['practical_present_days'] ?? '' }}"
                                    class="w-16 text-center border rounded-lg"
                                    min="0" max="31">
                         </td>
