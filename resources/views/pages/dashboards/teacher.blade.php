@@ -8,12 +8,12 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-white p-6 rounded shadow">
             <h3 class="font-semibold">My Subjects</h3>
-            <p class="text-3xl mt-2">{{ $mySubjects ?? 0 }}</p>
+            <p class="text-3xl mt-2">{{ $teacherSubjects ?? 0 }}</p>
         </div>
 
         <div class="bg-white p-6 rounded shadow">
-            <h3 class="font-semibold">Today's Attendance</h3>
-            <p class="text-3xl mt-2">{{ $todayAttendance ?? 0 }}</p>
+            <h3 class="font-semibold">Number of classes (Assigned me for attendance)</h3>
+            <p class="text-3xl mt-2">{{ $assignedClasses ?? 0 }}</p>
         </div>
     </div>
 </div>

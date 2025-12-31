@@ -11,6 +11,7 @@ use App\Models\StudentAttendance;
 use App\Models\StudentPaper;
 use App\Models\StudentDailyAttendance;
 use App\Models\AttendanceSetting;
+use App\Models\TeacherClassAssignment;
 
 class DashboardController extends Controller
 {
@@ -125,11 +126,22 @@ class DashboardController extends Controller
 
         // admin / teacher unchanged
         if (Auth::guard('admin')->check()) {
-            return view('pages.dashboards.admin');
+
+            $students = Student::get()->count();
+            $teachers = Teacher::get()->count();
+            $papers = Paper::get()->count();
+
+            return view('pages.dashboards.admin',compact('students','teachers','papers'));
         }
 
         if (Auth::guard('teacher')->check()) {
-            return view('pages.dashboards.teacher');
+
+            $teacher = Teacher::with('details')->where('id',auth('teacher')->user()->id)->first();
+            $teacherSubjects = $teacher->details->count();
+
+            $assignedClasses = TeacherClassAssignment::where('teacher_id',auth('teacher')->user()->id)->get()->count();
+
+            return view('pages.dashboards.teacher',compact('teacherSubjects','assignedClasses'));
         }
 
         return redirect()->route('login');
