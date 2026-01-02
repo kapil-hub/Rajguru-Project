@@ -76,9 +76,9 @@ class PapersImport implements ToCollection, WithHeadingRow, SkipsEmptyRows
                 'name'                  => trim($row['paper_name'] ?? ''),
                 'paper_type'            => strtoupper(trim($row['paper_type_core_elective'] ?? '')),
                 'status'                => ucfirst(strtolower(trim($row['status_active_inactive'] ?? ''))),
-                'number_of_lectures'    => (int) ($row['number_of_lectures'] ?? 0),
-                'number_of_tutorials'   => (int) ($row['number_of_tutorials'] ?? 0),
-                'number_of_practicals'  => (int) ($row['number_of_practicals'] ?? 0),
+                'number_of_lectures'    => (int) ($row['credit_of_lectures'] ?? 0),
+                'number_of_tutorials'   => (int) ($row['credit_of_tutorials'] ?? 0),
+                'number_of_practicals'  => (int) ($row['credit_of_practicals'] ?? 0),
             ];
         }
     }

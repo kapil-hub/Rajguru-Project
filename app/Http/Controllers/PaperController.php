@@ -67,7 +67,7 @@ class PaperController extends Controller
         }
 
         Paper::create($request->all());
-        return redirect()->route('pages.papers.index')->with('success', 'Paper added successfully');
+        return redirect()->route('papers.index')->with('success', 'Paper added successfully');
     }
 
     public function downloadTemplate()
@@ -81,9 +81,9 @@ class PaperController extends Controller
             'Paper Name',
             'Paper Type',
             'Status',
-            'Number Of Lectures',
-            'Number Of Tutorials',
-            'Number Of Practicals'
+            'Credit Of Lectures',
+            'Credit Of Tutorials',
+            'Credit Of Practicals'
         ];
 
         return Excel::download(new \App\Exports\BlankPaperTemplate($headers), 'papers_template.xlsx');

@@ -113,9 +113,9 @@
                         <th class="px-4 py-3 text-left text-xs font-semibold">Paper Name</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold">Type</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold">Status</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold">Number Of  Lectures</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold">Number Of Tutorials</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold">Number Of Practicals</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold">Credit Of  Lectures</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold">Credit Of Tutorials</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold">Credit Of Practicals</th>
                     </tr>
                 </thead>
 

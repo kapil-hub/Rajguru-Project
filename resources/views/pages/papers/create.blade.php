@@ -119,7 +119,32 @@
                     </select>
                 </div>
             </div>
-
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Lecture Credit <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" name="number_of_lectures" value="{{ old('number_of_lectures') }}" 
+                        class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        min="0" max="4" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Tute Credit <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" name="number_of_tutorials" value="{{ old('number_of_tutorials') }}"
+                        class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                         min="0" max="4" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Practical Credit <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" name="number_of_practicals" value="{{ old('number_of_practicals') }}"
+                        class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                         min="0" max="4" required>
+                </div>
+            </div>
             <!-- Actions -->
             <div class="flex justify-end gap-3 pt-4">
                 <a href="{{ route('papers.index') }}"

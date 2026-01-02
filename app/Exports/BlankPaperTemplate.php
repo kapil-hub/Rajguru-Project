@@ -25,9 +25,9 @@ class BlankPaperTemplate implements
             'Paper Name',
             'Paper Type (CORE / ELECTIVE)',
             'Status (Active / Inactive)',
-            'Number Of Lectures',
-            'Number Of Tutorials',
-            'Number Of Practicals'
+            'Credit Of Lectures',
+            'Credit Of Tutorials',
+            'Credit Of Practicals'
         ];
     }
 
