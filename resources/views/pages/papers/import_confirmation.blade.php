@@ -21,9 +21,9 @@
                         <th class="border px-3 py-2">Course</th>
                         <th class="border px-3 py-2">Semester</th>
                         <th class="border px-3 py-2">Code</th>
-                        <th class="border px-3 py-2">Number Of Lectures</th>
-                        <th class="border px-3 py-2">Number Of Tutorials</th>
-                        <th class="border px-3 py-2">Number Of Practicals</th>
+                        <th class="border px-3 py-2">Credit Of Lectures</th>
+                        <th class="border px-3 py-2">Credit Of Tutorials</th>
+                        <th class="border px-3 py-2">Credit Of Practicals</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -60,9 +60,9 @@
                         <th class="border px-3 py-2">Semester</th>
                         <th class="border px-3 py-2">Code</th>
                         <th class="border px-3 py-2">Paper Name</th>
-                        <th class="border px-3 py-2">Number Of Lectures</th>
-                        <th class="border px-3 py-2">Number Of Tutorials</th>
-                        <th class="border px-3 py-2">Number Of Practicals</th>
+                        <th class="border px-3 py-2">Credit Of Lectures</th>
+                        <th class="border px-3 py-2">Credit Of Tutorials</th>
+                        <th class="border px-3 py-2">Credit Of Practicals</th>
                     </tr>
                 </thead>
                 <tbody>
