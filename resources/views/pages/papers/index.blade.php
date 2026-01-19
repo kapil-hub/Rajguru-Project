@@ -116,6 +116,7 @@
                         <th class="px-4 py-3 text-left text-xs font-semibold">Credit Of  Lectures</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold">Credit Of Tutorials</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold">Credit Of Practicals</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold"> Marks Breakup</th>
                     </tr>
                 </thead>
 
@@ -143,6 +144,7 @@
                             <td class="px-4 py-3">{{ $paper->number_of_lectures }}</td>
                             <td class="px-4 py-3 font-medium">{{ $paper->number_of_tutorials }}</td>
                             <td class="px-4 py-3">{{ $paper->number_of_practicals }}</td>
+                            <td> <a href = "/teacher/marksBreakup/{{ $paper->id }}" class= "bg-blue-100 text-blue-700 link" >Breakup</a></td>
                         </tr>
                     @empty
                         <tr>

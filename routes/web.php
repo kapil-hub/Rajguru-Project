@@ -12,6 +12,7 @@ use App\Http\Controllers\StudentAttendanceController;
 use App\Http\Controllers\Admin\AdminFacultyController;
 use App\Http\Controllers\AdminAttendanceSettingController;
 use App\Http\Controllers\DailyAttendanceController;
+use App\Http\Controllers\IaController;
 
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
@@ -35,6 +36,11 @@ Route::middleware('auth:admin,teacher,student')->group(function () {
 
 });
 
+Route::middleware(['auth:admin,teacher'])->group(function () {
+    Route::get('/teacher/marksBreakup/{paperId}', [IaController::class,'index'])->name('teacher.marksBreakup');
+});
+
+
 Route::middleware('auth:teacher')->prefix('teacher')->group(function () {
 
     Route::get('attendance', [AttendanceController::class,'pendingList'])->name('teacher.attendance.pending');
@@ -51,7 +57,24 @@ Route::middleware('auth:teacher')->prefix('teacher')->group(function () {
 
     Route::get('daily/attendance/fill/{assignment}/{month}/{year}', [DailyAttendanceController::class,'fillAttendance'])->name('teacher.daily.attendance.fill');
     Route::post('attendance/daily/store', [DailyAttendanceController::class,'store'])->name('teacher.attendance.daily.store');
+    
 
+// IA Marks
+
+    Route::get('iaAttendance/', [IaController::class,'pendingList'])->name('teacher.iaAttendance.pendingList');
+     Route::get('monthly/iaAttendance/fill/{assignment}', [IaController::class,'fillAttendance'])->name('teacher.iaAttendance.fill');
+    Route::post('iaMarks/store', [IaController::class,'storeAttendance'])->name('teacher.iaMarks.store');
+
+    Route::get('/iaMarks/history', 
+        [IaController::class, 'history']
+    )->name('teacher.iaMarks.history');
+
+    Route::get('/iaMarks/history/{paper}/{semester}/{section}', 
+        [IaController::class, 'show']
+    )->name('teacher.iaMarks.view');
+
+    // Route::get('daily/iaAttendance/fill/{assignment}/{month}/{year}', [IaController::class,'fillAttendance'])->name('teacher.daily.iaAttendance.fill');
+    // Route::post('iaAttendance/daily/store', [IaController::class,'store'])->name('teacher.iaAttendance.daily.store');
 });
 
 
