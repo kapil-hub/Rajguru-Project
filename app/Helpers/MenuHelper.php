@@ -36,6 +36,24 @@ class MenuHelper
                 'permission' =>  auth('teacher')->check() ? true : False, 
                 
             ],
+            // [
+            //     'icon' => 'pages',
+            //     'name' => 'IA Marks Breakup',
+            //     'path' => '/teacher/marksBreakup',
+            //     'permission' =>  auth('admin')->check() ? true : False, 
+                
+            // ],
+             [
+                'icon' => 'pages',
+                'name' => 'Internal Assesment',
+                'path' => '',
+                'subItems' => [
+                    ['name' => 'Fill IA Marks', 'path' => '/teacher/iaAttendance'],
+                    ['name' => 'IA Marks History', 'path' => '/teacher/iaMarks/history'],
+                ],
+                'permission' =>  auth('teacher')->check() ? true : False, 
+                
+            ],
             [
                 'icon' => 'pages',
                 'name' => 'Papers',

@@ -880,8 +880,49 @@ pre[class*='language-'] {
         fill: none !important;
     }
 }
-
+:root {
+    --app-border-color: #d1d5db;
+}
+* {
+    border-color: var(--app-border-color);
+}
 h1,h2,h3,h4,h5,h6,p{
-      color: #772aa2;
+      color: #7b5be3;
       background: transparent;
+}
+th{
+  color:#3914b3;
+}
+fieldset{
+    border: 2px solid #7b5be3;
+    padding: 20px;
+}
+
+fieldset legend {
+    padding: 0 10px;
+    font-weight: bold;
+    color:#7b5be3;
+    text-align: center;
+}
+
+.focus-group::before {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 1px;
+    background-color: rgb(209 213 219); /* border-gray-300 */
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* when ANY input inside is focused */
+.focus-group:focus-within::before {
+    background-color: rgb(59 130 246); /* blue-500 */
+}
+
+/* highlight BOTH input borders together */
+.focus-group:focus-within input {
+    border-color: rgb(59 130 246); /* blue-500 */
+    box-shadow: 0 0 0 1px rgb(59 130 246);
 }
