@@ -109,9 +109,9 @@
                         <th class="px-4 py-3 text-left text-xs font-semibold">Department</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold">Course</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold">Semester</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold">Code</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold">Paper Code</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold">Paper Name</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold">Type</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold">Paper Type</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold">Status</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold">Credit Of  Lectures</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold">Credit Of Tutorials</th>
