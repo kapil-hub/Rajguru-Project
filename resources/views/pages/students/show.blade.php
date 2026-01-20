@@ -55,9 +55,9 @@
         <table class="w-full text-sm border">
             <thead class="bg-gray-100">
                 <tr>
-                    <th class="p-2">Code</th>
-                    <th class="p-2">Title</th>
-                    <th class="p-2">Type</th>
+                    <th class="p-2">Paper Code</th>
+                    <th class="p-2">Paper Name</th>
+                    <th class="p-2">Paper Type</th>
                     <th class="p-2">Semester</th>
                 </tr>
             </thead>
