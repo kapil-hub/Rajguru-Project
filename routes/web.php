@@ -13,11 +13,23 @@ use App\Http\Controllers\Admin\AdminFacultyController;
 use App\Http\Controllers\AdminAttendanceSettingController;
 use App\Http\Controllers\DailyAttendanceController;
 use App\Http\Controllers\IaController;
+use App\Http\Controllers\SubscriptionController;
 
 
-Route::get('/', [AuthController::class, 'showLogin'])->name('login');
+Route::get('/', [AuthController::class, 'showLogin'])->name('home');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::get('/subscription-expired',function(){
+    return view("subscription.expired");
+})->name("subscription.expired");
+
+Route::get('/subscription/plans', function () {
+    return view('subscription.plans');
+})->name('subscription.plans');
+
+Route::post('/subscription/subscribe', [SubscriptionController::class, 'subscribe'])
+    ->name('subscription.subscribe');
 
 
 Route::middleware(['auth:admin,teacher,student'])->group(function () {

@@ -58,7 +58,13 @@ class AuthController extends Controller
             return redirect()->route('login')->withErrors(['login' => 'Invalid credentials'])->withInput();
         }
 
+        Auth::shouldUse($guard);
         Auth::guard($guard)->login($user);
+
+        // 🔑 store active guard
+        session(['active_guard' => $guard]);
+
+        return redirect()->route('dashboard');
 
         // Redirect to dashboard (can separate for student/teacher if needed)
         return redirect()->route('dashboard');
@@ -67,19 +73,11 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        Auth::forgetGuards();
 
-        if (Auth::guard('admin')->check()) {
-            Auth::guard('admin')->logout();
-        }
-
-
-        if (Auth::guard('student')->check()) {
-            Auth::guard('student')->logout();
-        }
-
-        if (Auth::guard('teacher')->check()) {
-            Auth::guard('teacher')->logout();
-        }
+        Auth::guard('admin')->logout();
+        Auth::guard('teacher')->logout();
+        Auth::guard('student')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
