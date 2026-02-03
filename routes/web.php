@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\AdminFacultyController;
 use App\Http\Controllers\AdminAttendanceSettingController;
 use App\Http\Controllers\DailyAttendanceController;
 use App\Http\Controllers\IaController;
+use App\Http\Controllers\Registration\RegistrationController;
+use App\Http\Controllers\Admin\RegistrationWindowController;
 
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
@@ -38,6 +40,12 @@ Route::middleware('auth:admin,teacher,student')->group(function () {
 
 Route::middleware(['auth:admin,teacher'])->group(function () {
     Route::get('/teacher/marksBreakup/{paperId}', [IaController::class,'index'])->name('teacher.marksBreakup');
+    Route::get('/paper/edit/{id}', 
+        [PaperController::class, 'edit']
+    )->name('paper.edit');
+    Route::post('/paper/update/{id}', 
+        [PaperController::class, 'update']
+    )->name('paper.update');
 });
 
 
@@ -50,6 +58,9 @@ Route::middleware('auth:teacher')->prefix('teacher')->group(function () {
     Route::get('/attendance/history', 
         [AttendanceController::class, 'history']
     )->name('teacher.attendance.history');
+
+    
+
 
     Route::get('/attendance/history/{paper}/{month}/{year}', 
         [AttendanceController::class, 'show']
@@ -156,9 +167,48 @@ Route::middleware('auth:admin,student')->group(function() {
 
         Route::put('/{student}', [StudentController::class, 'update'])->name('update');
 
-
+        Route::middleware('registration.open')->get('registration/{student}',[RegistrationController::class,'index']);
+           Route::post('registration/{student}',
+            [RegistrationController::class,'store']
+        )->name('registration.store');
     });
 });
+
+Route::middleware('auth:admin')
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        // List all registration windows
+        Route::get('/registration-windows',
+            [RegistrationWindowController::class, 'index']
+        )->name('registration-window.index');
+
+        // Show create form
+        Route::get('/registration-windows/create',
+            [RegistrationWindowController::class, 'create']
+        )->name('registration-window.create');
+
+        // Store new window
+        Route::post('/registration-windows',
+            [RegistrationWindowController::class, 'store']
+        )->name('registration-window.store');
+
+        // Show edit form
+        Route::get('/registration-windows/{window}/edit',
+            [RegistrationWindowController::class, 'edit']
+        )->name('registration-window.edit');
+
+        // Update window
+        Route::put('/registration-windows/{window}',
+            [RegistrationWindowController::class, 'update']
+        )->name('registration-window.update');
+
+        // Open / Close window
+        Route::patch('/registration-windows/{window}/toggle',
+            [RegistrationWindowController::class, 'toggle']
+        )->name('registration-window.toggle');
+    });
 
 
 

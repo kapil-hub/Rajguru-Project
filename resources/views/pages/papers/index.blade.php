@@ -25,18 +25,6 @@
         </div>
     </div>
 
-    <!-- Success / Error -->
-    @if(session('success'))
-        <div class="mb-4 p-4 bg-green-100 text-green-700 rounded-lg">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if($errors->any())
-        <div class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
-            {{ $errors->first() }}
-        </div>
-    @endif
 
     <!-- IMPORT BOX (RESTORED ✅) -->
     <div class="bg-white shadow rounded-xl p-5 mb-6">
@@ -117,6 +105,7 @@
                         <th class="px-4 py-3 text-left text-xs font-semibold">Credit Of Tutorials</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold">Credit Of Practicals</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold"> Marks Breakup</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold">Action</th>
                     </tr>
                 </thead>
 
@@ -144,7 +133,8 @@
                             <td class="px-4 py-3">{{ $paper->number_of_lectures }}</td>
                             <td class="px-4 py-3 font-medium">{{ $paper->number_of_tutorials }}</td>
                             <td class="px-4 py-3">{{ $paper->number_of_practicals }}</td>
-                            <td> <a href = "/teacher/marksBreakup/{{ $paper->id }}" class= "bg-blue-100 text-blue-700 link" >Breakup</a></td>
+                            <td> <a href = "/teacher/marksBreakup/{{ $paper->id }}" class= "px-3 py-1 bg-yellow-600 text-white rounded" >Breakup</a></td>
+                            <td> <a href = "/paper/edit/{{ $paper->id }}" class= "px-3 py-1 bg-blue-600 text-white rounded" >edit</a></td>
                         </tr>
                     @empty
                         <tr>
