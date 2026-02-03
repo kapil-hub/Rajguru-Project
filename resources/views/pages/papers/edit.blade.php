@@ -5,14 +5,12 @@
 
     <!-- Header -->
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Add Paper</h2>
+        <h2 class="text-2xl font-bold text-gray-800">Edit Paper</h2>
         <p class="text-sm text-gray-500">Manually add a new paper to the system</p>
     </div>
-
-
     <!-- Form Card -->
     <div class="bg-white shadow rounded-xl p-6">
-        <form action="{{ route('papers.store') }}" method="POST" class="space-y-5">
+        <form action="{{ route('paper.update',$paper->id) }}" method="POST" class="space-y-5">
             @csrf
 
             <!-- Department + Course -->
@@ -26,7 +24,7 @@
                             required>
                         <option value="">Select Department</option>
                         @foreach($departments as $dept)
-                            <option value="{{ $dept->id }}" {{ old('dept_id') == $dept->id ? 'selected' : '' }}>
+                            <option value="{{ $dept->id }}" {{ $paper->dept_id == $dept->id ? 'selected' : '' }}>
                                 {{ $dept->name }}
                             </option>
                         @endforeach
@@ -42,7 +40,7 @@
                             required>
                         <option value="">Select Course</option>
                         @foreach($courses as $course)
-                            <option value="{{ $course->id }}" {{ old('course_id') == $course->id ? 'selected' : '' }}>
+                            <option value="{{ $course->id }}" {{ $paper->course_id == $course->id ? 'selected' : '' }}>
                                 {{ $course->name }}
                             </option>
                         @endforeach
@@ -56,7 +54,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Semester <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" name="semester" value="{{ old('semester') }}"
+                    <input type="text" name="semester" value="{{ $paper->semester }}"
                            class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                            placeholder="e.g. 1, 2, 3" required>
                 </div>
@@ -65,7 +63,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Paper Code <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" name="code" value="{{ old('code') }}"
+                    <input type="text" name="code" value="{{ $paper->code }}"
                            class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                            placeholder="e.g. CS101" required>
                 </div>
@@ -76,7 +74,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">
                     Paper Name <span class="text-red-500">*</span>
                 </label>
-                <input type="text" name="name" value="{{ old('name') }}"
+                <input type="text" name="name" value="{{ $paper->name }}"
                        class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                        placeholder="Enter paper name" required>
             </div>
@@ -92,7 +90,7 @@
                             required>
                         <option value="">Select Type</option>
                         @foreach ($paperTypes as $type )
-                             <option value="{{ $type }}" {{ old('paper_type')==$type ? 'selected' : '' }}>{{ $type }}</option>
+                             <option value="{{ $type }}" {{ $paper->paper_type==$type ? 'selected' : '' }}>{{ $type }}</option>
                         @endforeach
                        
                     
@@ -106,8 +104,8 @@
                     <select name="status"
                             class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                             required>
-                        <option value="Active" {{ old('status')=='Active' ? 'selected' : '' }}>Active</option>
-                        <option value="Inactive" {{ old('status')=='Inactive' ? 'selected' : '' }}>Inactive</option>
+                        <option value="Active" {{ $paper->status=='Active' ? 'selected' : '' }}>Active</option>
+                        <option value="Inactive" {{ $paper->status=='Inactive' ? 'selected' : '' }}>Inactive</option>
                     </select>
                 </div>
             </div>
@@ -116,7 +114,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Lecture Credit <span class="text-red-500">*</span>
                     </label>
-                    <input type="number" name="number_of_lectures" value="{{ old('number_of_lectures') }}" 
+                    <input type="number" name="number_of_lectures" value="{{ $paper->number_of_lectures }}" 
                         class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                         min="0" max="4" required>
                 </div>
@@ -124,7 +122,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Tute Credit <span class="text-red-500">*</span>
                     </label>
-                    <input type="number" name="number_of_tutorials" value="{{ old('number_of_tutorials') }}"
+                    <input type="number" name="number_of_tutorials" value="{{ $paper->number_of_tutorials }}"
                         class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                          min="0" max="4" required>
                 </div>
@@ -132,7 +130,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Practical Credit <span class="text-red-500">*</span>
                     </label>
-                    <input type="number" name="number_of_practicals" value="{{ old('number_of_practicals') }}"
+                    <input type="number" name="number_of_practicals" value="{{$paper->number_of_practicals }}"
                         class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                          min="0" max="4" required>
                 </div>
@@ -146,7 +144,7 @@
 
                 <button type="submit"
                         class="px-6 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition">
-                    Save Paper
+                    Update Paper
                 </button>
             </div>
         </form>

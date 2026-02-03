@@ -24,6 +24,12 @@ class MenuHelper
             ],
             [
                 'icon' => 'calendar',
+                'name' => 'Registration Window',
+                'path' => route('admin.registration-window.index'),
+                'permission' => auth('admin')->check(),
+            ],
+            [
+                'icon' => 'calendar',
                 'name' => 'Attendance',
                 'path' => '/teacher/attendance',
                 'permission' =>  auth('teacher')->check() ? true : False, 
@@ -72,6 +78,12 @@ class MenuHelper
                 'name' => 'My Profile',
                 'path' => '/students/'.auth('student')->id(),
                 'permission' => auth('student')->check() ? true : False,
+            ],
+            [
+                'icon' => 'pages',
+                'name' => 'Registration',
+                'path' => '/students/registration/'.auth('student')->id(),
+                'permission' => auth('student')->check() && is_registration_open() ? true : False,
             ],
              [
                 'icon' => 'pages',

@@ -12,6 +12,9 @@ use App\Imports\PapersImport;
 
 class PaperController extends Controller
 {
+
+    private const PAPER_TYPES = ['SEC','DSC','GE','VAC','DSE'];
+
     public function index(Request $request)
 {
     $search = $request->query('search');
@@ -39,7 +42,8 @@ class PaperController extends Controller
         $departments = Departments::all();
         $courses = Courses::all();
         $papers = Paper::get();
-        return view('pages.papers.create', compact('departments', 'courses','papers'));
+        $paperTypes = self::PAPER_TYPES;
+        return view('pages.papers.create', compact('departments', 'courses','papers','paperTypes'));
     }
 
     public function store(Request $request)
@@ -89,6 +93,23 @@ class PaperController extends Controller
         return Excel::download(new \App\Exports\BlankPaperTemplate($headers), 'papers_template.xlsx');
     }
 
+
+
+    public function edit($id,Request $request){
+        $paper = Paper::where("id",$id)->get()->first();
+        if (!$paper) {
+            return redirect()->back()->with("error", "Paper Does Not Exists");
+        }
+        $departments = Departments::all();
+        $courses = Courses::all();
+        $paperTypes = self::PAPER_TYPES;
+
+        return view("pages.papers.edit",compact('paper','departments','courses','paperTypes'));
+    }
+
+
+
+
     public function import(Request $request)
         {
             $request->validate([
@@ -123,5 +144,18 @@ class PaperController extends Controller
                 ->with('success', 'Papers imported successfully');
         }
 
+
+        public function update($id,Request $request){
+           $paper = Paper::where("id",$id);
+
+           if($paper->update($request->except(['_token', '_method']))){
+                return redirect()
+                    ->route('papers.index')
+                    ->with('success', 'Papers updated successfully');
+            }else{
+                return redirect()->back()->with("error","Something went wrong");
+            }
+        }
+    
 }
 
