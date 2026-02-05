@@ -36,7 +36,7 @@
                         <label class="block text-sm text-gray-600 mb-1">Lecture</label>
                         <input type="number" name ="lecture_days" id="lecture_days"
                             class="w-40 px-3 py-2 border rounded-lg"
-                            min="0" max="31">
+                            min="0" max="31" required>
                     </div>
                     @endif
 
@@ -45,7 +45,7 @@
                         <label class="block text-sm text-gray-600 mb-1">Tute</label>
                         <input type="number" name = "tute_days" id="tute_days"
                             class="w-40 px-3 py-2 border rounded-lg"
-                            min="0" max="31">
+                            min="0" max="31" required>
                     </div>
                     @endif
 
@@ -54,18 +54,26 @@
                         <label class="block text-sm text-gray-600 mb-1">Practical</label>
                         <input type="number" name="practical_days" id="practical_days"
                             class="w-40 px-3 py-2 border rounded-lg"
-                            min="0" max="31">
+                            min="0" max="31" required>
                     </div>
                     @endif
 
                     <button type="button"
                             onclick="addAttendanceFields()"
+                            id="showStudentsBtn"
                             class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                         Show Students
                     </button>
-                    <input type="checkbox" id ="ffff"
-                            class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">
-                        Bulk Import
+                    <label
+                        class="ml-4 flex items-center gap-2 border border-gray-300 rounded-md px-3 py-2 cursor-pointer"
+                    >
+                        <input
+                            type="checkbox"
+                            id="ffff"
+                            class="accent-blue-600"
+                        >
+                        <span class="text-sm font-medium">Bulk Import</span>
+                    </label>
                   
                 </div>
          
@@ -286,6 +294,8 @@ function addAttendanceFields() {
 
     document.getElementById('attendanceTable').classList.remove('hidden');
     document.getElementById('saveBtn').classList.remove('hidden');
+    document.getElementById("bulkSection").classList.add("hidden");
+    document.getElementById("ffff").checked = false;
 }
 
 
