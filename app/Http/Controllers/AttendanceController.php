@@ -11,6 +11,9 @@ use Carbon\Carbon;
 use App\Models\AttendanceSetting;
 use App\Models\StudentDailyAttendance;
 use DB;
+use App\Exports\AttendanceTemplateExport;
+use App\Imports\StudentAttendanceImport;
+use Maatwebsite\Excel\Facades\Excel;
 class AttendanceController extends Controller
 {
     public function index()
@@ -259,4 +262,51 @@ public function history()
             ));
         }
     }
+
+
+    public function downloadTemplate(Request $request)
+    {
+        $students = json_decode($request->student_obj, true);
+
+        return Excel::download(
+            new AttendanceTemplateExport(
+                students: $students,
+                lectureWD: isset($request->lecture_days) ? $request->lecture_days : "hidden",
+                tuteWD: isset($request->tute_days) ? $request->tute_days : "hidden",
+                practicalWD: isset($request->practical_days) ? $request->practical_days :"hidden"
+            ),
+            'attendance_template.xlsx'
+        );
+    }
+
+public function import(Request $request)
+    {
+        $request->validate([
+            'file'            => 'required|mimes:xlsx',
+            'paper_master_id' => 'required',
+            'course_id'       => 'required',
+            'semester_id'     => 'required',
+            'section'         => 'required',
+            'month'           => 'required',
+            'year'            => 'required',
+        ]);
+
+        Excel::import(
+            new StudentAttendanceImport(
+                meta: [
+                    'teacher_id'      => auth()->id(),
+                    'paper_master_id' => $request->paper_master_id,
+                    'course_id'       => $request->course_id,
+                    'semester_id'     => $request->semester_id,
+                    'section'         => $request->section,
+                    'month'           => $request->month,
+                    'year'            => $request->year,
+                ]
+            ),
+            $request->file('file')
+        );
+
+        return back()->with('success', 'Attendance imported successfully');
+    }
+
 }

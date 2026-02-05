@@ -94,12 +94,15 @@ class StudentImportController extends Controller
 
             $validPaperFound = true;
 
-            $paper = Paper::where([
-                'code' => $code,
-                'course_id' => optional($course)->id,
-                'semester' => $row[8],
-                'paper_type' => $type,
-            ])->first();
+            $paper = Paper::where('code', $code)
+                ->where('semester', $row[8])
+                ->where('paper_type', $type)
+                ->where(function ($query) use ($course) {
+                    $query->where('course_id', optional($course)->id)
+                        ->orWhere('course_id', 15);
+                })
+                ->first();
+
 
             if (!$paper) {
                 $errors[] = "Paper " . ($i + 1) . " not matched";

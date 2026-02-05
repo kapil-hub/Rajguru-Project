@@ -18,7 +18,161 @@
         </span>
     </div>
 
-    <form method="POST" action="{{ route('teacher.attendance.store') }}">
+    
+        {{-- WORKING DAYS CARD --}}
+        <div class="bg-white rounded-xl shadow border p-6 mb-6">
+            <h2 class="text-lg font-semibold mb-4">Working Days</h2>
+            <form action="{{ route('teacher.monthly.attendance.fill.downloadTemplate',[
+                                    'assignment' => $assignment->id,
+                                    'month' => $month,
+                                    'year' => $year
+                                ]) }}" method="POST">
+                @csrf
+                <input type= "hidden" name="student_obj" value="{{ $students }}">
+                <div class="flex flex-wrap gap-4 items-end">
+
+                    @if($assignment->is_lecture)
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">Lecture</label>
+                        <input type="number" name ="lecture_days" id="lecture_days"
+                            class="w-40 px-3 py-2 border rounded-lg"
+                            min="0" max="31" required>
+                    </div>
+                    @endif
+
+                    @if($assignment->is_tute)
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">Tute</label>
+                        <input type="number" name = "tute_days" id="tute_days"
+                            class="w-40 px-3 py-2 border rounded-lg"
+                            min="0" max="31" required>
+                    </div>
+                    @endif
+
+                    @if($assignment->is_practical)
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">Practical</label>
+                        <input type="number" name="practical_days" id="practical_days"
+                            class="w-40 px-3 py-2 border rounded-lg"
+                            min="0" max="31" required>
+                    </div>
+                    @endif
+
+                    <button type="button"
+                            onclick="addAttendanceFields()"
+                            id="showStudentsBtn"
+                            class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        Show Students
+                    </button>
+                    <label
+                        class="ml-4 flex items-center gap-2 border border-gray-300 rounded-md px-3 py-2 cursor-pointer"
+                    >
+                        <input
+                            type="checkbox"
+                            id="ffff"
+                            class="accent-blue-600"
+                        >
+                        <span class="text-sm font-medium">Bulk Import</span>
+                    </label>
+                  
+                </div>
+         
+            <div class="bg-white rounded-xl shadow border border-indigo-200 mb-10 hidden" id="bulkSection" style="margin-top:25px">
+
+                <div class="px-6 py-4 border-b bg-indigo-50 rounded-t-xl">
+                    <h2 class="text-lg font-semibold text-indigo-800 flex items-center gap-2">
+                        📥 Bulk Attendance Import
+                    </h2>
+                    <p class="text-sm text-indigo-600 mt-1">
+                        Recommended for faster monthly attendance entry
+                    </p>
+                </div>
+
+                <div class="p-6 space-y-6">
+
+                    {{-- STEP 1 --}}
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+                            1
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800">Download Excel Template</h4>
+                            <p class="text-sm text-gray-500 mb-2">
+                                Auto-filled with students & working days
+                            </p>
+
+                            
+                                <input type="hidden" name="student_obj" value="{{ $students }}">
+
+                                <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+                                    ⬇ Download Template
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+              
+                    <hr>
+
+                    {{-- STEP 2 --}}
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+                            2
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800">Fill Attendance in Excel</h4>
+                            <ul class="text-sm text-gray-500 list-disc ml-5 mt-1">
+                                <li>Edit only <b>Present (P)</b> columns</li>
+                                <li>Do not modify student names</li>
+                                <li>Present ≤ Working Days</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    {{-- STEP 3 --}}
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+                            3
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-800 mb-2">Upload Filled Excel</h4>
+
+                            <form action="{{ route('attendance.import') }}"
+                                method="POST"
+                                enctype="multipart/form-data"
+                                class="flex flex-col sm:flex-row gap-4">
+                                @csrf
+
+                                {{-- meta --}}
+                                <input type="hidden" name="paper_master_id" value="{{ $assignment->paper_master_id }}">
+                                <input type="hidden" name="course_id" value="{{ $assignment->course_id }}">
+                                <input type="hidden" name="semester_id" value="{{ $assignment->semester_id }}">
+                                <input type="hidden" name="section" value="{{ $assignment->section }}">
+                                <input type="hidden" name="month" value="{{ $month }}">
+                                <input type="hidden" name="year" value="{{ $year }}">
+
+                                <input type="file"
+                                    name="file"
+                                    accept=".xlsx"
+                                    required
+                                    class="block w-full sm:w-80 text-sm
+                                    file:mr-4 file:py-2 file:px-4
+                                    file:rounded-lg file:border-0
+                                    file:bg-indigo-50 file:text-indigo-700">
+
+                                <button class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                                    🚀 Import Attendance
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+        <form method="POST" action="{{ route('teacher.attendance.store') }}">
         @csrf
 
         {{-- HIDDEN META --}}
@@ -28,47 +182,6 @@
         <input type="hidden" name="paper_master_id" value="{{ $assignment->paper_master_id }}">
         <input type="hidden" name="month" value="{{ $month }}">
         <input type="hidden" name="year" value="{{ $year }}">
-
-        {{-- WORKING DAYS CARD --}}
-        <div class="bg-white rounded-xl shadow border p-6 mb-6">
-            <h2 class="text-lg font-semibold mb-4">Working Days</h2>
-
-            <div class="flex flex-wrap gap-4 items-end">
-
-                @if($assignment->is_lecture)
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">Lecture</label>
-                    <input type="number" id="lecture_days"
-                           class="w-40 px-3 py-2 border rounded-lg"
-                           min="0" max="31">
-                </div>
-                @endif
-
-                @if($assignment->is_tute)
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">Tute</label>
-                    <input type="number" id="tute_days"
-                           class="w-40 px-3 py-2 border rounded-lg"
-                           min="0" max="31">
-                </div>
-                @endif
-
-                @if($assignment->is_practical)
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">Practical</label>
-                    <input type="number" id="practical_days"
-                           class="w-40 px-3 py-2 border rounded-lg"
-                           min="0" max="31">
-                </div>
-                @endif
-
-                <button type="button"
-                        onclick="addAttendanceFields()"
-                        class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                    Add Attendance Fields
-                </button>
-            </div>
-        </div>
 
         {{-- ATTENDANCE TABLE (HIDDEN INITIALLY) --}}
         <div id="attendanceTable" class="hidden bg-white rounded-xl shadow border overflow-x-auto">
@@ -181,6 +294,8 @@ function addAttendanceFields() {
 
     document.getElementById('attendanceTable').classList.remove('hidden');
     document.getElementById('saveBtn').classList.remove('hidden');
+    document.getElementById("bulkSection").classList.add("hidden");
+    document.getElementById("ffff").checked = false;
 }
 
 
@@ -202,6 +317,16 @@ document.addEventListener('input', function (e) {
         alert('Present days cannot be more than working days');
         presentInput.value = working;
         presentInput.focus();
+    }
+});
+
+document.getElementById("ffff").addEventListener("change", function () {
+    const bulkSection = document.getElementById("bulkSection");
+
+    if (this.checked) {
+        bulkSection.classList.remove("hidden");
+    } else {
+        bulkSection.classList.add("hidden");
     }
 });
 </script>
