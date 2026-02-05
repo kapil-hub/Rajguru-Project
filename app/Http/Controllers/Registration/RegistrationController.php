@@ -24,39 +24,60 @@ class RegistrationController extends Controller
         "SEC",
         "VAC"
         ];
+
+    const ALTERNATIVE_SEMESTER = [
+            "I"=>1,
+            "II"=>2,
+            "III"=>3,
+            "IV"=>4,
+            "V"=>5,
+            "VI"=>6,
+            "VII"=>7,
+            "VIII"=>8,
+            1=>"I",
+            2=>"II",
+            3=>"III",
+            4=>"IV",
+            5=>"V",
+            6=>"VI",
+            7=>"VII",
+            8=>"VIII"
+        ];
+
     public function index(Student $student){
         $this->authorize('view', $student);
 
-    $deptId   = $student->academic->department_id;
-    $courseId = $student->academic->course_id;
-    $semester = $student->academic->current_semester;
+        $deptId   = $student->academic->department_id;
+        $courseId = $student->academic->course_id;
+        $semester = $student->academic->current_semester;
 
-    $papers = Paper::where('semester', $semester)
-        ->where(function ($query) use ($deptId, $courseId) {
+        $papers = Paper::where('semester', $semester)
+            ->orWhere('semester',self::ALTERNATIVE_SEMESTER[$semester])
+            ->where(function ($query) use ($deptId, $courseId) {
 
-            // Allow all NON-GE papers from same dept & course
-            $query->where(function ($q) use ($deptId, $courseId) {
-                $q->where('paper_type', '!=', 'GE')
-                  ->where('dept_id', $deptId)
-                  ->where('course_id', $courseId);
-            })
+                // Allow all NON-GE papers from same dept & course
+                $query->where(function ($q) use ($deptId, $courseId) {
+                    $q->whereNotIn('paper_type', ['GE','AEC','SEC','VAC'])
+                    ->where('dept_id', $deptId)
+                    ->where('course_id', $courseId);
+                })
 
-            // OR allow GE papers from OTHER dept or course
-            ->orWhere(function ($q) use ($deptId, $courseId) {
-                $q->where('paper_type', 'GE')
-                  ->where(function ($x) use ($deptId, $courseId) {
-                      $x->where('dept_id', '!=', $deptId)
+                // OR allow GE papers from OTHER dept or course
+                ->orWhere(function ($q) use ($deptId, $courseId) {
+                    $q->whereIn('paper_type', ['GE','AEC','SEC','VAC'])
+                    ->where(function ($x) use ($deptId, $courseId) {
+                        $x->where('dept_id', '!=', $deptId)
+                        ->where('dept_id',15)
                         ->orWhere('course_id', '!=', $courseId);
-                  });
-            });
-        })
-        ->get()
-        ->groupBy('paper_type');
-
-       return view('pages.registration.index', [
-            'student' => $student,
-            'papers'  => $papers, // grouped by paper_type
-        ]);
+                    });
+                });
+            })
+            ->get()
+            ->groupBy('paper_type');
+        return view('pages.registration.index', [
+                'student' => $student,
+                'papers'  => $papers, // grouped by paper_type
+            ]);
     }
 
     public function store(Request $request, Student $student)
