@@ -52,7 +52,11 @@ Route::middleware(['auth:admin,teacher'])->group(function () {
 Route::middleware('auth:teacher')->prefix('teacher')->group(function () {
 
     Route::get('attendance', [AttendanceController::class,'pendingList'])->name('teacher.attendance.pending');
+    Route::get('attendance', [AttendanceController::class,'pendingList'])->name('teacher.attendance.pending');
     Route::get('monthly/attendance/fill/{assignment}/{month}/{year}', [AttendanceController::class,'fillAttendance'])->name('teacher.monthly.attendance.fill');
+    Route::post('monthly/attendance/fill/{assignment}/{month}/{year}/downloadTemplate', [AttendanceController::class,'downloadTemplate'])->name('teacher.monthly.attendance.fill.downloadTemplate');
+    
+    Route::post('/attendance/import',[AttendanceController::class, 'import'])->name('attendance.import');
     Route::post('attendance/monthly/store', [AttendanceController::class,'storeAttendance'])->name('teacher.attendance.store');
 
     Route::get('/attendance/history', 
