@@ -34,7 +34,7 @@ class AttendanceController extends Controller
         $students = Student::whereHas('enrollments', function($q) use ($request) {
             $q->where('course_id', $request->course_id)
             ->where('semester_id', $request->semester_id)
-            ->where('section', $request->section)
+            // ->where('section', $request->section)
             ->where('paper_master_id', $request->paper_id);
         })->get();
         $attendance = StudentAttendance::where('paper_master_id', $request->paper_id)
@@ -128,8 +128,7 @@ class AttendanceController extends Controller
         $assignment = \App\Models\TeacherClassAssignment::findOrFail($assignmentId);
 
         $students = Student::whereHas('academic', function ($q) use ($assignment) {
-                $q->where('course_id', $assignment->course_id)
-                ->where('section', $assignment->section);
+                $q->where('course_id', $assignment->course_id);
             })
             ->whereHas('papers', function ($q) use ($assignment) {
                 $q->where('paper_master_id', $assignment->paper_master_id);

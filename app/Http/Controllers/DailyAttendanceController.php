@@ -14,8 +14,7 @@ class DailyAttendanceController extends Controller
         $assignment = \App\Models\TeacherClassAssignment::findOrFail($assignmentId);
 
         $students = Student::whereHas('academic', function ($q) use ($assignment) {
-                $q->where('course_id', $assignment->course_id)
-                ->where('section', $assignment->section);
+                $q->where('course_id', $assignment->course_id);
             })
             ->whereHas('papers', function ($q) use ($assignment) {
                 $q->where('paper_master_id', $assignment->paper_master_id);
@@ -33,8 +32,7 @@ class DailyAttendanceController extends Controller
     {
 
         $students = Student::whereHas('academic', function ($q) use ($request) {
-                $q->where('course_id', $request->course_id)
-                ->where('section', $request->section);
+                $q->where('course_id', $request->course_id);
             })
             ->whereHas('papers', function ($q) use ($request) {
                 $q->where('paper_master_id', $request->paper_master_id);
@@ -56,7 +54,6 @@ class DailyAttendanceController extends Controller
                     'teacher_id' => auth('teacher')->id(),
                     'course_id' => $request->course_id,
                     'semester_id' => $request->semester_id,
-                    'section' => $request->section,
                     'lecture' => $lecture,
                     'tute' => $tute,
                     'practical' => $practical,

@@ -17,9 +17,9 @@ class MenuHelper
             // ],
             [
                 'icon' => 'pages',
-                'name' => 'Assign Teacher',
+                'name' =>  auth('admin')->check() ? 'Assign Teacher' : (auth('teacher')->check() ? 'Assign Classes' : ' ' ),
                 'path' => '/teacher-assignments',
-                'permission' =>  auth('admin')->check() ? true : False, 
+                'permission' =>  auth('admin')->check() || auth('teacher')->check() ? true : False, 
                 
             ],
             [
@@ -32,6 +32,13 @@ class MenuHelper
                 'icon' => 'calendar',
                 'name' => 'Attendance',
                 'path' => '/teacher/attendance',
+                'permission' =>  auth('teacher')->check() ? true : False, 
+                
+            ],
+             [
+                'icon' => 'pages',
+                'name' => 'Profile',
+                'path' => '/teacher/profile/',
                 'permission' =>  auth('teacher')->check() ? true : False, 
                 
             ],

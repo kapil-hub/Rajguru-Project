@@ -70,8 +70,11 @@ class AdminFacultyController extends Controller
     }
 
     // Show edit form
-    public function edit($id)
+    public function edit($id = null)
     {
+        if(is_null($id)){
+            $id = auth('teacher')->user()->id;
+        }
         $faculty = Teacher::with('details')->findOrFail($id);
         $departments = Departments::all();
         $courses = Courses::all();
@@ -126,7 +129,7 @@ class AdminFacultyController extends Controller
             ]);
         }
 
-        return redirect()->route('admin.faculty.index')
+        return redirect()->back()
                          ->with('success', 'Faculty updated successfully');
     }
 

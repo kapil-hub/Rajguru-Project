@@ -13,12 +13,6 @@
         </p>
     </div>
 
-    <!-- Success Message -->
-    @if(session('success'))
-        <div class="mb-6 px-4 py-3 bg-green-100 border border-green-300 text-green-800 rounded-lg">
-            {{ session('success') }}
-        </div>
-    @endif
 
     <!-- ================= FORM CARD ================= -->
     <div class="bg-white rounded-xl shadow-sm border p-6 mb-10">
@@ -33,12 +27,21 @@
 
             <!-- Row 1 : Main Select Inputs -->
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <select name="teacher_id" required class="form-select rounded-lg">
-                    <option value="">Teacher</option>
-                    @foreach($teachers as $teacher)
-                        <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
-                    @endforeach
-                </select>
+                @if(auth('admin')->check())
+                    <select name="teacher_id" required class="form-select rounded-lg">
+                        <option value="">Teacher</option>
+                        @foreach($teachers as $teacher)
+                            <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
+                        @endforeach
+                    </select>
+                @endif
+                @if(auth('teacher')->check())
+                    <label
+                        class="ml-4 flex items-center gap-2 border border-gray-300 rounded-md px-3 py-2 cursor-pointer"
+                    >
+                        <span class="text-sm font-medium">{{ auth('teacher')->user()->name }}</span>
+                    </label>
+                @endif
 
                 <select name="course_id" required class="form-select rounded-lg">
                     <option value="">Course</option>
@@ -66,8 +69,8 @@
                     @endforeach
                 </select>
 
-                <select name="paper_master_id" required class="form-select rounded-lg">
-                    <option value="">Subject</option>
+                <select name="paper_master_id" required class="form-select rounded-lg paper-select">
+                    <option value="">Search Paper</option>
                     @foreach($papers as $paper)
                         <option value="{{ $paper->id }}">
                             {{ $paper->code }} - {{ $paper->name }}
@@ -109,7 +112,7 @@
                     class="inline-flex items-center px-6 py-2 rounded-lg
                            bg-blue-600 text-white font-medium
                            hover:bg-blue-700 focus:ring-2 focus:ring-blue-500">
-                    Assign Teacher
+                    Save
                 </button>
             </div>
         </form>
@@ -208,4 +211,16 @@
     </div>
 
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.paper-select').forEach(el => {
+            new TomSelect(el, {
+                placeholder: 'Search paper...',
+                allowEmptyOption: true,
+                create: false,
+                maxOptions: null
+            });
+        });
+    });
+</script>
 @endsection
