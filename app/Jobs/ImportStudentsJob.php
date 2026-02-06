@@ -69,13 +69,15 @@ class ImportStudentsJob implements ShouldQueue
                 for ($i = 0; $i < 7; $i++) {
                     $code = trim($row[$paperStart + ($i * 3)]);
                     $type = trim($row[$paperStart + ($i * 3) + 1]);
-
+                    $name = trim($row[$paperStart + ($i * 3) + 2]);
+                    
                     if (!$code) continue;
 
                     $paper = Paper::where([
                         'code' => $code,
                         'course_id' => $course->id,
                         'semester' => $row[8],
+                        'name' => $name,
                         'paper_type' => $type,
                     ])->first();
                     //Reattempt with 15 for SEC VAC GE 
@@ -83,6 +85,7 @@ class ImportStudentsJob implements ShouldQueue
                         $paper = Paper::where('code', $code)
                             ->where('semester', $row[8])
                             ->where('paper_type', $type)
+                            ->where('name', $name)
                             ->where('course_id', 15)
                             ->first();
                     }
