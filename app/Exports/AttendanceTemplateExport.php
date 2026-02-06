@@ -162,7 +162,7 @@ class AttendanceTemplateExport implements WithEvents
                 // Lock WD, Unlock P
                 foreach ($columns as $set) {
                     $sheet->getStyle($set['wd'] . "{$startRow}:" . $set['wd'] . "{$lastRow}")
-                          ->getProtection()->setLocked(true);
+                          ->getProtection()->setLocked(false);
 
                     $sheet->getStyle($set['p'] . "{$startRow}:" . $set['p'] . "{$lastRow}")
                           ->getProtection()->setLocked(false);

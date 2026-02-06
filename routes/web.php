@@ -51,6 +51,9 @@ Route::middleware(['auth:admin,teacher'])->group(function () {
 
 Route::middleware('auth:teacher')->prefix('teacher')->group(function () {
 
+    Route::get('profile', [AdminFacultyController::class,'edit']);
+    Route::put('profile/{faculty}/update',[AdminFacultyController::class, 'update'])->name('teacher.profile.update');
+
     Route::get('attendance', [AttendanceController::class,'pendingList'])->name('teacher.attendance.pending');
     Route::get('attendance', [AttendanceController::class,'pendingList'])->name('teacher.attendance.pending');
     Route::get('monthly/attendance/fill/{assignment}/{month}/{year}', [AttendanceController::class,'fillAttendance'])->name('teacher.monthly.attendance.fill');
@@ -139,14 +142,13 @@ Route::middleware('auth:admin')->group(function() {
 
             Route::post('/', [StudentController::class, 'store'])->name('store');
     });
-
-
+});
+Route::middleware('auth:admin,teacher')->group(function(){
     Route::get('teacher-assignments', [AdminController::class,'teacherAssignments'])->name('admin.teacher.assignments');
     Route::post('teacher-assignments', [AdminController::class,'storeTeacherAssignment'])->name('admin.teacher.assignments.store');
     Route::patch('/admin/teacher-assignments/{id}/status',[AdminController::class, 'toggleStatus'])->name('admin.teacher.assignments.status');
-
-
 });
+
 Route::middleware('auth:admin')->prefix('admin')->group(function(){
     Route::get('faculty', [AdminFacultyController::class,'index'])->name('admin.faculty.index');
     Route::get('faculty/create', [AdminFacultyController::class,'create'])->name('admin.faculty.create');

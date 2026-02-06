@@ -58,35 +58,116 @@
 
 </div>
 
-    <table class="w-full border text-sm">
-        <thead class="bg-gray-100">
-            <tr>
-                <th class="border p-2">Name</th>
-                <th class="border p-2">Control No</th>
-                <th class="border p-2">Course</th>
-                <th class="border p-2">Semester</th>
-                <th class="border p-2">Status</th>
-                <th class="border p-2">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach($students as $student)
-            <tr>
-                <td class="border p-2">{{ $student->name }}</td>
-                <td class="border p-2">{{ $student->control_number }}</td>
-                <td class="border p-2">{{ optional(optional($student->academic)->course)->name }}</td>
-                <td class="border p-2">{{ optional($student->academic)->current_semester }}</td>
-                <td class="border p-2">{{ $student->status }}</td>
-                <td class="p-3 text-right space-x-2">
-                    <a href="{{ route('students.show',$student) }}"
-                        class="px-3 py-1 bg-blue-600 text-white rounded">View</a>
-                    <a href="{{ route('students.edit',$student) }}"
-                        class="px-3 py-1 bg-gray-600 text-white rounded">Edit</a>
-                </td>
-            </tr>
-        @endforeach
-        </tbody>
-    </table>
+    <div class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- ================= HEADER ================= -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Manage Students</h1>
+            <p class="text-sm text-gray-500">
+                Search, browse and manage students
+            </p>
+        </div>
+
+        <!-- Search -->
+        <form method="GET" class="flex gap-2">
+            <input type="text"
+                   name="search"
+                   value="{{ request('search') }}"
+                   placeholder="Search name / control no"
+                   class="w-64 px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200">
+
+            <button type="submit"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                🔍 Search
+            </button>
+        </form>
+    </div>
+
+    <!-- ================= TABLE CARD ================= -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+
+        <table class="w-full text-sm text-left">
+            <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
+                <tr>
+                    <th class="p-3">Name</th>
+                    <th class="p-3">Control No</th>
+                    <th class="p-3">Course</th>
+                    <th class="p-3">Semester</th>
+                    <th class="p-3">Status</th>
+                    <th class="p-3 text-right">Action</th>
+                </tr>
+            </thead>
+
+            <tbody class="divide-y">
+            @forelse($students as $student)
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="p-3 font-medium">
+                        {{ $student->name }}
+                    </td>
+
+                    <td class="p-3">
+                        {{ $student->control_number }}
+                    </td>
+
+                    <td class="p-3">
+                        {{ optional(optional($student->academic)->course)->name ?? '-' }}
+                    </td>
+
+                    <td class="p-3">
+                        {{ optional($student->academic)->current_semester ?? '-' }}
+                    </td>
+
+                    <td class="p-3">
+                        <span class="px-2 py-1 rounded text-xs font-semibold
+                            {{ $student->status === 'active'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-red-100 text-red-700' }}">
+                            {{ ucfirst($student->status) }}
+                        </span>
+                    </td>
+
+                    <td class="p-3 text-right space-x-2">
+                        <a href="{{ route('students.show', $student) }}"
+                           class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
+                            View
+                        </a>
+
+                        <a href="{{ route('students.edit', $student) }}"
+                           class="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700">
+                            Edit
+                        </a>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="6" class="p-6 text-center text-gray-500">
+                        No students found 😕
+                    </td>
+                </tr>
+            @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ================= PAGINATION ================= -->
+    <div class="mt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+        <div class="text-sm text-gray-500">
+            @if($students->total() > 0)
+                Showing {{ $students->firstItem() }} –
+                {{ $students->lastItem() }}
+                of {{ $students->total() }} students
+            @endif
+        </div>
+
+        <div>
+            {{ $students->links('pagination::tailwind') }}
+        </div>
+
+    </div>
+
+</div>
 </div>
 
 @include('pages.students.partials.add-modal')

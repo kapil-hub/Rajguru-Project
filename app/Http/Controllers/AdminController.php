@@ -18,15 +18,21 @@ class AdminController extends Controller
     $semesters = Semester::get(); 
     $papers = Paper::all();
     $sections = ['A','B','C'];
+    if(auth('admin')->check()){
+        $assignments = TeacherClassAssignment::with(['teacher','course','semester','paperMaster'])->get();
+    }
+    if(auth('teacher')->check()){
+        $assignments = TeacherClassAssignment::where('teacher_id',auth('teacher')->user()->id)->with(['teacher','course','semester','paperMaster'])->get();
+    }
+    
 
-    $assignments = TeacherClassAssignment::with(['teacher','course','semester','paperMaster'])->get();
 
     return view('pages.admin.teacher_assignments.index', compact('teachers','courses','semesters','papers','sections','assignments'));
 }
 
 public function storeTeacherAssignment(Request $request) {
     TeacherClassAssignment::create([
-        'teacher_id' => $request->teacher_id,
+        'teacher_id' => auth('admin')->check() ? $request->teacher_id : (auth('teacher')->check() ? auth('teacher')->user()->id : ' ' ),
         'course_id' => $request->course_id,
         'semester_id' => $request->semester_id,
         'section' => $request->section,

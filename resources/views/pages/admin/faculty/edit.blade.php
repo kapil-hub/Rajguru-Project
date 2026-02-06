@@ -5,14 +5,14 @@
 
     <h1 class="text-2xl font-bold mb-6">Edit Faculty: {{ $faculty->name }}</h1>
 
-    {{-- Success Message --}}
-    @if(session('success'))
-        <div class="mb-4 p-3 bg-green-200 text-green-800 rounded">
-            {{ session('success') }}
-        </div>
-    @endif
 
-    <form method="POST" action="{{ route('admin.faculty.update', $faculty->id) }}">
+
+    @if(auth('admin')->check())
+        <form method="POST" action="{{ route('admin.faculty.update', $faculty->id) }}">
+    @endif
+    @if(auth('teacher')->check())  
+        <form method="POST" action="{{ route('teacher.profile.update', $faculty->id) }}">
+    @endif
         @csrf
         @method('PUT')
 
@@ -20,7 +20,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <input type="text" name="title" placeholder="Title" value="{{ $faculty->title }}" class="border rounded px-3 py-2" required>
             <input type="text" name="name" placeholder="Name" value="{{ $faculty->name }}" class="border rounded px-3 py-2" required>
-            <input type="text" name="designation" placeholder="Designation" value="{{ $faculty->designation }}" class="border rounded px-3 py-2" required>
+            <input type="text" name="designation" placeholder="Designation" value="{{ $faculty->designation }}" class="border rounded px-3 py-2" required {{ auth('teacher')->check() ? 'readonly' : ' ' }}>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -66,7 +66,7 @@
                 </select>
             @endif
             @foreach($faculty->details as $index => $d)
-                <div class="flex gap-2 items-center">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-3">
                     <select name="details[{{ $index }}][course_id]" class="border rounded px-3 py-2" required>
                         <option value="">Select Course</option>
                         @foreach($courses as $c)
@@ -75,14 +75,14 @@
                     </select>
 
                     {{-- Paper --}}
-                    <select name="details[{{ $index }}][paper_master_id]" class="border rounded px-3 py-2" required>
+                    <select name="details[{{ $index }}][paper_master_id]" class="paper-select border rounded px-3 py-2" required>
                         <option value="">Select Paper</option>
                         @foreach($papers as $p)
                             <option value="{{ $p->id }}" @if($d->paper_master_id==$p->id) selected @endif>{{ $p->name }}</option>
                         @endforeach
                     </select>
 
-                    <button type="button" onclick="this.parentElement.remove()" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700">Remove</button>
+                    <button type="button" onclick="this.parentElement.remove()" class="w-10 h-10 bg-red-600 text-white rounded flex items-center justify-center">-</button>
                 </div>
             @endforeach
         </div>
@@ -95,7 +95,7 @@
         {{-- Submit Button --}}
         <div class="flex justify-end">
             <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                Update Faculty
+                Update 
             </button>
         </div>
 
@@ -109,7 +109,7 @@ function addFacultyDetail() {
     const wrapper = document.getElementById('facultyDetailsWrapper');
 
     const html = `
-    <div class="flex gap-2 items-center mt-2">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-3">
         <select name="details[${detailIndex}][course_id]" class="border rounded px-3 py-2" required>
             <option value="">Select Course</option>
             @foreach($courses as $c)
@@ -117,7 +117,7 @@ function addFacultyDetail() {
             @endforeach
         </select>
 
-        <select name="details[${detailIndex}][paper_master_id]" class="border rounded px-3 py-2" required>
+        <select name="details[${detailIndex}][paper_master_id]" class="paper-select border rounded px-3 py-2" required>
             <option value="">Select Paper</option>
             @foreach($papers as $p)
                 <option value="{{ $p->id }}">{{ $p->name }}</option>
@@ -129,7 +129,22 @@ function addFacultyDetail() {
     `;
 
     wrapper.insertAdjacentHTML('beforeend', html);
+    initPaperSelect(row.querySelector('.paper-select'));
     detailIndex++;
 }
+
+function initPaperSelect(element) {
+    new TomSelect(element, {
+        placeholder: 'Search paper...',
+        allowEmptyOption: true,
+        create: false,
+        maxOptions: null
+    });
+}
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.paper-select').forEach(el => {
+        initPaperSelect(el);
+    });
+});
 </script>
 @endsection

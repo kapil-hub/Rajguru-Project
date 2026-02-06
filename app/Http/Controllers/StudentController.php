@@ -23,15 +23,30 @@ class StudentController extends Controller
     /* =======================
        STUDENT LIST
     ========================*/
-    public function index()
+    public function index(Request $request)
     {
-        $students = Student::with(['academic.course'])
-            ->latest()
-            ->get();
-        $courses = Courses::get();
-        $departments = Departments::get();
+        $query = Student::with(['academic.course'])->latest();
 
-        return view('pages.students.index', compact('students','courses','departments'));
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                ->orWhere('control_number', 'like', "%{$search}%");
+            });
+        }
+
+        $students = $query->paginate(20)->withQueryString();
+
+
+        $courses = Courses::all();
+        $departments = Departments::all();
+
+        return view(
+            'pages.students.index',
+            compact('students', 'courses', 'departments')
+        );
     }
 
     /* =======================
