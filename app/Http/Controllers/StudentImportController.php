@@ -93,11 +93,14 @@ class StudentImportController extends Controller
             }
 
             $validPaperFound = true;
-
+           if (!$code) {
+                $errors[] = "Paper " . ($i + 1) . "  not having UPC";
+            }
            $paper = Paper::where([
                         'code' => $code,
                         'course_id' => $course->id,
                         'semester' => $row[8],
+                        'name' => $name,
                         'paper_type' => $type,
                     ])->first();
                     //Reattempt with 15 for SEC VAC GE 
@@ -105,6 +108,7 @@ class StudentImportController extends Controller
                 $paper = Paper::where('code', $code)
                     ->where('semester', $row[8])
                     ->where('paper_type', $type)
+                    ->where('name', $name)
                     ->where('course_id', 15)
                     ->first();
             }
