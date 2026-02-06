@@ -78,6 +78,15 @@ class ImportStudentsJob implements ShouldQueue
                         'semester' => $row[8],
                         'paper_type' => $type,
                     ])->first();
+                    //Reattempt with 15 for SEC VAC GE 
+                    if (!$paper && $type != 'DSC' && $type != 'DSE') {
+                        $paper = Paper::where('code', $code)
+                            ->where('semester', $row[8])
+                            ->where('paper_type', $type)
+                            ->where('course_id', 15)
+                            ->first();
+                    }
+
 
                     if ($paper) {
                         StudentPaper::create([
