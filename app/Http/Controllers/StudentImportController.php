@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Exports\StudentTemplateExport;
 use App\Jobs\ImportStudentsJob;
 use App\Models\{
@@ -41,32 +42,53 @@ class StudentImportController extends Controller
         'file' => 'required|mimes:xlsx'
     ]);
 
-    $rows = Excel::toCollection(null, $request->file('file'))[0];
+    /* ===============================
+       STORE FILE IN PUBLIC DIRECTORY
+       =============================== */
+    $importDir = public_path('imports');
+    if (!file_exists($importDir)) {
+        mkdir($importDir, 0777, true);
+    }
+
+    $fileName = uniqid('students_') . '.xlsx';
+    $request->file('file')->move($importDir, $fileName);
+
+    // store filename in session (IMPORTANT)
+    session(['student_import_file' => $fileName]);
+
+    $filePath = public_path('imports/' . $fileName);
+
+    /* ===============================
+       READ EXCEL
+       =============================== */
+    $spreadsheet = IOFactory::load($filePath);
+    $sheet = $spreadsheet->getActiveSheet();
 
     $validRows = [];
     $invalidRows = [];
 
-    foreach ($rows->skip(1) as $index => $row) {
+    foreach ($sheet->getRowIterator(2) as $index => $row) {
+
+        $cells = [];
+        foreach ($row->getCellIterator() as $cell) {
+            $cells[] = trim((string) $cell->getValue());
+        }
 
         $errors = [];
 
         // =============================
-        // BASIC STUDENT VALIDATION
+        // BASIC VALIDATION
         // =============================
-        // if (!filter_var($row[2], FILTER_VALIDATE_EMAIL)) {
-        //     $errors[] = 'Invalid student email';
-        // }
-
-        if (Student::where('email', $row[2])->exists()) {
+        if (Student::where('email', $cells[2] ?? null)->exists()) {
             $errors[] = 'Student email already exists';
         }
 
-        $department = Departments::where('name', trim($row[6]))->first();
+        $department = Departments::where('name', trim($cells[6] ?? ''))->first();
         if (!$department) {
             $errors[] = 'Department not found';
         }
 
-        $course = Courses::where('name', trim($row[7]))
+        $course = Courses::where('name', trim($cells[7] ?? ''))
             ->where('dept_id', optional($department)->id)
             ->first();
 
@@ -75,44 +97,40 @@ class StudentImportController extends Controller
         }
 
         // =============================
-        // PAPER VALIDATION (7 PAPERS)
+        // PAPER VALIDATION
         // =============================
         $paperStart = 15;
-        $paperCount = 7;
         $validPaperFound = false;
 
-        for ($i = 0; $i < $paperCount; $i++) {
+        for ($i = 0; $i < 7; $i++) {
 
-            $code = trim($row[$paperStart + ($i * 3)]);
-            $type = trim($row[$paperStart + ($i * 3) + 1]);
-            $name = trim($row[$paperStart + ($i * 3) + 2]);
+            $code = trim($cells[$paperStart + ($i * 3)] ?? '');
+            $type = trim($cells[$paperStart + ($i * 3) + 1] ?? '');
+            $name = trim($cells[$paperStart + ($i * 3) + 2] ?? '');
 
-            // Skip empty paper slots
             if (!$code && !$type && !$name) {
                 continue;
             }
 
             $validPaperFound = true;
-           if (!$code) {
-                $errors[] = "Paper " . ($i + 1) . "  not having UPC";
-            }
-           $paper = Paper::where([
-                        'code' => $code,
-                        'course_id' => $course->id,
-                        'semester' => $row[8],
-                        'name' => $name,
-                        'paper_type' => $type,
-                    ])->first();
-                    //Reattempt with 15 for SEC VAC GE 
-            if (!$paper && $type != 'DSC' && $type != 'DSE') {
+
+            $paper = Paper::where([
+                'code' => $code,
+                'course_id' => optional($course)->id,
+                'semester' => $cells[8] ?? null,
+                'name' => $name,
+                'paper_type' => $type,
+            ])->first();
+
+            // fallback for SEC / VAC / GE
+            if (!$paper && !in_array($type, ['DSC', 'DSE'])) {
                 $paper = Paper::where('code', $code)
-                    ->where('semester', $row[8])
+                    ->where('semester', $cells[8] ?? null)
                     ->where('paper_type', $type)
                     ->where('name', $name)
                     ->where('course_id', 15)
                     ->first();
             }
-
 
             if (!$paper) {
                 $errors[] = "Paper " . ($i + 1) . " not matched";
@@ -124,41 +142,56 @@ class StudentImportController extends Controller
         }
 
         // =============================
-        // FINAL DECISION
+        // FINAL RESULT
         // =============================
         if ($errors) {
             $invalidRows[] = [
-                'row_number' => $index + 2,
+                'row_number' => $index,
                 'errors' => $errors,
-                'data' => $row,
+                'data' => $cells,
             ];
         } else {
-            $validRows[] = $row;
+            $validRows[] = $cells;
         }
     }
 
-    session([
-        'student_import_valid' => $validRows,
-        'student_import_invalid' => $invalidRows,
-    ]);
+    // store valid rows for confirmation
+    session(['student_import_valid' => $validRows]);
 
-    return view('pages.students.import.preview', compact('validRows', 'invalidRows'));
+    return view(
+        'pages.students.import.preview',
+        compact('validRows', 'invalidRows')
+    );
 }
-
 
     /* ===============================
      * STEP 3: CONFIRM IMPORT
      * =============================== */
    public function confirm()
-    {
-        $rows = session('student_import_valid', []);
+{
+    $rows = session('student_import_valid', []);
 
-        Cache::put('student_import_progress', 0);
-
-        ImportStudentsJob::dispatch($rows);
-
-        return redirect()->route('students.import.progress');
+    if (empty($rows)) {
+        return back()->with('error', 'No data to import');
     }
+
+    $total = count($rows);
+
+    Cache::put('student_import_total', $total);
+    Cache::put('student_import_processed', 0);
+    Cache::put('student_import_progress', 0);
+
+    // ?? CHUNK DATA (100 rows per job)
+    $chunks = array_chunk($rows, 100);
+
+    foreach ($chunks as $chunk) {
+        ImportStudentsJob::dispatch($chunk);
+    }
+
+    return redirect()->route('students.import.progress');
+}
+
+
 
 
     /* ===============================
