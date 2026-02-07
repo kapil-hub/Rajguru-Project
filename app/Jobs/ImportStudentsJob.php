@@ -18,6 +18,7 @@ class ImportStudentsJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public array $rows;
+    public $timeout = 120;
 
     public function __construct(array $rows)
     {
@@ -26,9 +27,6 @@ class ImportStudentsJob implements ShouldQueue
 
     public function handle()
     {
-        $total = count($this->rows);
-        $processed = 0;
-
         foreach ($this->rows as $row) {
 
             DB::transaction(function () use ($row) {
@@ -67,10 +65,11 @@ class ImportStudentsJob implements ShouldQueue
                 $paperStart = 15;
 
                 for ($i = 0; $i < 7; $i++) {
+
                     $code = trim($row[$paperStart + ($i * 3)]);
                     $type = trim($row[$paperStart + ($i * 3) + 1]);
                     $name = trim($row[$paperStart + ($i * 3) + 2]);
-                    
+
                     if (!$code) continue;
 
                     $paper = Paper::where([
@@ -80,8 +79,8 @@ class ImportStudentsJob implements ShouldQueue
                         'name' => $name,
                         'paper_type' => $type,
                     ])->first();
-                    //Reattempt with 15 for SEC VAC GE 
-                    if (!$paper && $type != 'DSC' && $type != 'DSE') {
+
+                    if (!$paper && !in_array($type, ['DSC', 'DSE'])) {
                         $paper = Paper::where('code', $code)
                             ->where('semester', $row[8])
                             ->where('paper_type', $type)
@@ -89,7 +88,6 @@ class ImportStudentsJob implements ShouldQueue
                             ->where('course_id', 15)
                             ->first();
                     }
-
 
                     if ($paper) {
                         StudentPaper::create([
@@ -102,14 +100,34 @@ class ImportStudentsJob implements ShouldQueue
                 }
             });
 
-            // ✅ PROGRESS UPDATE (WORKING)
-            $processed++;
+            // ?? UPDATE PROGRESS SAFELY
+            $processed = Cache::increment('student_import_processed');
+
+            $total = Cache::get('student_import_total');
+
             Cache::put(
                 'student_import_progress',
                 intval(($processed / $total) * 100)
             );
         }
 
-        Cache::put('student_import_progress', 100);
+
+$jobsDone = Cache::increment('student_import_jobs_done');
+    $jobsTotal = Cache::get('student_import_jobs_total');
+
+    if ($jobsDone >= $jobsTotal) {
+        $fileName = Cache::get('student_import_file');
+
+        if ($fileName) {
+            $path = public_path('imports/' . $fileName);
+
+            if (File::exists($path)) {
+                File::delete($path);
+            }
+        }
+
+        // optional cleanup
+        Cache::forget('student_import_file');
+    }
     }
 }
