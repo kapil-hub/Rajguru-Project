@@ -112,11 +112,11 @@ class ImportStudentsJob implements ShouldQueue
         }
 
 
-$jobsDone = Cache::increment('student_import_jobs_done');
-    $jobsTotal = Cache::get('student_import_jobs_total');
+    $jobsDone = Cache::increment('chunk_processed');
+    $jobsTotal = Cache::get('total_jobs_chunk');
 
-    if ($jobsDone >= $jobsTotal) {
-        $fileName = Cache::get('student_import_file');
+    if ($jobsDone == $jobsTotal) {
+         
 
         if ($fileName) {
             $path = public_path('imports/' . $fileName);
@@ -125,9 +125,15 @@ $jobsDone = Cache::increment('student_import_jobs_done');
                 File::delete($path);
             }
         }
+	
+    Cache::put('student_import_total', $total);
+    Cache::put('student_import_processed', 0);
+    Cache::put('chunk_processed',0);
+    Cache::put('total_jobs_chunk',0);
 
         // optional cleanup
-        Cache::forget('student_import_file');
+        session()->forget('student_import_file');
+	session()->forget('student_import_valid');
     }
     }
 }

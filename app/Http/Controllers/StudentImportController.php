@@ -180,10 +180,10 @@ class StudentImportController extends Controller
     Cache::put('student_import_total', $total);
     Cache::put('student_import_processed', 0);
     Cache::put('student_import_progress', 0);
-
+    Cache::put('chunk_processed',0);
     // ?? CHUNK DATA (100 rows per job)
     $chunks = array_chunk($rows, 100);
-
+    Cache::put('total_jobs_chunk',count($chunks));
     foreach ($chunks as $chunk) {
         ImportStudentsJob::dispatch($chunk);
     }
