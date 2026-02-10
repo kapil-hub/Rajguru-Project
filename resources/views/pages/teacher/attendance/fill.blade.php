@@ -209,7 +209,7 @@
                 <tbody class="divide-y">
                 @foreach($students as $i => $s)
                     <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-2">{{ $i + 1 }}</td>
+                        <td class="px-4 py-2">{{ $s['academic']['roll_number'] ?? 'N/A' }}</td>
                         <td class="px-6 py-2 font-medium">{{ $s->name }}</td>
 
                         {{-- LECTURE --}}

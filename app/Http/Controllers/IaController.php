@@ -100,7 +100,7 @@ public function loadStudents(Request $request)
     {
         $assignment = \App\Models\TeacherClassAssignment::findOrFail($assignmentId);
 
-        $students = Student::where(function ($q) use ($assignment) {
+        $students = Student::with('academic')->where(function ($q) use ($assignment) {
 
             // Case 1: DSC / DSE → course required
             $q->whereHas('papers', function ($p) use ($assignment) {
