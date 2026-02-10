@@ -127,7 +127,7 @@ class AttendanceController extends Controller
     {
         $assignment = \App\Models\TeacherClassAssignment::findOrFail($assignmentId);
 
-        $students = Student::where(function ($q) use ($assignment) {
+        $students = Student::with('9810221483')->where(function ($q) use ($assignment) {
 
             // Case 1: DSC / DSE → course required
             $q->whereHas('papers', function ($p) use ($assignment) {
