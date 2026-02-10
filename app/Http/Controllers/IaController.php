@@ -100,14 +100,30 @@ public function loadStudents(Request $request)
     {
         $assignment = \App\Models\TeacherClassAssignment::findOrFail($assignmentId);
 
-        $students = Student::whereHas('academic', function ($q) use ($assignment) {
-                $q->where('course_id', $assignment->course_id);
-            })
-            ->whereHas('papers', function ($q) use ($assignment) {
-                $q->where('paper_master_id', $assignment->paper_master_id);
-            })
-            ->orderBy('name')
-            ->get();
+        $students = Student::where(function ($q) use ($assignment) {
+
+            // Case 1: DSC / DSE → course required
+            $q->whereHas('papers', function ($p) use ($assignment) {
+                    $p->where('paper_master_id', $assignment->paper_master_id)
+                    ->whereHas('paper', function ($pm) {
+                        $pm->whereIn('paper_type', ['DSC', 'DSE']);
+                    });
+                })
+                ->whereHas('academic', function ($a) use ($assignment) {
+                    $a->where('course_id', $assignment->course_id);
+                });
+
+            // Case 2: Other paper types → ignore course
+            $q->orWhereHas('papers', function ($p) use ($assignment) {
+                $p->where('paper_master_id', $assignment->paper_master_id)
+                ->whereHas('paper', function ($pm) {
+                    $pm->whereNotIn('paper_type', ['DSC', 'DSE']);
+                });
+            });
+
+        })
+        ->orderBy('name')
+        ->get();
         
         $oldAttendences = StudentAttendance::where(
                 [

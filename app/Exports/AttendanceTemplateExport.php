@@ -31,7 +31,7 @@ class AttendanceTemplateExport implements WithEvents
                 /* ===============================
                    BASE HEADERS
                 =============================== */
-                $sheet->mergeCells('A1:A2')->setCellValue('A1', '#');
+                $sheet->mergeCells('A1:A2')->setCellValue('A1', 'Roll Number');
                 $sheet->mergeCells('B1:B2')->setCellValue('B1', 'Student Name');
 
                 $currentCol = 'C';
@@ -118,7 +118,7 @@ class AttendanceTemplateExport implements WithEvents
 
                 foreach ($this->students as $i => $student) {
 
-                    $sheet->setCellValue("A{$row}", $i + 1);
+                    $sheet->setCellValue("A{$row}", $student["academic"]['roll_number'] ?? "N/A");
                     $sheet->setCellValue("B{$row}", $student['name']);
 
                     if (isset($columns['lecture'])) {
