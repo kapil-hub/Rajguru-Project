@@ -49,36 +49,61 @@
     </div>
 
     <!-- PAPERS -->
-    <div class="bg-white rounded-xl shadow p-6">
-        <h3 class="font-semibold text-lg mb-4">Current Semester Papers</h3>
+    <<div class="bg-white rounded-xl shadow p-6">
+    <h3 class="font-semibold text-lg mb-4">Current Semester Papers</h3>
 
-        <table class="w-full text-sm border">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="p-2">Paper Code</th>
-                    <th class="p-2">Paper Name</th>
-                    <th class="p-2">Paper Type</th>
-                    <th class="p-2">Semester</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y">
-            @forelse($student->papers as $paper)
-                <tr>
-                    <td class="p-2">{{ $paper->paper->code }}</td>
-                    <td class="p-2">{{ $paper->paper->name }}</td>
-                    <td class="p-2">{{ $paper->paper->paper_type }}</td>
-                    <td class="p-2">{{ $paper->semester }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="4" class="p-3 text-center text-gray-500">
-                        No papers chossed/assigned
-                    </td>
-                </tr>
-            @endforelse
-            </tbody>
-        </table>
-    </div>
+    <table class="w-full text-sm border">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="p-2">Paper Code</th>
+                <th class="p-2">Paper Name</th>
+                <th class="p-2">Paper Type</th>
+                <th class="p-2">Semester</th>
+            </tr>
+        </thead>
+
+        <tbody class="divide-y">
+        @forelse($student->papers as $paper)
+            <tr class="
+                {{ $paper->is_backlog 
+                    ? 'bg-red-50 text-red-800' 
+                    : 'bg-white' }}
+            ">
+                <td class="p-2 font-medium">
+                    {{ $paper->paper->code }}
+                </td>
+
+                <td class="p-2">
+                    {{ $paper->paper->name }}
+
+                    @if($paper->is_backlog)
+                        <span class="ml-2 inline-flex items-center
+                            text-xs font-semibold px-2 py-0.5
+                            rounded-full bg-red-200 text-red-800">
+                            Backlog
+                        </span>
+                    @endif
+                </td>
+
+                <td class="p-2">
+                    {{ $paper->paper->paper_type }}
+                </td>
+
+                <td class="p-2 font-semibold">
+                    {{ $paper->semester }}
+                </td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="4" class="p-3 text-center text-gray-500">
+                    No papers chosen / assigned
+                </td>
+            </tr>
+        @endforelse
+        </tbody>
+    </table>
+</div>
+
 
 </div>
 @endsection

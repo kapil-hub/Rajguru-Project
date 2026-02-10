@@ -110,6 +110,7 @@ class AttendanceController extends Controller
                 'paperMaster'
             ])
             ->where('teacher_id', $teacherId)
+            ->where('is_active', 1)
             ->get();
 
         // Group attendance settings by semester for easy access
@@ -127,7 +128,7 @@ class AttendanceController extends Controller
     {
         $assignment = \App\Models\TeacherClassAssignment::findOrFail($assignmentId);
 
-        $students = Student::with('9810221483')->where(function ($q) use ($assignment) {
+        $students = Student::with('academic')->where(function ($q) use ($assignment) {
 
             // Case 1: DSC / DSE → course required
             $q->whereHas('papers', function ($p) use ($assignment) {

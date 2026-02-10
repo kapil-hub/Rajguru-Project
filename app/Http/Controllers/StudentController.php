@@ -9,6 +9,7 @@ use App\Models\StudentAcademic;
 use App\Models\StudentEnrolDetail;
 use App\Models\StudentPaper;
 use App\Models\Courses;
+use App\Models\Paper;
 use App\Models\Departments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -54,9 +55,12 @@ class StudentController extends Controller
     ========================*/
     public function create()
     {
+  
         return view('pages.students.create', [
-            'courses' => Courses::all(),
             'departments' => Departments::all(),
+            'courses'     => Courses::all(),
+            'allPapers'   => Paper::select('id','name','code','semester')
+                                ->orderBy('name')->get(),
         ]);
     }
 
@@ -82,35 +86,51 @@ class StudentController extends Controller
             'mother_name' => 'required',
             'parents_contact_number' => 'required',
             'parents_email_id' => 'required|email',
-        ]);
+            'papers.*.paper_id' => 'required|distinct',
+        ],
+        [
+        'papers.*.paper_id.distinct' => 'Same paper cannot be assigned twice.'
+    ]);
 
         DB::transaction(function () use ($request) {
 
-            $student = StudentUser::create([
-                'name' => $request->name,
-                'control_number' => $request->control_number,
-                'mobile' => $request->mobile,
-                'password' => Hash::make('student@123'),
-                'status' => 'Active',
-            ]);
+        $student = Student::create([
+            'name'                     => $request->name,
+            'email'                    => $request->email,
+            'mobile'                   => $request->mobile,
+            'admission_academic_year'  => $request->admission_academic_year,
+            'control_number'           => $request->control_numer,
+            'status'                   => 1,
+            'password'                 => Hash::make('Student@123'),
+        ]);
 
-            StudentAcademic::create([
-                'student_user_id' => $student->id,
-                'department_id' => $request->department_id,
-                'course_id' => $request->course_id,
-                'current_semester' => $request->current_semester,
-                'current_academic_year' => now()->year,
-            ]);
+        StudentAcademic::create([
+            'student_user_id' => $student->id,
+            'roll_number'     => $request->roll_number,
+            'department_id'   => $request->department_id,
+            'course_id'       => $request->course_id,
+            'current_semester'=> $request->current_semester,
+            'current_academic_year' => now()->year,
+            'section'         => $request->section,
+        ]);
 
-            StudentEnrolDetail::create([
-                'student_user_id'=>$student->id,
-                'father_name'=>$request->father_name,    
-                'mother_name'=>$request->mother_name,   
-                'parents_contact_number'=>$request->parents_contact_number,   
-                'parents_email_id'=>$request->parents_email_id,   
-            ]);
+        StudentEnrolDetail::create([
+            'student_user_id'        => $student->id,
+            'father_name'            => $request->father_name,
+            'mother_name'            => $request->mother_name,
+            'parents_contact_number' => $request->parents_contact_number,
+            'parents_email_id'       => $request->parents_email_id,
+        ]);
 
-        });
+        foreach ($request->papers ?? [] as $paper) {
+            $student->papers()->create([
+                'paper_master_id' => $paper['paper_id'],
+                'semester' => $paper['semester'] ?? $request->current_semester,
+                'academic_year'=>now()->year,
+                'is_backlog' => $paper['is_backlog'] ?? 0,
+            ]);
+        }
+    });
 
         return redirect()->route('students.index')
             ->with('success', 'Student added successfully');
@@ -139,10 +159,13 @@ class StudentController extends Controller
     public function edit(Student $student)
     {
         $this->authorize('update', $student);
+        $allPapers = Paper::select('id', 'name', 'code', 'semester')->orderBy('name')->get();
         return view('pages.students.edit', [
-            'student' => $student->load('academic'),
+            'student' => $student->load(['academic','enrolDetails',
+                'papers.paper']),
             'courses' => Courses::all(),
             'departments' => Departments::all(),
+            'allPapers' => $allPapers,
         ]);
     }
 
@@ -206,6 +229,21 @@ class StudentController extends Controller
                     'parents_email_id' => $request->parents_email_id,
                 ]
             );
+
+            $student->papers()->delete();
+
+            foreach ($request->papers ?? [] as $paper) {
+                $student->papers()->create([
+                    'paper_master_id' => $paper['paper_id'],
+                    'semester' => $paper['semester'] ?? $request->current_semester,
+                    'academic_year'=>now()->year,
+                    'is_backlog' => $paper['is_backlog'] ?? 0,
+                    
+                ]);
+            }
+
+
+
         });
 
         return redirect()
