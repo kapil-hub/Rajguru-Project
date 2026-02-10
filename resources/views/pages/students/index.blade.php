@@ -15,7 +15,12 @@
                 Download the template, fill student data, and import.
             </p>
         </div>
-
+        
+        <a href="{{  route('students.create') }}"
+                class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700">
+            + Create student
+        </a>
+        
         <!-- Download Template -->
         <a href="{{ route('students.template') }}"
            class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700">
@@ -53,7 +58,6 @@
                 </button>
             </div>
         </form>
-
     </div>
 
 </div>
@@ -68,7 +72,7 @@
                 Search, browse and manage students
             </p>
         </div>
-
+        
         <!-- Search -->
         <form method="GET" class="flex gap-2">
             <input type="text"
