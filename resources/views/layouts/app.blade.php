@@ -79,9 +79,103 @@
             });
         });
     </script>
+    <style>
+        /*Phones – 600px*/
 
+@media (max-width: 37.5em) {
+
+  img.dark\:hidden {
+
+    width: 40%;
+
+    margin-left: 7rem;
+
+  }
+
+}
+
+
+/*Tablets – 768px*/
+
+@media (min-width: 37.6em) and (max-width: 48em) {
+
+  img.dark\:hidden {
+
+    width: 20%;
+
+    margin-left: 17rem;
+
+  }
+
+  .flex.flex-col.gap-4 {
+
+    margin-top: 5rem;
+
+  }
+
+}
+
+
+/*Laptops – 992px*/
+
+@media (min-width: 49em) and (max-width: 62em) {
+
+  img.dark\:hidden {
+
+    width: 30%;
+
+    margin-left: 14rem;
+
+  }
+
+  .flex.flex-col.gap-4 {
+
+    margin-top: 10rem;
+
+  }
+
+}
+
+
+/*Large Screens – 1200px*/
+
+@media (min-width: 63em) and (max-width: 75em) {
+
+  img.dark\:hidden {
+
+    width: 16%;
+
+    margin-left: 27rem;
+
+  }
+
+  .flex.flex-col.gap-4 {
+
+    margin-top: 5.5rem;
+
+  }
+
+}
+
+
+/*Large Screens – 1200px*/
+
+@media (min-width: 75em) {
+
+  img.dark\:hidden {
+
+    width: 55%;
+
+    margin-left: 3rem;
+
+  }
+
+}
+    </style>
     <!-- Apply dark mode immediately to prevent flash -->
     <script>
+        const width = window.innerWidth;
+ 
         (function() {
             const savedTheme = localStorage.getItem('theme');
             const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';

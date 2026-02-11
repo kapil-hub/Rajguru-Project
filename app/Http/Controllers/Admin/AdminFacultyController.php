@@ -134,10 +134,9 @@ class AdminFacultyController extends Controller
     }
 
     // Delete faculty
-    public function destroy(Faculty $faculty)
+    public function destroy(Teacher $faculty)
     {
-        FacultyDetail::where('faculty_user_id', $faculty->id)->delete();
-        $faculty->delete();
+        Teacher::where('id', $faculty->id)->delete();
         return redirect()->route('admin.faculty.index')
                          ->with('success', 'Faculty deleted successfully');
     }

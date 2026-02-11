@@ -131,7 +131,7 @@
                         </span>
                     </td>
 
-                    <td class="p-3 text-right space-x-2">
+                    <td class="p-3 text-right flex flex-2 gap-2">
                         <a href="{{ route('students.show', $student) }}"
                            class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
                             View
