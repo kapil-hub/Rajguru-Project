@@ -153,6 +153,11 @@
         <button type="submit" class="btn-login">Login</button>
 
     </form>
+        <div class="footer-text">
+            <a href="/forgot-password" style="color:#4f46e5;text-decoration:none;">
+                Forgot Password?
+            </a>
+        </div>
 
     <div class="footer-text">
         © {{ date('Y') }} Saheed Rajguru College

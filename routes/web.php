@@ -20,7 +20,14 @@ use App\Http\Controllers\Admin\RegistrationWindowController;
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/forgot-password', [AuthController::class, 'showForgot']);
+Route::post('/forgot-password', [AuthController::class, 'sendOtp']);
 
+Route::get('/verify-otp', [AuthController::class, 'showOtpForm']);
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+
+Route::get('/reset-password', [AuthController::class, 'showResetPassword']);
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 Route::middleware(['auth:admin,teacher,student'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])

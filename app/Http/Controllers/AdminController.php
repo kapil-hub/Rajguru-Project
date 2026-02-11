@@ -19,10 +19,19 @@ class AdminController extends Controller
     $papers = Paper::all();
     $sections = ['A','B','C'];
     if(auth('admin')->check()){
-        $assignments = TeacherClassAssignment::with(['teacher','course','semester','paperMaster'])->get();
+        $assignments = TeacherClassAssignment::whereHas('teacher')
+            ->whereHas('course')
+            ->whereHas('semester')
+            ->whereHas('paperMaster')
+            ->with(['teacher', 'course', 'semester', 'paperMaster'])
+            ->get();
     }
     if(auth('teacher')->check()){
-        $assignments = TeacherClassAssignment::where('teacher_id',auth('teacher')->user()->id)->with(['teacher','course','semester','paperMaster'])->get();
+        $assignments = TeacherClassAssignment::where('teacher_id',auth('teacher')->user()->id)
+            ->whereHas('teacher')
+            ->whereHas('course')
+            ->whereHas('semester')
+            ->whereHas('paperMaster')->with(['teacher','course','semester','paperMaster'])->get();
     }
     
 

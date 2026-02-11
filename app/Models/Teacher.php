@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Teacher extends Authenticatable
 {
     use Notifiable;
-
+    use SoftDeletes;
+    
     protected $guard = 'teacher';
     protected $table = 'faculty_users';
 

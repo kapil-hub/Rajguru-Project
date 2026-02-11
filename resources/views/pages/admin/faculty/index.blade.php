@@ -60,7 +60,7 @@
                             <button type="submit" 
                                     class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
                                     onclick="return confirm('Are you sure?')">
-                                Delete
+                                Trash
                             </button>
                         </form>
                     </td>
