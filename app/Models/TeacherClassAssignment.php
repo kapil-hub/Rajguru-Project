@@ -38,7 +38,9 @@ class TeacherClassAssignment extends Model
     public function paperMaster() {
         return $this->belongsTo(\App\Models\Paper::class, 'paper_master_id');
     }
-
+    public function paper() {
+            return $this->belongsTo(\App\Models\Paper::class, 'paper_master_id');
+        }
     // Returns pending months (current + past incomplete)
     public function pendingMonths() {
         $currentMonth = date('n');
@@ -63,4 +65,18 @@ class TeacherClassAssignment extends Model
 
         return $months;
     }
+
+    public function attendanceForMonth(int $month, int $year)
+    {
+        return StudentAttendance::where('teacher_id', $this->teacher_id)
+            ->where('course_id', $this->course_id)
+            ->where('semester_id', $this->semester_id)
+            ->where('section', $this->section)
+            ->where('paper_master_id', $this->paper_master_id)
+            ->where('month', $month)
+            ->where('year', $year);
+    }
+
+
+
 }

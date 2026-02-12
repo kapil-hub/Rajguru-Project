@@ -24,6 +24,12 @@ class MenuHelper
             ],
             [
                 'icon' => 'calendar',
+                'name' => 'Attendance Monitoring',
+                'path' => route('admin.attendance.monitoring'),
+                'permission' => auth('admin')->check(),
+            ],
+            [
+                'icon' => 'calendar',
                 'name' => 'Registration Window',
                 'path' => route('admin.registration-window.index'),
                 'permission' => auth('admin')->check(),
