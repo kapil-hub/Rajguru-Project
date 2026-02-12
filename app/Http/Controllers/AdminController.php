@@ -8,6 +8,7 @@ use App\Models\Courses;
 use App\Models\Semester;
 use App\Models\Paper;
 use App\Models\TeacherClassAssignment;
+use DB;
 
 class AdminController extends Controller
 {
@@ -67,5 +68,117 @@ public function toggleStatus($id)
 
     return back()->with('success', 'Assignment status updated');
 }
+
+
+
+   public function attendanceMonitorig(Request $request)
+{
+    $month = (int) ($request->month ?? now()->month);
+    $year  = (int) ($request->year  ?? now()->year);
+
+    $month = min(max($month, 1), 12);
+
+    $teacherId = $request->teacher_id;  
+    $status    = $request->status; 
+    
+    $records = DB::table('teacher_class_assignments as tca')
+        ->select(
+            'tca.id',
+            'tca.teacher_id',
+            'tca.course_id',
+            'tca.semester_id',
+            'tca.section',
+            'tca.paper_master_id',
+            DB::raw("
+                EXISTS (
+                    SELECT 1
+                    FROM student_attendances sa
+                    WHERE sa.teacher_id = tca.teacher_id
+                      AND sa.course_id = tca.course_id
+                      AND sa.semester_id = tca.semester_id
+                      AND sa.section = tca.section
+                      AND sa.paper_master_id = tca.paper_master_id
+                      AND sa.month = $month
+                      AND sa.year = $year
+                ) as is_marked
+            ")
+        );
+
+    // 🔹 FILTER BY TEACHER
+    if ($teacherId) {
+        $records->where('tca.teacher_id', $teacherId);
+    }
+
+    // 🔹 FILTER BY STATUS
+    if ($status === 'marked') {
+        $records->whereRaw("
+            EXISTS (
+                SELECT 1 FROM student_attendances sa
+                WHERE sa.teacher_id = tca.teacher_id
+                  AND sa.course_id = tca.course_id
+                  AND sa.semester_id = tca.semester_id
+                  AND sa.section = tca.section
+                  AND sa.paper_master_id = tca.paper_master_id
+                  AND sa.month = $month
+                  AND sa.year = $year
+            )
+        ");
+    }
+
+    if ($status === 'not_marked') {
+        $records->whereRaw("
+            NOT EXISTS (
+                SELECT 1 FROM student_attendances sa
+                WHERE sa.teacher_id = tca.teacher_id
+                  AND sa.course_id = tca.course_id
+                  AND sa.semester_id = tca.semester_id
+                  AND sa.section = tca.section
+                  AND sa.paper_master_id = tca.paper_master_id
+                  AND sa.month = $month
+                  AND sa.year = $year
+            )
+        ");
+    }
+
+    $records = $records
+        ->orderBy('tca.teacher_id')
+        ->paginate(10)
+        ->withQueryString();
+
+    // Teachers for dropdown
+    $teachers = \App\Models\Teacher::orderBy('name')->get();
+
+    // COUNTS (same as before)
+    $totalClasses = DB::table('teacher_class_assignments')->count();
+
+    $markedCount = DB::table('teacher_class_assignments as tca')
+        ->whereExists(function ($q) use ($month, $year) {
+            $q->select(DB::raw(1))
+              ->from('student_attendances as sa')
+              ->whereColumn('sa.teacher_id', 'tca.teacher_id')
+              ->whereColumn('sa.course_id', 'tca.course_id')
+              ->whereColumn('sa.semester_id', 'tca.semester_id')
+              ->whereColumn('sa.section', 'tca.section')
+              ->whereColumn('sa.paper_master_id', 'tca.paper_master_id')
+              ->where('sa.month', $month)
+              ->where('sa.year', $year);
+        })
+        ->count();
+
+    $notMarkedCount = $totalClasses - $markedCount;
+
+    return view('pages.admin.attendance-settings.monitoring', compact(
+        'records',
+        'teachers',
+        'month',
+        'year',
+        'teacherId',
+        'status',
+        'totalClasses',
+        'markedCount',
+        'notMarkedCount'
+    ));
+}
+
 
 }

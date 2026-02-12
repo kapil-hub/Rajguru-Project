@@ -149,6 +149,13 @@ Route::middleware('auth:admin')->group(function() {
 
             Route::post('/', [StudentController::class, 'store'])->name('store');
     });
+
+    Route::get('admin/attendance-monitoring', 
+            [AdminController::class, 'attendanceMonitorig']
+        )->name('admin.attendance.monitoring');
+
+
+
 });
 Route::middleware('auth:admin,teacher')->group(function(){
     Route::get('teacher-assignments', [AdminController::class,'teacherAssignments'])->name('admin.teacher.assignments');
