@@ -26,7 +26,7 @@
                         <th class="px-4 py-3 text-left text-xs font-semibold">Class Test (IA)</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold">Assignment (IA)</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold">Attendance (IA)</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold">Tute ( CA )</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold">Tutorial ( CA )</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold">Practical ( CA )</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold">Practical ( Written Exam )</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold">Practical ( Viva Voce  )</th>
@@ -89,18 +89,18 @@
                     <th class="px-16 py-3 text-center">Lecture Attendence<br><span class="text-xs">Total Lecture / Total Attended</span></th>
                     <th class="px-4 py-3 text-center">%</span></th>
 
-                    <th class="px-16 py-3 text-center">Tute Attendence <br><span class="text-xs">Total Tutes / Total Attended</span></th>
+                    <th class="px-16 py-3 text-center">Tutorial Attendence <br><span class="text-xs">Total Tutes / Total Attended</span></th>
                     <th class="px-4 py-3 text-center">%</span></th>
                     {{-- <th class="px-6 py-3 text-center">IA (Attendance) <br><span class="text-xs">TM / OM</span></th> --}}
                     @if($assignment->paperMaster->number_of_tutorials == 1)
-                        <th class="px-4 py-3 text-center">Tute (CA Marks) <br> {{$tuteB["ca"]}}</th>
+                        <th class="px-4 py-3 text-center">Tutorial (CA Marks) <br> {{$tuteB["ca"]}}</th>
                     @endif
                     <th class="px-4 py-3 text-center">IA (Class Test Marks) <br>{{ $lectureB["ia_breakup"]["class_test"] }} </th>
                     <th class="px-4 py-3 text-center">IA (Assignment Marks) <br> {{ $lectureB["ia_breakup"]["assignment"] }}</th>
                     <th class="px-4 py-3 text-center">IA (Attendance Marks) <br>{{$lectureB["ia_breakup"]["attendance"] }}</th>
                     <th class="px-4 py-3 text-center">Total IA Marks</th>
                     @if($assignment->paperMaster->number_of_tutorials == 1)
-                        <th class="px-4 py-3 text-center">Total Tute Marks</th>
+                        <th class="px-4 py-3 text-center">Total Tutorial Marks</th>
                     @endif
 
                     <th class="px-4 py-3 text-center">Total Assisment</th>

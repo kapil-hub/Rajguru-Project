@@ -21,13 +21,18 @@ class AdminAttendanceController extends Controller
     $students = DB::table('student_attendances as sa')
         ->join('student_users as s', 's.id', '=', 'sa.student_id')
         ->join('student_academic as sc', 'sc.student_user_id', '=', 'sa.student_id')
+        ->join('departments as d', 'd.id', '=', 'sc.department_id')
+        ->join('courses as c', 'c.id', '=', 'sc.course_id')
         ->where('sa.month', $month)
         ->where('sa.year', $year)
-        ->groupBy('sa.student_id', 's.name', 'sc.roll_number')
+        ->groupBy('sa.student_id', 's.name', 'sc.roll_number','d.name','c.name','sc.current_semester')
         ->select(
             'sa.student_id',
             's.name as student_name',
             'sc.roll_number',
+            'd.name as department_name',
+            'c.name as course_name',
+            'sc.current_semester',
             DB::raw('ROUND(AVG(sa.lecture_present_days / NULLIF(sa.lecture_working_days,0)) * 100,2) as lecture_avg'),
             DB::raw('ROUND(AVG(sa.tute_present_days / NULLIF(sa.tute_working_days,0)) * 100,2) as tutorial_avg'),
             DB::raw('ROUND(AVG(sa.practical_present_days / NULLIF(sa.practical_working_days,0)) * 100,2) as practical_avg')

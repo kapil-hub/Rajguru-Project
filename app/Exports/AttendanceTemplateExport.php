@@ -45,8 +45,8 @@ class AttendanceTemplateExport implements WithEvents
                     $sheet->mergeCells("{$currentCol}1:" . chr(ord($currentCol) + 1) . "1")
                         ->setCellValue("{$currentCol}1", 'Lecture');
 
-                    $sheet->setCellValue("{$currentCol}2", 'WD');
-                    $sheet->setCellValue(chr(ord($currentCol) + 1) . '2', 'P');
+                    $sheet->setCellValue("{$currentCol}2", 'Classes Held');
+                    $sheet->setCellValue(chr(ord($currentCol) + 1) . '2', 'Classes Attended');
 
                     $columns['lecture'] = [
                         'wd' => $currentCol,
@@ -61,12 +61,12 @@ class AttendanceTemplateExport implements WithEvents
                 =============================== */
                 if ($this->tuteWD !== 'hidden') {
                     $sheet->mergeCells("{$currentCol}1:" . chr(ord($currentCol) + 1) . "1")
-                        ->setCellValue("{$currentCol}1", 'Tute');
+                        ->setCellValue("{$currentCol}1", 'Tutorial');
 
-                    $sheet->setCellValue("{$currentCol}2", 'WD');
-                    $sheet->setCellValue(chr(ord($currentCol) + 1) . '2', 'P');
+                    $sheet->setCellValue("{$currentCol}2", 'Classes Held');
+                    $sheet->setCellValue(chr(ord($currentCol) + 1) . '2', 'Classes Attended');
 
-                    $columns['tute'] = [
+                    $columns['tutorial'] = [
                         'wd' => $currentCol,
                         'p'  => chr(ord($currentCol) + 1),
                     ];
@@ -81,8 +81,8 @@ class AttendanceTemplateExport implements WithEvents
                     $sheet->mergeCells("{$currentCol}1:" . chr(ord($currentCol) + 1) . "1")
                         ->setCellValue("{$currentCol}1", 'Practical');
 
-                    $sheet->setCellValue("{$currentCol}2", 'WD');
-                    $sheet->setCellValue(chr(ord($currentCol) + 1) . '2', 'P');
+                    $sheet->setCellValue("{$currentCol}2", 'Classes Held');
+                    $sheet->setCellValue(chr(ord($currentCol) + 1) . '2', 'Classes Attended');
 
                     $columns['practical'] = [
                         'wd' => $currentCol,
@@ -125,8 +125,8 @@ class AttendanceTemplateExport implements WithEvents
                         $sheet->setCellValue($columns['lecture']['wd'] . $row, $this->lectureWD);
                     }
 
-                    if (isset($columns['tute'])) {
-                        $sheet->setCellValue($columns['tute']['wd'] . $row, $this->tuteWD);
+                    if (isset($columns['tutorial'])) {
+                        $sheet->setCellValue($columns['tutorial']['wd'] . $row, $this->tuteWD);
                     }
 
                     if (isset($columns['practical'])) {

@@ -13,11 +13,11 @@
                 <tr>
                     <th class="px-4 py-3">#</th>
                     <th class="px-6 py-3">Student</th>
-                    <th class="px-6 py-3 text-center">Lecture (Working / Present)</th>
-                    <th class="px-6 py-3 text-center">Tute (Working / Present)</th>
-                    <th class="px-6 py-3 text-center">Practical (Working / Present)</th>
+                    <th class="px-6 py-3 text-center">Lecture (Held / Attended)</th>
+                    <th class="px-6 py-3 text-center">Tutorial (Held / Attended)</th>
+                    <th class="px-6 py-3 text-center">Practical (Held / Attended)</th>
                     <th class="px-6 py-3 text-center">Lecture %</th>
-                    <th class="px-6 py-3 text-center">Tute %</th>
+                    <th class="px-6 py-3 text-center">Tutorial %</th>
                     <th class="px-6 py-3 text-center">Practical %</th>
                 </tr>
             </thead>
