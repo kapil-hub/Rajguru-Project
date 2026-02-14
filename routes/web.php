@@ -15,6 +15,7 @@ use App\Http\Controllers\DailyAttendanceController;
 use App\Http\Controllers\IaController;
 use App\Http\Controllers\Registration\RegistrationController;
 use App\Http\Controllers\Admin\RegistrationWindowController;
+use App\Http\Controllers\Admin\AdminAttendanceController;
 
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
@@ -154,7 +155,15 @@ Route::middleware('auth:admin')->group(function() {
             [AdminController::class, 'attendanceMonitorig']
         )->name('admin.attendance.monitoring');
 
+    Route::get(
+        '/admin/student-attendance-master',
+        [AdminAttendanceController::class, 'index']
+    )->name('admin.attendance.master');
 
+    Route::get(
+        '/admin/student-attendance-master/excel/{month}/{year}',
+        [AdminAttendanceController::class, 'exportExcel']
+    )->name('admin.attendance.master.excel');
 
 });
 Route::middleware('auth:admin,teacher')->group(function(){

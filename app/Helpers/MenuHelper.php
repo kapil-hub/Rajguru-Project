@@ -20,6 +20,7 @@ class MenuHelper
                 'name' =>  auth('admin')->check() ? 'Assign Teacher' : (auth('teacher')->check() ? 'Assign Classes' : ' ' ),
                 'path' => '/teacher-assignments',
                 'permission' =>  auth('admin')->check() || auth('teacher')->check() ? true : False, 
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
                 
             ],
             [
@@ -27,18 +28,21 @@ class MenuHelper
                 'name' => 'Attendance Monitoring',
                 'path' => route('admin.attendance.monitoring'),
                 'permission' => auth('admin')->check(),
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
                 'icon' => 'calendar',
                 'name' => 'Registration Window',
                 'path' => route('admin.registration-window.index'),
                 'permission' => auth('admin')->check(),
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
                 'icon' => 'calendar',
                 'name' => 'Attendance',
                 'path' => '/teacher/attendance',
                 'permission' =>  auth('teacher')->check() ? true : False, 
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
                 
             ],
              [
@@ -46,6 +50,7 @@ class MenuHelper
                 'name' => 'Profile',
                 'path' => '/teacher/profile/',
                 'permission' =>  auth('teacher')->check() ? true : False, 
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
                 
             ],
              [
@@ -53,6 +58,7 @@ class MenuHelper
                 'name' => 'Attendence History',
                 'path' => '/teacher/attendance/history',
                 'permission' =>  auth('teacher')->check() ? true : False, 
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
                 
             ],
             // [
@@ -71,6 +77,7 @@ class MenuHelper
                     ['name' => 'IA Marks History', 'path' => '/teacher/iaMarks/history'],
                 ],
                 'permission' =>  auth('teacher')->check() ? true : False, 
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
                 
             ],
             [
@@ -78,12 +85,14 @@ class MenuHelper
                 'name' => 'Papers',
                 'path' => '/papers',
                 'permission' => auth('admin')->check() ? true : False,
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
                 'icon' => 'users',
                 'name' => 'Students',
                 'path' => '/students',
                 'permission' => auth('admin')->check() ? true : False,
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
             ],
 
             [
@@ -91,24 +100,28 @@ class MenuHelper
                 'name' => 'My Profile',
                 'path' => '/students/'.auth('student')->id(),
                 'permission' => auth('student')->check() ? true : False,
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
                 'icon' => 'pages',
                 'name' => 'Registration',
                 'path' => '/students/registration/'.auth('student')->id(),
                 'permission' => auth('student')->check() && is_registration_open() ? true : False,
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
             ],
              [
                 'icon' => 'pages',
                 'name' => 'My Attendence Portfolio',
                 'path' => '/students/my-attendance/',
                 'permission' => auth('student')->check() ? true : False,
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
                 'icon' => 'pages',
                 'name' => 'Faculty',
                 'path' => '/admin/faculty/',
                 'permission' => auth('admin')->check() ? true : False,
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
             ],
 
             [
@@ -116,12 +129,21 @@ class MenuHelper
                 'name' => 'Change Password',
                 'path' => '/change-password',
                 'permission' => auth('admin')->check() || auth('student')->check() || auth('teacher')->check()? true : False,
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
                 'icon' => 'pages',
                 'name' => 'Attendence Config',
                 'path' => '/attendance-settings',
                 'permission' => auth('admin')->check() ? true : False,
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+            [
+                'icon' => 'pages',
+                'name' => 'Attendence Master Report',
+                'path' => '/admin/student-attendance-master',
+                'permission' => auth('admin')->check() ? true : False,
+                'class' => request()->routeIs('admin.attendance.master') ? 'menu-item-active' : 'menu-item-inactive',
             ],
         ];
     }
