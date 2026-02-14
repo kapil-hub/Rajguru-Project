@@ -37,7 +37,7 @@ class StudentAttendanceMasterExport implements
     {
         return [
             [
-                'Student Info', '', '', '', '',
+                'Student Info', '','', '', '', '',
                 'Lecture', '', '',
                 'Tutorial', '', '',
                 'Practical', '', '',
@@ -45,21 +45,22 @@ class StudentAttendanceMasterExport implements
             ],
             [
                 'Student',
+                'Department',
                 'Course',
                 'Semester',
                 'Section',
                 'Paper',
 
-                'Working',
-                'Present',
+                'Classes Held',
+                'Classes Attended',
                 '%',
 
-                'Working',
-                'Present',
+                'Classes Held',
+                'Classes Attended',
                 '%',
 
-                'Working',
-                'Present',
+                'Classes Held',
+                'Classes Attended',
                 '%',
 
                 '%'
@@ -77,13 +78,15 @@ class StudentAttendanceMasterExport implements
     $data = DB::table('student_attendances as sa')
         ->join('student_users as s', 's.id', '=', 'sa.student_id')
         ->join('student_academic as sc', 'sc.student_user_id', '=', 'sa.student_id')
+        ->join('departments as d', 'd.id', '=', 'sc.department_id')
         ->join('paper_master as p', 'p.id', '=', 'sa.paper_master_id')
-        ->join('courses as c', 'c.id', '=', 'sa.course_id')
+        ->join('courses as c', 'c.id', '=', 'sc.course_id')
         ->select(
             'sa.student_id',
             's.name as student_name',
             'sc.roll_number as roll_no',
             'c.name as course_name',
+            'd.name as department_name',
             'sa.semester_id',
             'sa.section',
             'p.name as paper_name',
@@ -129,7 +132,8 @@ class StudentAttendanceMasterExport implements
         // 🔹 MAIN STUDENT ROW
         $rows->push([
             $first->student_name . ' (' . $first->roll_no . ')',
-            $first->course_name,
+            $first->department_name,
+            $first->course_name, 
             $first->semester_id,
             $first->section,
             'STUDENT SUMMARY',
@@ -157,7 +161,7 @@ class StudentAttendanceMasterExport implements
 
             $rows->push([
                 '   → ' . $r->paper_name,
-                '', '', '', '',
+                '', '', '', '','',
 
                 $r->lecture_working_days ?? 0,$r->lecture_present_days ?? 0, $lecP,
                 $r->tute_working_days ?? 0,$r->tute_present_days ?? 0, $tutP,
@@ -206,7 +210,7 @@ class StudentAttendanceMasterExport implements
             $sheet->freezePane('A3');
 
             // Header Styling
-            $sheet->getStyle('A1:O1')->applyFromArray([
+            $sheet->getStyle('A1:P1')->applyFromArray([
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
                     'color' => ['rgb' => '02317C']
@@ -225,7 +229,7 @@ class StudentAttendanceMasterExport implements
                     ],
                 ],
             ]);
-            $sheet->getStyle('A2:O2')->applyFromArray([
+            $sheet->getStyle('A2:P2')->applyFromArray([
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
                     'color' => ['rgb' => 'D9E1F2']
@@ -247,12 +251,12 @@ class StudentAttendanceMasterExport implements
             // Loop rows for coloring
             for ($row = 3; $row <= $highestRow; $row++) {
 
-                $studentCell = $sheet->getCell("E$row")->getValue();
+                $studentCell = $sheet->getCell("F$row")->getValue();
 
                 // ===== STUDENT SUMMARY ROW =====
                 if ($studentCell === 'STUDENT SUMMARY') {
 
-                    $sheet->getStyle("A$row:O$row")->applyFromArray([
+                    $sheet->getStyle("A$row:P$row")->applyFromArray([
                         'fill' => [
                             'fillType' => Fill::FILL_SOLID,
                             'color' => ['rgb' => 'BDD7EE'] // Blue
@@ -264,7 +268,7 @@ class StudentAttendanceMasterExport implements
                 }
 
                 // ===== PERCENTAGE COLORING =====
-                foreach (['H','K','N','O'] as $col) {
+                foreach (['I','L','O','P'] as $col) {
 
                     $value = $sheet->getCell("$col$row")->getValue();
 
@@ -292,7 +296,7 @@ class StudentAttendanceMasterExport implements
             }
 
             // Full Table Borders
-            $sheet->getStyle("A1:O{$highestRow}")
+            $sheet->getStyle("A1:P{$highestRow}")
                 ->applyFromArray([
                     'borders' => [
                         'allBorders' => [

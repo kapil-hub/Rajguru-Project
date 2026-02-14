@@ -32,15 +32,12 @@ class StudentAttendanceImport implements ToCollection
 
             $subType = strtolower(trim($typeRow[$index] ?? ''));
 
-            if (in_array($currentGroup, ['lecture', 'tute', 'practical'])) {
+            if (in_array($subType, ['wd', 'classes held', 'working days'])) {
+                $map[$currentGroup]['wd'] = $index;
+            }
 
-                if ($subType === 'wd') {
-                    $map[$currentGroup]['wd'] = $index;
-                }
-
-                if ($subType === 'p') {
-                    $map[$currentGroup]['p'] = $index;
-                }
+            if (in_array($subType, ['p', 'classes attended', 'present'])) {
+                $map[$currentGroup]['p'] = $index;
             }
         }
 
@@ -57,7 +54,7 @@ class StudentAttendanceImport implements ToCollection
 
             $studentName = trim($row[1] ?? 'Unknown Student');
 
-                foreach (['lecture', 'tute', 'practical'] as $type) {
+                foreach (['lecture', 'tutorial', 'practical'] as $type) {
 
                     $wdIndex = $map[$type]['wd'] ?? null;
                     $pIndex  = $map[$type]['p'] ?? null;
@@ -100,11 +97,11 @@ class StudentAttendanceImport implements ToCollection
                     'lecture_present_days'   => $map['lecture']['p'] ?? null
                         ? $row[$map['lecture']['p']] ?? null : null,
 
-                    'tute_working_days'      => $map['tute']['wd'] ?? null
-                        ? $row[$map['tute']['wd']] ?? null : null,
+                    'tute_working_days'      => $map['tutorial']['wd'] ?? null
+                        ? $row[$map['tutorial']['wd']] ?? null : null,
 
-                    'tute_present_days'      => $map['tute']['p'] ?? null
-                        ? $row[$map['tute']['p']] ?? null : null,
+                    'tute_present_days'      => $map['tutorial']['p'] ?? null
+                        ? $row[$map['tutorial']['p']] ?? null : null,
 
                     'practical_working_days' => $map['practical']['wd'] ?? null
                         ? $row[$map['practical']['wd']] ?? null : null,

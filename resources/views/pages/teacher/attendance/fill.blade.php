@@ -21,7 +21,7 @@
     
         {{-- WORKING DAYS CARD --}}
         <div class="bg-white rounded-xl shadow border p-6 mb-6">
-            <h2 class="text-lg font-semibold mb-4">Working Days</h2>
+            <h2 class="text-lg font-semibold mb-4">Classes Held</h2>
             <form action="{{ route('teacher.monthly.attendance.fill.downloadTemplate',[
                                     'assignment' => $assignment->id,
                                     'month' => $month,
@@ -42,7 +42,7 @@
 
                     @if($assignment->is_tute)
                     <div>
-                        <label class="block text-sm text-gray-600 mb-1">Tute</label>
+                        <label class="block text-sm text-gray-600 mb-1">Tutorial</label>
                         <input type="number" name = "tute_days" id="tute_days"
                             class="w-40 px-3 py-2 border rounded-lg"
                             min="0" max="31" required>
@@ -193,15 +193,15 @@
                         <th class="px-6 py-3 text-left">Student</th>
 
                         @if($assignment->is_lecture)
-                            <th class="px-6 py-3 text-center">Lecture<br><span class="text-xs">WD / P</span></th>
+                            <th class="px-6 py-3 text-center">Lecture<br><span class="text-xs">Classes Held / Classes Attended</span></th>
                         @endif
 
                         @if($assignment->is_tute)
-                            <th class="px-6 py-3 text-center">Tute<br><span class="text-xs">WD / P</span></th>
+                            <th class="px-6 py-3 text-center">Tutorial<br><span class="text-xs">Classes Held / Classes Attended</span></th>
                         @endif
 
                         @if($assignment->is_practical)
-                            <th class="px-6 py-3 text-center">Practical<br><span class="text-xs">WD / P</span></th>
+                            <th class="px-6 py-3 text-center">Practical<br><span class="text-xs">Classes Held / Classes Attended</span></th>
                         @endif
                     </tr>
                 </thead>

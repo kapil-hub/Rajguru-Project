@@ -24,14 +24,25 @@
         @foreach($students as $s)
             <div class="bg-white rounded-xl shadow p-4 student-card">
 
-                <div class="grid grid-cols-6 gap-4 items-center cursor-pointer"
+                <div class="grid grid-cols-9 gap-2 items-center cursor-pointer"
                      onclick="toggle({{ $s->student_id }})">
 
                     <div class="col-span-2">
                         <div class="font-semibold">{{ $s->student_name }}</div>
                         <div class="text-sm text-gray-500">{{ $s->roll_number }}</div>
                     </div>
-
+                    <div>
+                        <div class="text-sm font-medium">Department</div>
+                        <div class="text-green-600">{{ $s->department_name ?? 'N/A' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium">Course</div>
+                        <div class="text-green-600">{{ $s->course_name ?? 'N/A' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium">Semester</div>
+                        <div class="text-green-600">{{ $s->current_semester ?? 'N/A' }}</div>
+                    </div>
                     <div>
                         <div class="text-sm font-medium">Lecture</div>
                         <div class="text-green-600">{{ round($s->lecture_avg,2) ?? 0 }}%</div>
