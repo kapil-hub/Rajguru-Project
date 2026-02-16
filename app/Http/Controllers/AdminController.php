@@ -93,8 +93,8 @@ public function toggleStatus($id)
                 EXISTS (
                     SELECT 1
                     FROM student_attendances sa
-                    WHERE sa.teacher_id = tca.teacher_id
-                      AND sa.course_id = tca.course_id
+                   
+                      WHERE sa.course_id = tca.course_id
                       AND sa.semester_id = tca.semester_id
                       AND sa.section = tca.section
                       AND sa.paper_master_id = tca.paper_master_id
@@ -114,8 +114,8 @@ public function toggleStatus($id)
         $records->whereRaw("
             EXISTS (
                 SELECT 1 FROM student_attendances sa
-                WHERE sa.teacher_id = tca.teacher_id
-                  AND sa.course_id = tca.course_id
+                
+                 WHERE sa.course_id = tca.course_id
                   AND sa.semester_id = tca.semester_id
                   AND sa.section = tca.section
                   AND sa.paper_master_id = tca.paper_master_id
@@ -129,8 +129,8 @@ public function toggleStatus($id)
         $records->whereRaw("
             NOT EXISTS (
                 SELECT 1 FROM student_attendances sa
-                WHERE sa.teacher_id = tca.teacher_id
-                  AND sa.course_id = tca.course_id
+              
+                 WHERE  sa.course_id = tca.course_id
                   AND sa.semester_id = tca.semester_id
                   AND sa.section = tca.section
                   AND sa.paper_master_id = tca.paper_master_id
@@ -155,7 +155,7 @@ public function toggleStatus($id)
         ->whereExists(function ($q) use ($month, $year) {
             $q->select(DB::raw(1))
               ->from('student_attendances as sa')
-              ->whereColumn('sa.teacher_id', 'tca.teacher_id')
+         
               ->whereColumn('sa.course_id', 'tca.course_id')
               ->whereColumn('sa.semester_id', 'tca.semester_id')
               ->whereColumn('sa.section', 'tca.section')

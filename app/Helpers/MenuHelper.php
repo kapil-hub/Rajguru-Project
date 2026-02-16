@@ -19,7 +19,7 @@ class MenuHelper
                 'icon' => 'pages',
                 'name' =>  auth('admin')->check() ? 'Assign Teacher' : (auth('teacher')->check() ? 'Assign Classes' : ' ' ),
                 'path' => '/teacher-assignments',
-                'permission' =>  auth('admin')->check() || auth('teacher')->check() ? true : False, 
+                'permission' =>  auth('admin')->check()  ? true : False, 
                 'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
                 
             ],
