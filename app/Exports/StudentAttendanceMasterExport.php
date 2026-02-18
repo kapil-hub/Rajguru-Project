@@ -112,18 +112,39 @@ class StudentAttendanceMasterExport implements
 
         // ===== STUDENT SUMMARY =====
         $lec = round($studentRows->avg(function ($r) {
+            if (is_null($r->lecture_working_days)) {
+                return null;   
+            }
+
+            if ($r->lecture_working_days == 0) {
+                return 0;      
+            }
             return $r->lecture_working_days > 0
                 ? ($r->lecture_present_days / $r->lecture_working_days) * 100
                 : 0;
         }), 2);
 
         $tut = round($studentRows->avg(function ($r) {
+            if (is_null($r->tute_working_days)) {
+                return null;   
+            }
+
+            if ($r->tute_working_days == 0) {
+                return 0;      
+            }
             return $r->tute_working_days > 0
                 ? ($r->tute_present_days / $r->tute_working_days) * 100
                 : 0;
         }), 2);
 
         $prac = round($studentRows->avg(function ($r) {
+            if (is_null($r->practical_working_days)) {
+                return null;   
+            }
+
+            if ($r->practical_working_days == 0) {
+                return 0;      
+            }
             return $r->practical_working_days > 0
                 ? ($r->practical_present_days / $r->practical_working_days) * 100
                 : 0;
