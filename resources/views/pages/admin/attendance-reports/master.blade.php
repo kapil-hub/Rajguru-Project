@@ -16,9 +16,10 @@
                placeholder="Search student or roll no"
                class="border rounded px-3 py-2 w-64">
     </div>
-    <a href="/admin/student-attendance-master/excel/{{ $month }}/{{ $year }}" class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700">
-            ⬇ Download Excel Template
-    </a>
+    <button onclick="generateExcel()" 
+        class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700">
+        ⬇ Generate Excel
+    </button>
     {{-- LIST --}}
     <div class="space-y-3">
         @foreach($students as $s)
@@ -116,4 +117,63 @@
         });
     });
 </script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+function generateExcel() {
+
+    Swal.fire({
+        title: 'Generating File...',
+        text: 'Please do not refresh your page. We will notify you once ready.',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading()
+        }
+    });
+
+    fetch("{{ route('admin.attendance.generate') }}", {
+        method: "POST",
+        headers: {
+            'X-CSRF-TOKEN': "{{ csrf_token() }}",
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            month: "{{ $month }}",
+            year: "{{ $year }}"
+        })
+    });
+
+    checkStatus();
+}
+
+function checkStatus() {
+
+    let interval = setInterval(() => {
+
+        fetch("{{ route('admin.attendance.check') }}")
+            .then(res => res.json())
+            .then(data => {
+
+                if (data.ready) {
+
+                    clearInterval(interval);
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'File Ready!',
+                        text: 'Click below to download',
+                        confirmButtonText: 'Download'
+                    }).then(() => {
+                        window.open(data.download_route, '_blank');
+                    });
+                }
+            });
+
+    }, 5000); // check every 5 seconds
+}
+</script>
+
+
 @endsection

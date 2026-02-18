@@ -9,6 +9,8 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\StudentAttendanceMasterExport;
 use App\Jobs\StudentAttendanceExportJob;
 use Illuminate\Support\Str;
+use App\Jobs\GenerateAttendanceExcelJob;
+use Illuminate\Support\Facades\Storage;
 
 class AdminAttendanceController extends Controller
 {
@@ -73,15 +75,54 @@ class AdminAttendanceController extends Controller
 
 
 
-   public function exportExcel($month,$year,Request $request)
+   public function generateExcel(Request $request)
 {
-    $month = (int) ($month ?? now()->month);
-    $year  = (int) ($year ?? now()->year);
-   
-    return Excel::download(
-        new StudentAttendanceMasterExport($month, $year),
-        "student_attendance_master_{$month}_{$year}.xlsx"
+    $month = $request->month;
+    $year  = $request->year;
+
+    GenerateAttendanceExcelJob::dispatch(
+        $month,
+        $year,
+        auth()->id()
     );
+
+    return response()->json([
+        'status' => 'started'
+    ]);
+}
+
+
+public function checkExcelStatus()
+{
+    $file = cache()->get("excel_ready_user_" . auth()->id());
+
+    if ($file) {
+        return response()->json([
+            'ready' => true,
+            'download_route' => route('admin.attendance.download', $file)
+        ]);
+    }
+
+    return response()->json(['ready' => false]);
+}
+
+
+public function downloadExcel($file)
+{
+    $relativePath = 'exports/' . $file;
+
+    // Check in public disk (storage/app/public)
+    if (!Storage::disk('public')->exists($relativePath)) {
+        abort(404, 'File not found.');
+    }
+
+    $absolutePath = Storage::disk('public')->path($relativePath);
+
+    cache()->forget("excel_ready_user_" . auth()->id());
+
+    return response()
+        ->download($absolutePath)
+        ->deleteFileAfterSend(true);
 }
 
 }

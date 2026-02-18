@@ -159,10 +159,16 @@ Route::middleware('auth:admin')->group(function() {
         [AdminAttendanceController::class, 'index']
     )->name('admin.attendance.master');
 
-    Route::get(
-        '/admin/student-attendance-master/excel/{month}/{year}',
-        [AdminAttendanceController::class, 'exportExcel']
-    )->name('admin.attendance.master.excel');
+    Route::post('/admin/student-attendance-master/generate', 
+        [AdminAttendanceController::class, 'generateExcel']
+    )->name('admin.attendance.generate');
+
+    Route::get('/admin/student-attendance-master/check-status', 
+        [AdminAttendanceController::class, 'checkExcelStatus']
+    )->name('admin.attendance.check');
+    Route::get('/admin/student-attendance-master/download/{file}',
+        [AdminAttendanceController::class, 'downloadExcel']
+    )->name('admin.attendance.download');
 
 });
 Route::middleware('auth:admin')->group(function(){
