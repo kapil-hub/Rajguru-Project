@@ -13,7 +13,7 @@ use App\Imports\PapersImport;
 class PaperController extends Controller
 {
 
-    private const PAPER_TYPES = ['SEC','DSC','GE','VAC','DSE'];
+    private const PAPER_TYPES = ['SEC','DSC','GE','VAC','DSE','AEC'];
 
     public function index(Request $request)
 {

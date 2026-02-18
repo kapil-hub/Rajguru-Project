@@ -41,11 +41,20 @@ class AdminController extends Controller
 }
 
 public function storeTeacherAssignment(Request $request) {
+     $request->validate([
+            'teacher_id' => 'required|integer',
+            'course_id' => 'required',
+            'semester_id' => 'required|integer',
+            'paper_master_id' => 'required',
+
+            'academic_session' => 'required',
+        ]);
+
     TeacherClassAssignment::create([
         'teacher_id' => auth('admin')->check() ? $request->teacher_id : (auth('teacher')->check() ? auth('teacher')->user()->id : ' ' ),
         'course_id' => $request->course_id,
         'semester_id' => $request->semester_id,
-        'section' => $request->section,
+        'section' => 'A',
         'paper_master_id' => $request->paper_master_id,
         'academic_session'=> $request->academic_session,
 
