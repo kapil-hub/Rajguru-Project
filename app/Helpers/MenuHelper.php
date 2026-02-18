@@ -32,17 +32,24 @@ class MenuHelper
             ],
             [
                 'icon' => 'calendar',
+                'name' => 'Departments',
+                'path' => route('admin.departments.index'),
+                'permission' => auth('admin')->check(),
+                'class' => request()->routeIs('admin.departments.index') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+            [
+                'icon' => 'calendar',
                 'name' => 'Registration Window',
                 'path' => route('admin.registration-window.index'),
                 'permission' => auth('admin')->check(),
-                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
+                'class' => request()->routeIs('admin.registration-window.index') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
                 'icon' => 'calendar',
                 'name' => 'Attendance',
                 'path' => '/teacher/attendance',
                 'permission' =>  auth('teacher')->check() ? true : False, 
-                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
+                'class' => request()->routeIs('teacher.attendance.pending') ? 'menu-item-active' : 'menu-item-inactive',
                 
             ],
              [
@@ -50,7 +57,7 @@ class MenuHelper
                 'name' => 'Profile',
                 'path' => '/teacher/profile/',
                 'permission' =>  auth('teacher')->check() ? true : False, 
-                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
+                'class' => request()->routeIs('teacher.profile.edit') ? 'menu-item-active' : 'menu-item-inactive',
                 
             ],
              [
@@ -58,7 +65,7 @@ class MenuHelper
                 'name' => 'Attendence History',
                 'path' => '/teacher/attendance/history',
                 'permission' =>  auth('teacher')->check() ? true : False, 
-                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
+                'class' => request()->routeIs('teacher.attendance.history') ? 'menu-item-active' : 'menu-item-inactive',
                 
             ],
             // [

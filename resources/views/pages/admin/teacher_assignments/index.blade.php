@@ -51,9 +51,20 @@
                 </select>
         
 
-                <input type="text" name="academic_session"
-                    class="form-input w-full"
-                    placeholder="2024-25">
+                @php
+                    $currentYear = date('Y');
+                    $nextYear = $currentYear + 1;
+                    $prevYear = $currentYear - 1;
+
+                    $currentSession = $currentYear . '-' . substr($nextYear, -2);
+                    $previousSession = $prevYear . '-' . substr($currentYear, -2);
+                @endphp
+
+                <select name="academic_session" class="form-input w-full">
+                    <option value="">Select Academic Session</option>
+                    <option value="{{ $currentSession }}">{{ $currentSession }}</option>
+                    <option value="{{ $previousSession }}">{{ $previousSession }}</option>
+                </select>
              
                 <select name="semester_id" required class="form-select rounded-lg">
                     <option value="">Semester</option>

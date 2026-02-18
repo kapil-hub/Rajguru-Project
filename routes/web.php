@@ -59,10 +59,9 @@ Route::middleware(['auth:admin,teacher'])->group(function () {
 
 Route::middleware('auth:teacher')->prefix('teacher')->group(function () {
 
-    Route::get('profile', [AdminFacultyController::class,'edit']);
+    Route::get('profile', [AdminFacultyController::class,'edit'])->name('teacher.profile.edit');
     Route::put('profile/{faculty}/update',[AdminFacultyController::class, 'update'])->name('teacher.profile.update');
 
-    Route::get('attendance', [AttendanceController::class,'pendingList'])->name('teacher.attendance.pending');
     Route::get('attendance', [AttendanceController::class,'pendingList'])->name('teacher.attendance.pending');
     Route::get('monthly/attendance/fill/{assignment}/{month}/{year}', [AttendanceController::class,'fillAttendance'])->name('teacher.monthly.attendance.fill');
     Route::post('monthly/attendance/fill/{assignment}/{month}/{year}/downloadTemplate', [AttendanceController::class,'downloadTemplate'])->name('teacher.monthly.attendance.fill.downloadTemplate');
@@ -237,8 +236,19 @@ Route::middleware('auth:admin')
         Route::patch('/registration-windows/{window}/toggle',
             [RegistrationWindowController::class, 'toggle']
         )->name('registration-window.toggle');
-    });
 
+    });
+    Route::prefix('admin')->group(function () {
+        Route::resource('departments', App\Http\Controllers\Admin\DepartmentController::class)->names([
+            'index'   => 'admin.departments.index',
+            'create'  => 'admin.departments.create',
+            'store'   => 'admin.departments.store',
+            'show'    => 'admin.departments.show',
+            'edit'    => 'admin.departments.edit',
+            'update'  => 'admin.departments.update',
+            // 'destroy' => 'admin.departments.destroy',
+        ]);
+    });
 
 
 
