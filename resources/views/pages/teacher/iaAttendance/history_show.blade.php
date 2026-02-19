@@ -18,6 +18,8 @@
                 <tr>
                     <th class="px-4 py-2">#</th>
                     <th class="px-6 py-2 text-left">Student</th>
+                    <th class="px-6 py-3 text-left">Exam Roll Number</th>
+                     <th class="px-6 py-3 text-left">College Roll Number</th>
                     {{-- <th class="px-4 py-2 text-center">Attendance %</th> --}}
                     <th class="px-4 py-2 text-center">Attendance Marks</th>
                     <th class="px-4 py-2 text-center">Class Test</th>
@@ -32,6 +34,8 @@
                 <tr class="hover:bg-gray-50">
                     <td class="px-4 py-2">{{ $i+1 }}</td>
                     <td class="px-6 py-2">{{ $m->student->name }}</td>
+                    <td class="px-6 py-2 ">{{ optional($m->student->academic)->roll_number }}</td>
+                    <td class="px-6 py-2 ">{{ optional($m->student->academic)->college_roll_number }}</td>
                     {{-- <td class="px-4 py-2 text-center">{{ $m->attendance_percentage }}%</td> --}}
                     <td class="px-4 py-2 text-center">{{ $m->attendance }}</td>
                     <td class="px-4 py-2 text-center">{{ $m->class_test }}</td>

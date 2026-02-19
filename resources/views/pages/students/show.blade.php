@@ -29,7 +29,8 @@
     <div class="bg-white rounded-xl shadow p-6">
         <h3 class="font-semibold text-lg mb-4">Academic Details</h3>
         <div class="grid md:grid-cols-3 gap-4 text-sm">
-            <div><strong>Roll No:</strong> {{ optional($student->academic)->roll_number }}</div>
+            <div><strong>Exam Roll No:</strong> {{ optional($student->academic)->roll_number }}</div>
+            <div><strong>College Roll No:</strong> {{ optional($student->academic)->college_roll_number }}</div>
             <div><strong>Department:</strong> {{ optional(optional($student->academic)->department)->name }}</div>
             <div><strong>Course:</strong> {{ optional(optional($student->academic)->course)->name }}</div>
             <div><strong>Semester:</strong> {{ optional($student->academic)->current_semester }}</div>

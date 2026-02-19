@@ -12,7 +12,9 @@
             <thead class="bg-gray-100">
                 <tr>
                     <th class="px-4 py-3">#</th>
-                    <th class="px-6 py-3">Student</th>
+                    <th class="px-6 py-3">Student Name</th>
+                    <th class="px-6 py-3">Exam Roll Number</th>
+                    <th class="px-6 py-3">College Roll Number</th>
                     <th class="px-6 py-3 text-center">Lecture (Held / Attended)</th>
                     <th class="px-6 py-3 text-center">Tutorial (Held / Attended)</th>
                     <th class="px-6 py-3 text-center">Practical (Held / Attended)</th>
@@ -44,7 +46,8 @@
                     <tr class="border-b">
                         <td class="px-4 py-2">{{ $i + 1 }}</td>
                         <td class="px-6 py-2">{{ $r->student->name }}</td>
-
+                        <td class="px-6 py-2">{{ optional($r->student->academic)->roll_number ?? 'N/A' }}</td>
+                        <td class="px-6 py-2">{{ optional($r->student->academic)->college_roll_number ?? 'N/A' }}</td>
                         <td class="px-6 py-2 text-center font-semibold">
                             {{ $r->lecture_working_days . ' / ' . $r->lecture_present_days }}
                         </td>

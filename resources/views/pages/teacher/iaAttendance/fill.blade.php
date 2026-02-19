@@ -85,7 +85,9 @@
                 <thead class="bg-gray-100">
                     <tr>
                     <th class="px-4 py-3">#</th>
-                    <th class="px-8 py-3 text-left">Student</th>
+                    <th class="px-8 py-3 text-left">Student Name</th>
+                    <th class="px-8 py-3 text-left">Exam Roll Number</th>
+                     <th class="px-8 py-3 text-left">College Roll Number</th>
                     <th class="px-16 py-3 text-center">Lecture Attendence<br><span class="text-xs">Total Lecture / Total Attended</span></th>
                     <th class="px-4 py-3 text-center">%</span></th>
 
@@ -113,6 +115,8 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-2">{{ $i + 1 }}</td>
                         <td class="px-6 py-2 font-medium">{{ $s->name }}</td>
+                        <td class="px-6 py-2 font-medium">{{ optional($s->academic)->roll_number }}</td>
+                        <td class="px-6 py-2 font-medium">{{ optional($s->academic)->college_roll_number }}</td>
                         <td class="px-2 py-2 text-center space-x-2">
                             <div class="relative inline-flex items-center gap-4 out-of-wrapper focus-group">
                                 <input type="number"

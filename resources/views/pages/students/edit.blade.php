@@ -86,6 +86,15 @@
                         <div class="text-lg font-semibold text-red-700 mb-3">{{ $message }}</div>
                     @enderror
                 </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">College Roll Number</label>
+                    <input name="college_roll_number"
+                           value="{{ optional($student->academic)->college_roll_number }}"
+                           required class="border rounded-lg p-2 w-full">
+                    @error('college_roll_number')
+                        <div class="text-lg font-semibold text-red-700 mb-3">{{ $message }}</div>
+                    @enderror
+                </div>
 
                 <div>
                     <label class="block text-sm font-medium mb-1">Department</label>
