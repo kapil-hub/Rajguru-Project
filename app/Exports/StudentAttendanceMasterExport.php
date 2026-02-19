@@ -150,6 +150,11 @@ class StudentAttendanceMasterExport implements
                 : 0;
         }), 2);
 
+        $devide_by = 0;
+        if($lec > 0){$devide_by++;}
+        if($tut > 0){$devide_by++;}
+        if($prac > 0){$devide_by++;}
+        if($devide_by == 0){ $devide_by = 1;}
         // 🔹 MAIN STUDENT ROW
         $rows->push([
             $first->student_name . ' (' . $first->roll_no . ')',
@@ -162,7 +167,7 @@ class StudentAttendanceMasterExport implements
             '', '', $lec,
             '', '', $tut,
             '', '', $prac,
-            round(($lec + $tut + $prac) / 3, 2),
+            round(($lec + $tut + $prac) / $devide_by, 2),
         ]);
 
         // 🔹 PAPER ROWS
