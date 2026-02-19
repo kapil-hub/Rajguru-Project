@@ -13,48 +13,72 @@ use DB;
 class AdminController extends Controller
 {
     
-   public function teacherAssignments() {
+   public function teacherAssignments(Request $request)
+{
     $teachers = Teacher::all();
     $courses = Courses::all();
-    $semesters = Semester::get(); 
+    $semesters = Semester::all();
     $papers = Paper::all();
     $sections = ['A','B','C'];
-    if(auth('admin')->check()){
-        $assignments = TeacherClassAssignment::whereHas('teacher')
-            ->whereHas('course')
-            ->whereHas('semester')
-            ->whereHas('paperMaster')
-            ->with(['teacher', 'course', 'semester', 'paperMaster'])
-            ->get();
+
+    $query = TeacherClassAssignment::with([
+        'teacher','course','semester','paperMaster'
+    ]);
+
+    // Filter: teacher name
+    if($request->teacher){
+        $query->whereHas('teacher', function($q) use ($request){
+            $q->where('name','like','%'.$request->teacher.'%');
+        });
     }
+
+    // Filter: course
+    if($request->course){
+        $query->where('course_id',$request->course);
+    }
+
+    // Filter: semester
+    if($request->semester){
+        $query->where('semester_id',$request->semester);
+    }
+
+    // Filter: status
+    if($request->status !== null){
+        $query->where('is_active',$request->status);
+    }
+
+    // If teacher login
     if(auth('teacher')->check()){
-        $assignments = TeacherClassAssignment::where('teacher_id',auth('teacher')->user()->id)
-            ->whereHas('teacher')
-            ->whereHas('course')
-            ->whereHas('semester')
-            ->whereHas('paperMaster')->with(['teacher','course','semester','paperMaster'])->get();
+        $query->where('teacher_id',auth('teacher')->id());
     }
-    
 
+    $assignments = $query->latest()->paginate(10);
 
-    return view('pages.admin.teacher_assignments.index', compact('teachers','courses','semesters','papers','sections','assignments'));
+    return view('pages.admin.teacher_assignments.index',
+        compact('teachers','courses','semesters','papers','sections','assignments')
+    );
 }
 
-public function storeTeacherAssignment(Request $request) {
-     $request->validate([
-            'teacher_id' => 'required|integer',
-            'course_id' => 'required',
-            'semester_id' => 'required|integer',
-            'paper_master_id' => 'required',
 
-            'academic_session' => 'required',
-        ]);
+public function storeTeacherAssignment(Request $request)
+{
+    $request->validate([
+        'teacher_id' => 'required',
+        'course_id' => 'required',
+        'semester_id' => 'required',
+        'section' => 'required',
+        'paper_master_id' => 'required',
+        'academic_session' => 'required',
+    ]);
 
     TeacherClassAssignment::create([
-        'teacher_id' => auth('admin')->check() ? $request->teacher_id : (auth('teacher')->check() ? auth('teacher')->user()->id : ' ' ),
+        'teacher_id' => auth('admin')->check()
+            ? $request->teacher_id
+            : auth('teacher')->id(),
+
         'course_id' => $request->course_id,
         'semester_id' => $request->semester_id,
-        'section' => 'A',
+        'section' => $request->section,
         'paper_master_id' => $request->paper_master_id,
         'academic_session'=> $request->academic_session,
 
@@ -64,9 +88,9 @@ public function storeTeacherAssignment(Request $request) {
         'is_coordinator' => $request->has('is_coordinator'),
     ]);
 
-
     return back()->with('success','Teacher assigned successfully');
 }
+
 
 
 public function toggleStatus($id)
