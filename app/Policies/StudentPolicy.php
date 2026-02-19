@@ -36,7 +36,7 @@ class StudentPolicy
 
         // Student can update only self
         if (auth()->guard('student')->check()) {
-            return $user->id === $student->id;
+            return false;
         }
 
         return false;

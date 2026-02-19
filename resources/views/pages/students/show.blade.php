@@ -2,14 +2,15 @@
 
 @section('content')
 <div class="max-w-6xl mx-auto p-6 space-y-6">
-
-    <div class="flex justify-between items-center">
-        <h2 class="text-2xl font-bold">Student Profile</h2>
-        <a href="{{ route('students.edit',$student) }}"
-           class="px-4 py-2 bg-indigo-600 text-white rounded-lg">
-            Edit
-        </a>
-    </div>
+    @if(auth('admin')->check())
+        <div class="flex justify-between items-center">
+            <h2 class="text-2xl font-bold">Student Profile</h2>
+            <a href="{{ route('students.edit',$student) }}"
+            class="px-4 py-2 bg-indigo-600 text-white rounded-lg">
+                Edit
+            </a>
+        </div>
+    @endif
 
     <!-- BASIC INFO -->
     <div class="bg-white rounded-xl shadow p-6">
@@ -49,7 +50,7 @@
     </div>
 
     <!-- PAPERS -->
-    <<div class="bg-white rounded-xl shadow p-6">
+    <div class="bg-white rounded-xl shadow p-6">
     <h3 class="font-semibold text-lg mb-4">Current Semester Papers</h3>
 
     <table class="w-full text-sm border">
