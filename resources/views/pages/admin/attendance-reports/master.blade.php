@@ -6,16 +6,99 @@
     <h2 class="text-xl font-bold">Attendance Master Report</h2>
 
     {{-- Filters --}}
-    <div class="flex flex-wrap gap-3">
-        <input type="month"
-               value="{{ $year }}-{{ str_pad($month,2,'0',STR_PAD_LEFT) }}"
-               onchange="let v=this.value.split('-');location.href='?month='+v[1]+'&year='+v[0];"
-               class="border rounded px-3 py-2">
+        {{-- MODERN FILTER CARD --}}
+<div class="bg-white shadow-xl rounded-2xl p-6 border border-gray-100">
 
-        <input id="search"
-               placeholder="Search student or roll no"
-               class="border rounded px-3 py-2 w-64">
-    </div>
+    <form method="GET" class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+
+        {{-- Month --}}
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1">Month</label>
+            <input type="month"
+                   name="month_year"
+                   value="{{ $year }}-{{ str_pad($month,2,'0',STR_PAD_LEFT) }}"
+                   class="w-full rounded-xl border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2">
+        </div>
+
+        {{-- Department --}}
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1">Department</label>
+            <select name="department_id"
+                    id="department"
+                    class="w-full rounded-xl border-gray-300 focus:ring-2 focus:ring-purple-500 px-3 py-2">
+                <option value="">All</option>
+                @foreach($departments as $dept)
+                    <option value="{{ $dept->id }}"
+                        {{ request('department_id') == $dept->id ? 'selected' : '' }}>
+                        {{ $dept->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- Course --}}
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1">Course</label>
+            <select name="course_id"
+                    id="course"
+                    class="w-full rounded-xl border-gray-300 focus:ring-2 focus:ring-pink-500 px-3 py-2">
+                <option value="">All</option>
+                @foreach($courses as $course)
+                    <option value="{{ $course->id }}"
+                        {{ request('course_id') == $course->id ? 'selected' : '' }}>
+                        {{ $course->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- Semester --}}
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1">Semester</label>
+            <select name="semester"
+                    class="w-full rounded-xl border-gray-300 focus:ring-2 focus:ring-green-500 px-3 py-2">
+                <option value="">All</option>
+                @for($i=1;$i<=8;$i++)
+                    <option value="{{ $i }}"
+                        {{ request('semester') == $i ? 'selected' : '' }}>
+                        {{ $i }}
+                    </option>
+                @endfor
+            </select>
+        </div>
+
+        {{-- Search --}}
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1">Search</label>
+            <input type="text"
+                   name="search"
+                   value="{{ request('search') }}"
+                   placeholder="Name or Roll No"
+                   class="w-full rounded-xl border-gray-300 focus:ring-2 focus:ring-blue-500 px-3 py-2">
+        </div>
+
+        {{-- Buttons --}}
+        <div class="flex gap-2">
+
+            <button 
+                class="flex-1 bg-blue-600 hover:bg-blue-700 
+                    text-white font-semibold 
+                    rounded-xl px-4 py-2 
+                    shadow-md transition duration-200">
+                Apply
+            </button>
+
+            <a href="{{ route('admin.attendance.master') }}"
+               class="flex-1 bg-gray-200 text-gray-700 rounded-xl px-4 py-2 
+                      text-center hover:bg-gray-300 transition">
+                Reset
+            </a>
+
+        </div>
+
+    </form>
+</div>
+
     <button onclick="generateExcel()" 
         class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700">
         ⬇ Generate Excel
