@@ -14,19 +14,54 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminAttendanceController extends Controller
 {
-   public function index(Request $request)
+    public function index(Request $request)
 {
-    $month = (int) ($request->month ?? now()->month);
-    $year  = (int) ($request->year ?? now()->year);
+   // Month & Year
+    if ($request->filled('month_year')) {
+        [$year, $month] = explode('-', $request->month_year);
+    } else {
+        $month = now()->month;
+        $year  = now()->year;
+    }
 
-    // 1️⃣ STUDENT SUMMARY (PAGINATED & FAST)
-    $students = DB::table('student_attendances as sa')
+    $query = DB::table('student_attendances as sa')
         ->join('student_users as s', 's.id', '=', 'sa.student_id')
         ->join('student_academic as sc', 'sc.student_user_id', '=', 'sa.student_id')
         ->join('departments as d', 'd.id', '=', 'sc.department_id')
         ->join('courses as c', 'c.id', '=', 'sc.course_id')
         ->where('sa.month', $month)
-        ->where('sa.year', $year)
+        ->where('sa.year', $year);
+
+ 
+    if ($request->filled('search')) {
+        $query->where(function ($q) use ($request) {
+            $q->where('s.name', 'like', '%' . $request->search . '%')
+              ->orWhere('sc.roll_number', 'like', '%' . $request->search . '%');
+        });
+    }
+
+    // Department filter
+    if ($request->filled('department_id')) {
+        $query->where('sc.department_id', $request->department_id);
+    }
+
+    // Course filter
+    if ($request->filled('course_id')) {
+        $query->where('sc.course_id', $request->course_id);
+    }
+
+    // Semester filter
+    if ($request->filled('semester')) {
+        $query->where('sc.current_semester', $request->semester);
+    }
+    if ($request->below75) {
+        $query->havingRaw('AVG(sa.lecture_present_days / NULLIF(sa.lecture_working_days,0)) * 100 < 50');
+    }
+
+    if ($request->above90) {
+        $query->havingRaw('AVG(sa.lecture_present_days / NULLIF(sa.lecture_working_days,0)) * 100 >= 66');
+    }
+    $students = $query
         ->groupBy('sa.student_id', 's.name', 'sc.roll_number','d.name','c.name','sc.current_semester')
         ->select(
             'sa.student_id',
@@ -40,11 +75,12 @@ class AdminAttendanceController extends Controller
             DB::raw('ROUND(AVG(sa.practical_present_days / NULLIF(sa.practical_working_days,0)) * 100,2) as practical_avg')
         )
         ->orderBy('s.name')
-        ->paginate(25);
-
+        ->paginate(25)
+        ->withQueryString();
     // 2️⃣ LOAD PAPERS ONLY FOR CURRENT PAGE
     $studentIds = $students->pluck('student_id');
-
+    $departments = DB::table('departments')->get();
+    $courses = DB::table('courses')->get();
     $papers = DB::table('student_attendances as sa')
         ->join('paper_master as pm', 'pm.id', '=', 'sa.paper_master_id')
         ->whereIn('sa.student_id', $studentIds)
@@ -64,9 +100,10 @@ class AdminAttendanceController extends Controller
         ->groupBy('student_id');
 
     return view(
-        'pages.admin.attendance-reports.master',
-        compact('students','papers','month','year')
+    'pages.admin.attendance-reports.master',
+    compact('students','papers','month','year','departments','courses')
     );
+
 }
 
 
