@@ -40,6 +40,9 @@
 <input name="roll_number" placeholder="Roll Number"
  class="border rounded-lg p-2 w-full">
 
+<input name="college_roll_number" placeholder="College Roll Number"
+ class="border rounded-lg p-2 w-full">
+
 <select name="department_id" class="border rounded-lg p-2 w-full">
 <option value="">Department</option>
 @foreach($departments as $d)

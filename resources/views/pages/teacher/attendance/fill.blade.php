@@ -189,8 +189,9 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-100">
                     <tr>
-                        <th class="px-4 py-3">#</th>
-                        <th class="px-6 py-3 text-left">Student</th>
+                        <th class="px-4 py-3">Exam Roll Number</th>
+                        <th class="px-4 py-3">College Roll Number</th>
+                        <th class="px-6 py-3 text-left">Student Name</th>
 
                         @if($assignment->is_lecture)
                             <th class="px-6 py-3 text-center">Lecture<br><span class="text-xs">Classes Held / Classes Attended</span></th>
@@ -210,6 +211,7 @@
                 @foreach($students as $i => $s)
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-2">{{ $s['academic']['roll_number'] ?? 'N/A' }}</td>
+                        <td class="px-4 py-2">{{ $s['academic']['college_roll_number'] ?? 'N/A' }}</td>
                         <td class="px-6 py-2 font-medium">{{ $s->name }}</td>
 
                         {{-- LECTURE --}}

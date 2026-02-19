@@ -27,7 +27,7 @@
                             <th class="px-4 py-2">Month</th>
 
                             <th class="px-4 py-2 text-center">Lecture<br><span class="text-xs">W / P</span></th>
-                            <th class="px-4 py-2 text-center">Tute<br><span class="text-xs">W / P</span></th>
+                            <th class="px-4 py-2 text-center">Tutorial<br><span class="text-xs">W / P</span></th>
                             <th class="px-4 py-2 text-center">Practical<br><span class="text-xs">W / P</span></th>
 
                             <th class="px-4 py-2 text-center">%</th>

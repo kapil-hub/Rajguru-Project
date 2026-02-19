@@ -107,6 +107,7 @@ class StudentController extends Controller
         StudentAcademic::create([
             'student_user_id' => $student->id,
             'roll_number'     => $request->roll_number,
+            'college_roll_number'     => $request->college_roll_number,
             'department_id'   => $request->department_id,
             'course_id'       => $request->course_id,
             'current_semester'=> $request->current_semester,
@@ -211,6 +212,7 @@ class StudentController extends Controller
                 ['student_user_id' => $student->id],
                 [
                     'roll_number' => $request->roll_number,
+                    'college_roll_number'     => $request->college_roll_number,
                     'department_id' => $request->department_id,
                     'course_id' => $request->course_id,
                     'current_semester' => $request->current_semester,
