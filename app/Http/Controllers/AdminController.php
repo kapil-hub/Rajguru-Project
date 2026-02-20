@@ -13,6 +13,37 @@ use DB;
 class AdminController extends Controller
 {
     
+
+
+public function edit($id)
+{
+    $assignment = TeacherClassAssignment::findOrFail($id);
+    return response()->json($assignment);
+}
+
+
+
+public function update(Request $request, $id)
+{
+    $assignment = TeacherClassAssignment::findOrFail($id);
+
+    $assignment->update([
+        'teacher_id' => $request->teacher_id,
+        'course_id' => $request->course_id,
+        'semester_id' => $request->semester_id,
+        'section' => $request->section,
+        'paper_master_id' => $request->paper_master_id,
+        'academic_session'=> $request->academic_session,
+        'is_lecture' => $request->has('is_lecture'),
+        'is_tute' => $request->has('is_tute'),
+        'is_practical' => $request->has('is_practical'),
+        'is_coordinator' => $request->has('is_coordinator'),
+    ]);
+
+    return back()->with('success','Updated successfully');
+}
+
+
    public function teacherAssignments(Request $request)
 {
     $teachers = Teacher::all();

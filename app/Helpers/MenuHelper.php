@@ -140,7 +140,7 @@ class MenuHelper
             ],
             [
                 'icon' => 'pages',
-                'name' => 'Attendence Config',
+                'name' => 'Attendence Configuration',
                 'path' => '/attendance-settings',
                 'permission' => auth('admin')->check() ? true : False,
                 'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
