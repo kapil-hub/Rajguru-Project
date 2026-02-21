@@ -14,6 +14,7 @@
 
 
     <title>{{ $title ?? 'Dashboard' }} | TailAdmin - Laravel Tailwind CSS Admin Dashboard Template</title>    <!-- Scripts -->
+    @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- Alpine.js -->
@@ -270,5 +271,5 @@
 </body>
 
 @stack('scripts')
-
+@livewireScripts
 </html>
