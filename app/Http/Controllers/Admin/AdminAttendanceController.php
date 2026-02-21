@@ -81,27 +81,11 @@ class AdminAttendanceController extends Controller
     $studentIds = $students->pluck('student_id');
     $departments = DB::table('departments')->get();
     $courses = DB::table('courses')->get();
-    $papers = DB::table('student_attendances as sa')
-        ->join('paper_master as pm', 'pm.id', '=', 'sa.paper_master_id')
-        ->whereIn('sa.student_id', $studentIds)
-        ->where('sa.month', $month)
-        ->where('sa.year', $year)
-        ->select(
-            'sa.student_id',
-            'pm.name as paper_name',
-            'sa.lecture_working_days',
-            'sa.lecture_present_days',
-            'sa.tute_working_days',
-            'sa.tute_present_days',
-            'sa.practical_working_days',
-            'sa.practical_present_days'
-        )
-        ->get()
-        ->groupBy('student_id');
+    
 
     return view(
     'pages.admin.attendance-reports.master',
-    compact('students','papers','month','year','departments','courses')
+    compact('students','month','year','departments','courses')
     );
 
 }
