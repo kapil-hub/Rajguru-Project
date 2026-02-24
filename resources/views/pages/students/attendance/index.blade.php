@@ -12,7 +12,7 @@
         @endphp
 
         {{-- SUBJECT CARD --}}
-        <div class="mb-8 bg-white rounded-xl shadow border">
+        <div class="mb-8 bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
             <div class="px-6 py-4 border-b bg-gray-50">
                 <h2 class="text-lg font-semibold">

@@ -19,7 +19,7 @@
         // echo "<pre>";print_r($setting);die;
     @endphp
 
-    <div class="bg-white shadow rounded p-4 border border-gray-200">
+    <div class="bg-white shadow rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
         <div class="mb-2">
             <h3 class="text-lg font-semibold">

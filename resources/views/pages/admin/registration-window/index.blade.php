@@ -10,7 +10,7 @@
 <a href="{{ route('admin.registration-window.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded">
     + New Window
 </a>
-    <div class="overflow-x-auto bg-white shadow rounded-lg">
+    <div class="overflow-x-auto bg-white shadow rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
         <table class="min-w-full border-collapse">
             <thead class="bg-gray-100">
                 <tr>

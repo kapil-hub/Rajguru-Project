@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-8xl mx-auto px-4 py-6">
+<div class="max-w-8xl mx-auto rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
     <h1 class="text-2xl font-bold mb-6">Edit Registration Window</h1>
         <div class="bg-white shadow rounded-xl p-6">

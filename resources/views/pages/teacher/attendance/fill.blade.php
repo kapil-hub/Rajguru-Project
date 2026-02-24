@@ -20,7 +20,7 @@
 
     
         {{-- WORKING DAYS CARD --}}
-        <div class="bg-white rounded-xl shadow border p-6 mb-6">
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
             <h2 class="text-lg font-semibold mb-4">Classes Held</h2>
             <form action="{{ route('teacher.monthly.attendance.fill.downloadTemplate',[
                                     'assignment' => $assignment->id,
@@ -184,7 +184,7 @@
         <input type="hidden" name="year" value="{{ $year }}">
 
         {{-- ATTENDANCE TABLE (HIDDEN INITIALLY) --}}
-        <div id="attendanceTable" class="hidden bg-white rounded-xl shadow border overflow-x-auto">
+        <div id="attendanceTable" class="hidden bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-100">

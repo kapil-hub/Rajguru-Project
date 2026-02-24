@@ -5,7 +5,7 @@
 
     <h2 class="text-xl font-semibold mb-4">Manage Students</h2>
 
-    <div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="max-w-6xl mx-auto rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
     <!-- Page Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
@@ -89,7 +89,7 @@
     </div>
 
     <!-- ================= TABLE CARD ================= -->
-    <div class="bg-white rounded-xl shadow overflow-hidden">
+    <div class="bg-white text-3xl font-bold rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
         <table class="w-full text-sm text-left">
             <thead class="bg-gray-50 text-gray-600 uppercase text-xs">

@@ -11,7 +11,7 @@
 
             @forelse($subjects as $subject)
 
-                <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition">
+                <div class="bg-white p-6 rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600 transition">
 
                     <h3 class="text-lg font-semibold text-gray-800">
                         {{ $subject->code }}
@@ -47,7 +47,7 @@
     <!-- Students Table -->
     @if($showStudents)
 
-    <div class="bg-white p-6 rounded-2xl shadow-xl">
+    <div class="bg-white p-6 rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
         <!-- HEADER WITH PAPER DETAILS -->
         <div class="flex justify-between items-start mb-6">

@@ -17,7 +17,7 @@
     $practicalPercent = percent($practicalPresent, $practicalHeld);
 @endphp
 
-<div class="max-w-7xl mx-auto px-4 py-6">
+<div class="max-w-7xl mx-auto rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
     <h1 class="text-2xl font-bold mb-6">Student Dashboard</h1>
 
