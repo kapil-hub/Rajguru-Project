@@ -3,7 +3,7 @@
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-indigo-600 to-purple-700 py-10 px-4">
 
-    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl p-8">
+    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
         <!-- Header -->
         <div class="text-center mb-10">

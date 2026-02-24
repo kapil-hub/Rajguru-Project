@@ -5,7 +5,7 @@
 
     <h1 class="text-2xl font-bold mb-6">Attendance History</h1>
 
-    <div class="bg-white shadow rounded-lg overflow-hidden">
+    <div class="bg-white shadow rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
         <table class="min-w-full divide-y">
             <thead class="bg-gray-100">
                 <tr>

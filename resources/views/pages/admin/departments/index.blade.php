@@ -3,11 +3,11 @@
 @section('content')
 <div class="min-h-screen bg-gray-100 p-6">
 
-    <div class="max-w-8xl ounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
+    <div class="max-w-8xl ounded-2xl rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-700">Department Management</h2>
+            <h2 class="text-3xl font-bold text-indigo-700">Department Management</h2>
 
             <button onclick="document.getElementById('addModal').classList.remove('hidden')"
                 class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow">

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow">
+<div class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
     <h2 class="text-xl font-semibold text-center mb-4">
         Change Password

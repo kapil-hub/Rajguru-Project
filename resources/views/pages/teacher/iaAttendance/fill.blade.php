@@ -15,7 +15,7 @@
     </div>
         {{-- Marks Breakup Table --}}
 
-        <fieldset  class="overflow-x-auto">
+        <fieldset  class="overflow-x-auto rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
              <legend>Marks Breakup</legend>
             <table class="min-w-full border-collapse">
                 <thead class="bg-gray-50 sticky top-0 z-10">
@@ -79,7 +79,7 @@
 
 
         {{-- Marks Filling TABLE (HIDDEN INITIALLY) --}}
-        <div id="attendanceTable" class=" bg-white rounded-xl shadow border overflow-x-auto">
+        <div id="attendanceTable" class=" bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600 overflow-x-auto">
 
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-100">

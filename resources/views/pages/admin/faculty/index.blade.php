@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-7xl mx-auto p-6 bg-white rounded shadow">
+<div class="max-w-7xl mx-auto  bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-semibold text-gray-700">Faculty Management</h2>

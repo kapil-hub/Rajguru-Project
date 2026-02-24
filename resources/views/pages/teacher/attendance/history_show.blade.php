@@ -7,7 +7,7 @@
         Attendance Details ({{ \Carbon\Carbon::createFromDate((int)$year, (int)$month, 1)->format('F Y') }})
     </h1>
 
-    <div class="bg-white shadow rounded-lg overflow-x-auto">
+    <div class="bg-white shadow rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
         <table class="min-w-full divide-y border">
             <thead class="bg-gray-100">
                 <tr>

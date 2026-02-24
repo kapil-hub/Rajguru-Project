@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-5xl mx-auto p-6">
+<div class="max-w-5xl mx-auto rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
     <h1 class="text-2xl font-bold mb-6">Attendance Configuration</h1>
 

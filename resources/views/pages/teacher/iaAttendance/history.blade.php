@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="p-6 bg-white rounded-xl shadow">
+<div class="p-6 bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
     <h2 class="text-xl font-semibold mb-4">
         IA Marks History (Last 6 Months)

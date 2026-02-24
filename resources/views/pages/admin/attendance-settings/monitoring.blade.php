@@ -7,7 +7,7 @@
     {{-- ===================== --}}
     {{-- TOP SUMMARY CARDS --}}
     {{-- ===================== --}}
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
         <div class="bg-white rounded-2xl shadow p-5">
             <p class="text-gray-500 text-sm">Total Classes</p>
@@ -36,7 +36,7 @@
     {{-- ===================== --}}
     {{-- FILTER SECTION --}}
     {{-- ===================== --}}
-    <div class="bg-white rounded-2xl shadow p-6">
+    <div class="bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
         <form method="GET" class="flex flex-wrap items-end gap-4">
 
             {{-- Month --}}
@@ -102,7 +102,7 @@
     {{-- ===================== --}}
     {{-- ATTENDANCE TABLE --}}
     {{-- ===================== --}}
-    <div class="bg-white rounded-2xl shadow overflow-hidden">
+    <div class="bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600 overflow-hidden">
 
         <table class="w-full text-sm">
             <thead class="bg-gray-100 text-gray-600">

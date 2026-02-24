@@ -1,7 +1,7 @@
 <div>
 
     <!-- Header -->
-    <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
+    <div class="bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
         <h2 class="text-2xl font-bold text-indigo-600">
             Practical Marks Entry
         </h2>
@@ -52,7 +52,7 @@
 
     @if($showStudents)
 
-        <div class="bg-white p-6 rounded-2xl shadow-lg">
+        <div class="bg-white p-6 rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm text-left border rounded-lg">
