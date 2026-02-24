@@ -26,21 +26,28 @@ class MenuHelper
             [
                 'icon' => 'calendar',
                 'name' => 'Attendance Monitoring',
-                'path' => route('admin.attendance.monitoring'),
+                'path' => '/admin/attendance-monitoring',
                 'permission' => auth('admin')->check(),
                 'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
                 'icon' => 'calendar',
                 'name' => 'Departments',
-                'path' => route('admin.departments.index'),
+                'path' => '/admin/departments',
+                'permission' => auth('admin')->check(),
+                'class' => request()->routeIs('admin.departments.index') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+            [
+                'icon' => 'calendar',
+                'name' => 'Courses',
+                'path' => '/admin/courses/index',
                 'permission' => auth('admin')->check(),
                 'class' => request()->routeIs('admin.departments.index') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
                 'icon' => 'calendar',
                 'name' => 'Registration Window',
-                'path' => route('admin.registration-window.index'),
+                'path' => '/admin/registration-windows',
                 'permission' => auth('admin')->check(),
                 'class' => request()->routeIs('admin.registration-window.index') ? 'menu-item-active' : 'menu-item-inactive',
             ],
@@ -87,6 +94,19 @@ class MenuHelper
                 'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
                 
             ],
+            [
+                'icon' => 'pages',
+                'name' => 'Practical',
+                'path' => '',
+                'subItems' => [
+                    ['name' => 'Fill Practical Marks', 'path' => '/teacher/practical-marks',],
+                    ['name' => 'View Practical', 'path' => '/teacher/practical-marks/view'],
+                ],
+                'permission' =>  auth('teacher')->check() ? true : False, 
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
+                
+            ],
+           
             [
                 'icon' => 'pages',
                 'name' => 'Papers',

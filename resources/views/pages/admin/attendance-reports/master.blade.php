@@ -7,7 +7,7 @@
 
     {{-- Filters --}}
         {{-- MODERN FILTER CARD --}}
-<div class="bg-white shadow-xl rounded-2xl p-6 border border-gray-100">
+<div class="bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
     <form method="GET" class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
 

@@ -3,7 +3,7 @@
 @section('content')
 <div class="min-h-screen bg-gray-100 p-6">
 
-    <div class="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-6">
+    <div class="max-w-8xl ounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
@@ -16,7 +16,7 @@
         </div>
 
         <!-- Table -->
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto ">
             <table class="w-full border-collapse">
                 <thead>
                     <tr class="bg-gray-200 text-gray-600 uppercase text-sm">

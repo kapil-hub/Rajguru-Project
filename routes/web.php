@@ -16,7 +16,7 @@ use App\Http\Controllers\IaController;
 use App\Http\Controllers\Registration\RegistrationController;
 use App\Http\Controllers\Admin\RegistrationWindowController;
 use App\Http\Controllers\Admin\AdminAttendanceController;
-
+use App\Livewire\Teacher\PracticalMarks;
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
@@ -73,8 +73,13 @@ Route::middleware('auth:teacher')->prefix('teacher')->group(function () {
         [AttendanceController::class, 'history']
     )->name('teacher.attendance.history');
 
-    
+     Route::get('/practical-marks', function () {
+        return view('pages.teacher.practical.practical-marks');
+    })->name('teacher.practical.marks');
 
+    Route::get('/practical-marks/view', function () {
+        return view('pages.teacher.practical.view-practical-marks');
+    })->name('teacher.practical.view');
 
     Route::get('/attendance/history/{paper}/{month}/{year}', 
         [AttendanceController::class, 'show']
@@ -246,7 +251,7 @@ Route::middleware('auth:admin')
         )->name('registration-window.toggle');
 
     });
-    Route::prefix('admin')->group(function () {
+    Route::prefix('admin')->middleware('auth:admin')->group(function () {
         Route::resource('departments', App\Http\Controllers\Admin\DepartmentController::class)->names([
             'index'   => 'admin.departments.index',
             'create'  => 'admin.departments.create',
@@ -256,6 +261,11 @@ Route::middleware('auth:admin')
             'update'  => 'admin.departments.update',
             // 'destroy' => 'admin.departments.destroy',
         ]);
+
+        Route::get('courses/index',function(){
+            return view('pages.admin.courses.index');
+        });
+
     });
 
 
