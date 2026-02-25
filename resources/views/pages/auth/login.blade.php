@@ -174,7 +174,7 @@
         </div>
 
     <div class="footer-text">
-        © {{ date('Y') }} Saheed Rajguru College
+        © {{ date('Y') }} Open Learning Development Center (OLDC)
     </div>
 </div>
 
