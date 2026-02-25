@@ -30,6 +30,7 @@
             text-align: center;
             margin-bottom: 5px;
             color:#4f46e5;
+            font-size: 17px;
         }
 
         .anv{
@@ -131,8 +132,8 @@
 <div class="login-box">
     <center><img src="/images/logo/logo.png" width="150"></center>
     <center><xrt class="anv">अनुवर्तन</xrt></center>
-    <h2>Saheed Rajguru College Login</h2>
-    <p>Student / Teacher Portal</p>
+    <h2>Shaheed Rajguru College of Applied Sciences for Women</h2>
+    {{-- <p>Student / Teacher Portal</p> --}}
     
     @if ($errors->any())
         <div class="error">{{ $errors->first() }}</div>
