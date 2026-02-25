@@ -24,9 +24,17 @@ if (!function_exists('tutorialMarksBreakup')) {
 
         // $theory = round($total * 0.75);
         // $ia     = round($total * 0.25);
-
+        if($total == 0){
+            return [
+            'ca'  => 0,
+            'activities'=>0,
+            'attendance'=>0
+        ];
+        }
         return [
-            'ca'  => $total
+            'ca'  => $total,
+            'activities'=>35,
+            'attendance'=>5
         ];
     }
 }

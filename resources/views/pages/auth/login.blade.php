@@ -29,8 +29,19 @@
         h2 {
             text-align: center;
             margin-bottom: 5px;
+            color:#4f46e5;
         }
 
+        .anv{
+            text-align: center;
+            background-image: linear-gradient(to bottom, red, orange, #3e3e34, green, blue, indigo, violet);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            font-size: 24px;
+            font-weight:900
+        }
         p {
             text-align: center;
             color: #666;
@@ -118,9 +129,11 @@
 <body>
 
 <div class="login-box">
-    <h2>College Login</h2>
+    <center><img src="/images/logo/logo.png" width="150"></center>
+    <center><xrt class="anv">अनुवर्तन</xrt></center>
+    <h2>Saheed Rajguru College Login</h2>
     <p>Student / Teacher Portal</p>
-
+    
     @if ($errors->any())
         <div class="error">{{ $errors->first() }}</div>
     @endif

@@ -87,6 +87,13 @@ class CourseManager extends Component
         $this->isOpen = false;
     }
 
+    public function delete($id)
+    {
+        Course::find($id)->delete();
+        session()->flash('message', 'Course Deleted Successfully.');
+    }
+
+
     private function resetFields()
     {
         $this->courseId = null;
