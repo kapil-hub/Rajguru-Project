@@ -146,7 +146,7 @@
                         <!-- Status Checkbox -->
                         <div class="flex items-center gap-2 mt-2">
                             <input type="checkbox" wire:model="status"
-                                class="h-4 w-4 text-indigo-600 rounded">
+                                class="h-4 w-4 text-indigo-600 rounded" {{ $status ?'checked':' ' }}>
                             <label class="text-sm font-medium">Active</label>
                         </div>
 
