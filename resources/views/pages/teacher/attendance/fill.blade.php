@@ -22,7 +22,7 @@
         {{-- WORKING DAYS CARD --}}
         <div class="bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
             <h2 class="text-lg font-semibold mb-4">Classes Held</h2>
-            <form action="{{ route('teacher.monthly.attendance.fill.downloadTemplate',[
+            <form id="predefData" action="{{ route('teacher.monthly.attendance.fill.downloadTemplate',[
                                     'assignment' => $assignment->id,
                                     'month' => $month,
                                     'year' => $year
@@ -281,7 +281,11 @@ function addAttendanceFields() {
     const lecture = document.getElementById('lecture_days')?.value;
     const tute = document.getElementById('tute_days')?.value;
     const practical = document.getElementById('practical_days')?.value;
+    let form = document.getElementById("predefData");
 
+        if (!form.reportValidity()) {
+           return false;
+        }
     if (lecture !== undefined) {
         document.querySelectorAll('.lecture-working').forEach(el => el.value = lecture);
     }

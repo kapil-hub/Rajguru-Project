@@ -1,4 +1,4 @@
-<div class="flex items-center gap-3 bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
+<div class="flex paper-row items-center gap-3 bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
     <input type="hidden" name="papers[{{ $index }}][is_backlog]" value="{{ $isBacklog ? 1 : 0 }}">
 
