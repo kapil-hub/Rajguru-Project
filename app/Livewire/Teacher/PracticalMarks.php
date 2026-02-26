@@ -66,6 +66,7 @@ class PracticalMarks extends Component
         }
         
         $credit = optional(Paper::find($this->selectedPaper))->number_of_practicals ?? 0;
+
         if($credit == 0){
             session()->flash('error', 'Selected Paper does not has practical');
             return;

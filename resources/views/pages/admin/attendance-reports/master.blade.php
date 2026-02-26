@@ -150,6 +150,8 @@
                 <livewire:admin.studentattendance-breakup 
                     :student="$s"
                     :key="'student-'.$s->student_id"
+                    :month="$month ?? now()->format('m')"
+                    :year="$year ?? now()->format('Y')"
                 />
 
             </div>
