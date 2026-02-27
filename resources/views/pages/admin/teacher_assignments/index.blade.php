@@ -244,7 +244,7 @@
                         @endif
                     </td>
 
-                    <td class="px-4 py-3 text-center">
+                    <td class="px-4 py-3 text-left flex flex-2 gap-2">
                         <form method="POST"
                             action="{{ route('admin.teacher.assignments.status', $a->id) }}">
                             @csrf
@@ -258,6 +258,10 @@
                                 {{ $a->is_active ? 'Deactivate' : 'Activate' }}
                             </button>
                         </form>
+                         <button onclick="editAssignment({{ $a->id }})"
+                            class="bg-blue-500 text-white px-3 py-1 rounded">
+                            Edit
+                        </button>
                     </td>
                 </tr>
                 @empty
@@ -269,6 +273,116 @@
                 @endforelse
             </tbody>
         </table>
+         <!-- LOADER -->
+        <div id="loader" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+            <div class="bg-white p-5 rounded shadow">
+                <div class="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-500 border-solid mx-auto"></div>
+                <p class="mt-3 text-center">Loading...</p>
+            </div>
+        </div>
+        <!-- MODAL -->
+       <!-- EDIT MODAL -->
+<div id="editModal"
+     class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-auto">
+
+    <div class="bg-white w-full max-w-3xl md:max-w-4xl lg:max-w-5xl p-6 rounded-xl shadow-xl relative">
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-gray-200 pb-4">
+            <h3 class="text-lg font-medium text-gray-800">
+                Edit Assignment
+            </h3>
+            <button type="button" onclick="closeEditModal()"
+                    class="text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-full p-2">
+                <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                <span class="sr-only">Close modal</span>
+            </button>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" id="editForm" class="space-y-6 mt-4">
+            @csrf
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                @if(auth('admin')->check())
+                    <select name="teacher_id" id="edit_teacher_id" required class="modern-input w-full">
+                        <option value="">Select Teacher</option>
+                        @foreach($teachers as $teacher)
+                            <option value="{{ $teacher->id }}">
+                                {{ $teacher->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                @endif
+
+                <select name="course_id" id="edit_course_id" required class="modern-input w-full">
+                    <option value="">Course</option>
+                    @foreach($courses as $course)
+                        <option value="{{ $course->id }}">
+                            {{ $course->name }}
+                        </option>
+                    @endforeach
+                </select>
+
+                <select name="academic_session" id="edit_academic_session" required class="modern-input w-full">
+                    <option value="">Academic Session</option>
+                    @php
+                        $year = date('Y');
+                        $next = $year + 1;
+                        $prev = $year - 1;
+                    @endphp
+                    <option value="{{ $year.'-'.substr($next,-2) }}">{{ $year.'-'.substr($next,-2) }}</option>
+                    <option value="{{ $prev.'-'.substr($year,-2) }}">{{ $prev.'-'.substr($year,-2) }}</option>
+                </select>
+
+                <select name="semester_id" id="edit_semester_id" required class="modern-input w-full">
+                    <option value="">Semester</option>
+                    @foreach($semesters as $sem)
+                        <option value="{{ $sem->id }}">{{ $sem->name }}</option>
+                    @endforeach
+                </select>
+
+                <select name="section" id="edit_section" required class="modern-input w-full">
+                    <option value="">Section</option>
+                    @foreach($sections as $sec)
+                        <option value="{{ $sec }}">{{ $sec }}</option>
+                    @endforeach
+                </select>
+
+                <select name="paper_master_id" id="edit_paper_master_id" required class="modern-input w-full">
+                    <option value="">Search Paper</option>
+                    @foreach($papers as $paper)
+                        <option value="{{ $paper->id }}">{{ $paper->code }} - {{ $paper->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Checkboxes -->
+            <div class="flex flex-wrap gap-4 mt-2">
+                @foreach(['is_lecture' => 'Lecture', 'is_tute' => 'Tutorial', 'is_practical' => 'Practical', 'is_coordinator' => 'Coordinator'] as $name => $label)
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="edit_{{ $name }}" name="{{ $name }}">
+                        <span>{{ $label }}</span>
+                    </label>
+                @endforeach
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-end gap-3 mt-4 flex-wrap">
+                <button type="button" onclick="closeEditModal()" class="bg-gray-500 text-white px-5 py-2 rounded">
+                    Cancel
+                </button>
+                <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded">
+                    Update Assignment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
         <div class="p-4">
             {{ $assignments->withQueryString()->links() }}
@@ -287,7 +401,54 @@
 }
 </style>
 
+<script>
+function editAssignment(id) {
 
+    // Show Loader
+    document.getElementById('loader').classList.remove('hidden');
+    document.getElementById('loader').classList.add('flex');
+
+    fetch(`/teacher-assignments/${id}`)
+    .then(res => res.json())
+    .then(data => {
+
+        // hide loader
+        document.getElementById('loader').classList.add('hidden');
+
+        // set form action
+        document.getElementById('editForm')
+            .setAttribute('action', `/teacher-assignments/${id}`);
+
+        // populate fields
+        document.getElementById('edit_teacher_id').value = data.teacher_id;
+        document.getElementById('edit_course_id').value = data.course_id;
+        document.getElementById('edit_semester_id').value = data.semester_id;
+        document.getElementById('edit_section').value = data.section;
+        document.getElementById('edit_paper_master_id').value = data.paper_master_id;
+        document.getElementById('edit_academic_session').value = data.academic_session;
+
+        document.getElementById('edit_is_lecture').checked = data.is_lecture == 1;
+        document.getElementById('edit_is_tute').checked = data.is_tute == 1;
+        document.getElementById('edit_is_practical').checked = data.is_practical == 1;
+        document.getElementById('edit_is_coordinator').checked = data.is_coordinator == 1;
+
+        // show modal
+        document.getElementById('editModal').classList.remove('hidden');
+
+    })
+    .catch(err => {
+        console.error('Fetch error:', err);
+        alert('Failed to load assignment data!');
+        document.getElementById('loader').classList.add('hidden');
+    });
+
+   
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.add('hidden');
+}
+</script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
