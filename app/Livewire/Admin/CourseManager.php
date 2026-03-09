@@ -2,22 +2,31 @@
 
 namespace App\Livewire\Admin;
 
-use Livewire\Component;
-use Livewire\WithPagination;
 use App\Models\Courses as Course;
 use App\Models\Departments as Department;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class CourseManager extends Component
 {
     use WithPagination;
 
     public $name;
+
     public $dept_id;
+
     public $program_code;
+
     public $types;
+
     public $status = 1;
 
+    public $search = '';
+
+    public $statusFilter = '';
+
     public $courseId;
+
     public $isOpen = false;
 
     public $departments = [];
@@ -27,7 +36,7 @@ class CourseManager extends Component
         'dept_id' => 'required|exists:departments,id',
         'program_code' => 'nullable|string|max:100',
         'types' => 'required|integer',
-        'status' => 'boolean'
+        'status' => 'boolean',
     ];
 
     public function mount()
@@ -37,7 +46,11 @@ class CourseManager extends Component
 
     public function render()
     {
-        $courses = Course::with('department')
+        $courses = Course::query()
+            ->when($this->search, fn ($q) => $q->where('name', 'like', '%'.$this->search.'%')
+            )
+            ->when($this->statusFilter !== '', fn ($q) => $q->where('status', $this->statusFilter)
+            )
             ->latest()
             ->paginate(10);
 
@@ -75,7 +88,7 @@ class CourseManager extends Component
                 'dept_id' => $this->dept_id,
                 'program_code' => $this->program_code,
                 'types' => $this->types,
-                'status' => $this->status
+                'status' => $this->status,
             ]
         );
 
@@ -92,7 +105,6 @@ class CourseManager extends Component
         Course::find($id)->delete();
         session()->flash('message', 'Course Deleted Successfully.');
     }
-
 
     private function resetFields()
     {
