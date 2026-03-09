@@ -13,9 +13,20 @@
             </p>
 
             <div class="grid grid-cols-2 gap-4 text-sm">
+                <p><strong>Academic Session:</strong> {{ $setting->academic_session }}</p>
                 <p><strong>Attendance Type:</strong> {{ ucfirst($setting->attendance_type) }}</p>
                 <p><strong>Semester Type:</strong> {{ ucfirst($setting->semester_type) }}</p>
-                <p><strong>Month Range:</strong> {{ $setting->month_from }} - {{ $setting->month_to }}</p>
+                <p><strong>Month Range:</strong>
+                   {{ \Carbon\Carbon::createFromDate(
+                                    now()->year,
+                                    $setting->start_month,
+                                    1
+                                )->format('M Y')}}  -  {{\Carbon\Carbon::createFromDate(
+                                    now()->year,
+                                    $setting->end_month,
+                                    1
+                                )->format('M Y')}}
+                </p>
                 <p><strong>Status:</strong> Active</p>
             </div>
 
@@ -45,18 +56,17 @@
 
                <div>
                     <label class="block text-sm mb-1">Academic Session</label>
-                    <input type="text" name="academic_session"
-                       class="form-input w-full"
-                       placeholder="2024-25">
-                </div>
-
-            <div>
-                <label class="block text-sm mb-1">Semester Type</label>
-                <select name="semester_type" class="form-select w-full">
-                    <option value="odd">Odd</option>
-                    <option value="even">Even</option>
+                    <select name="academic_session" id="edit_academic_session" required class="modern-input w-full">
+                    <option value="">Academic Session</option>
+                    @php
+                        $year = date('Y');
+                        $next = $year + 1;
+                        $prev = $year - 1;
+                    @endphp
+                    <option value="{{ $year.'-'.substr($next,-2) }}">{{ $year.'-'.substr($next,-2) }}</option>
+                    <option value="{{ $prev.'-'.substr($year,-2) }}">{{ $prev.'-'.substr($year,-2) }}</option>
                 </select>
-            </div>
+                </div>
 
             <div>
                 <label class="block text-sm mb-1">Start Month</label>
