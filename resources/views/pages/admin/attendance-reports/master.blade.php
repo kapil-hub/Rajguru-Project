@@ -2,8 +2,103 @@
 
 @section('content')
 <div class="p-6 space-y-4">
+    <h2 class="text-xl font-bold">Download Attendance Report</h2>
+    <div class="bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
+    <div  class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+        {{-- Buttons --}}
+        @for($m = $buttons->start_month;$m <= $buttons->end_month;$m++)
+            <div class="flex gap-2">
+                <button 
+                    type="button"
+                    onclick="generateExcel({{ $m }}, {{ $markedMonths[$m]['year'] ?? now()->year }} , true)"
 
-    <h2 class="text-xl font-bold">Attendance Master Report</h2>
+                    class="flex items-center justify-center gap-2
+                    flex-1 font-semibold
+                    rounded-xl px-2 py-2
+                    shadow-md transition duration-200  {{ isset($markedMonths[$m]) ? ' bg-blue-600 hover:bg-blue-700
+                    text-white' :'bg-gray-200 text-gray-700 text-gray' }}"
+                    style="{{isset($markedMonths[$m]) ? ' ' :'cursor:not-allowed;'}}"
+                    @disabled(!isset($markedMonths[$m]['year']))
+
+                    title="{{ $markedMonths[$m]['year'] ?? 'Attendance for this month has not been marked yet' }}"
+                >
+
+                    <img src="/images/download.png" class="w-6 h-6">
+
+                    {{ \Carbon\Carbon::createFromDate(
+                        now()->year,
+                        $m,
+                        1
+                    )->format('M') }}
+
+                    {{ $markedMonths[$m]['year'] ?? now()->year }} Attendance
+
+                </button>
+            </div>
+        @endfor
+        {{-- Buttons
+        <div class="flex gap-2">
+            <button
+                class="flex items-center justify-center gap-2 flex-1 bg-blue-600 hover:bg-blue-700
+                    text-white font-semibold
+                    rounded-xl px-4 py-2
+                    shadow-md transition duration-200">
+                <img src="/images/download.png" class="w-6 h-6"> February Attendance
+            </button>
+        </div>
+        {{-- Buttons --}}
+        {{-- <div class="flex gap-2">
+            <button
+                class="flex items-center justify-center gap-2 flex-1 bg-gray-200 text-gray-700
+                 font-semibold
+                    rounded-xl px-4 py-2
+                    shadow-md transition duration-200" disabled style="cursor:not-allowed;"
+                    data-bs-toggle="tooltip" data-bs-placement="top"
+                     title="Attendance for this month has not been marked yet">
+               <img src="/images/download.png" class="w-6 h-6">  March Attendance
+            </button>
+        </div> --}}
+        {{-- Buttons --}}
+        {{-- <div class="flex gap-2">
+            <button
+                class="flex items-center justify-center gap-2 flex-1 bg-gray-200 text-gray-700
+                 font-semibold
+                    rounded-xl px-4 py-2
+                    shadow-md transition duration-200" disabled style="cursor:not-allowed;"
+                    data-bs-toggle="tooltip" data-bs-placement="top"
+                     title="Attendance for this month has not been marked yet">
+                <img src="/images/download.png" class="w-6 h-6"> April Attendance
+            </button>
+        </div> --}}
+        {{-- Buttons --}}
+        {{-- <div class="flex gap-2">
+            <button
+                class="flex items-center justify-center gap-2 flex-1 bg-gray-200 text-gray-700
+               
+                     font-semibold
+                    rounded-xl px-4 py-2
+                    shadow-md transition duration-200 " disabled style="cursor:not-allowed;"
+                    data-bs-toggle="tooltip" data-bs-placement="top"
+                     title="Attendance for this month has not been marked yet">
+                <img src="/images/download.png" class="w-6 h-6"> May Attendance
+            </button>
+        </div> --}}
+        {{-- Buttons --}}
+        <div class="flex gap-2" onclick="generateExcel({{ $buttons->start_month }} , {{now()->year}} , false)"> 
+            <button
+                class="flex items-center justify-center gap-2 flex-1 bg-green-600 hover:bg-green-700
+                    text-white font-semibold
+                    rounded-xl px-2 py-2
+                    shadow-md transition duration-200">
+                <img src="/images/download.png" class="w-6 h-6"> Complete Attendance
+            </button>
+        </div>
+    </div>
+</div>
+</div>
+<div class="p-6 space-y-4">
+
+    <h2 class="text-xl font-bold">View Attendance Report</h2>
 
     {{-- Filters --}}
         {{-- MODERN FILTER CARD --}}
@@ -99,13 +194,13 @@
     </form>
 </div>
 
-    <button onclick="generateExcel()" 
+        <!--<button onclick="generateExcel()"
         class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700">
         ⬇ Generate Excel
-    </button>
+    </button>-->
     {{-- LIST --}}
     <div class="space-y-3">
-        @foreach($students as $s)
+        @forelse ($students as $s)
             <div class="bg-white rounded-xl shadow p-4 student-card">
 
                 <div class="grid grid-cols-9 gap-2 items-center cursor-pointer"
@@ -155,7 +250,9 @@
                 />
 
             </div>
-        @endforeach
+        @empty
+            <p class="text-center">Attendance for this month has not been marked yet.</p>
+        @endforelse 
     </div>
 
     {{-- PAGINATION --}}
@@ -182,7 +279,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-function generateExcel() {
+function generateExcel(month,year,breakup) {
 
     Swal.fire({
         title: 'Generating File...',
@@ -200,8 +297,9 @@ function generateExcel() {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            month: "{{ $month }}",
-            year: "{{ $year }}"
+            month: month,
+            year: year,
+            breakup:breakup
         })
     });
 

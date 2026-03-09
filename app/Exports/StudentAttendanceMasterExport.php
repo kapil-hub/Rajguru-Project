@@ -4,44 +4,45 @@ namespace App\Exports;
 
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class StudentAttendanceMasterExport implements
-    FromCollection,
-    WithHeadings,
-    WithEvents,
-    ShouldAutoSize
+class StudentAttendanceMasterExport implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings
 {
     protected $month;
+
     protected $year;
 
-    public function __construct($month, $year)
+    protected $breakup;
+
+    public function __construct($month, $year, $breakup)
     {
         $this->month = $month;
-        $this->year  = $year;
+        $this->year = $year;
+        $this->breakup = $breakup;
     }
 
-    /**
-     * TWO ROW HEADERS
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | HEADERS
+    |--------------------------------------------------------------------------
+    */
+
     public function headings(): array
     {
         return [
             [
-                'Student Info', '','', '', '', '',
+                'Student Info', '', '', '', '', '',
                 'Lecture', '', '',
                 'Tutorial', '', '',
                 'Practical', '', '',
-                'Overall'
+                'Overall',
             ],
             [
                 'Student',
@@ -63,150 +64,171 @@ class StudentAttendanceMasterExport implements
                 'Classes Attended',
                 '%',
 
-                '%'
-            ]
+                '%',
+            ],
         ];
     }
 
-    /**
-     * DATA
-     */
-    public function collection()
-{
-    $rows = collect();
+    /*
+    |--------------------------------------------------------------------------
+    | PERCENTAGE HELPER
+    |--------------------------------------------------------------------------
+    */
 
-    $data = DB::table('student_attendances as sa')
-        ->join('student_users as s', 's.id', '=', 'sa.student_id')
-        ->join('student_academic as sc', 'sc.student_user_id', '=', 'sa.student_id')
-        ->join('departments as d', 'd.id', '=', 'sc.department_id')
-        ->join('paper_master as p', 'p.id', '=', 'sa.paper_master_id')
-        ->join('courses as c', 'c.id', '=', 'sc.course_id')
-        ->select(
-            'sa.student_id',
-            's.name as student_name',
-            'sc.roll_number as roll_no',
-            'c.name as course_name',
-            'd.name as department_name',
-            'sa.semester_id',
-            'sa.section',
-            'p.name as paper_name',
-
-            'sa.lecture_working_days',
-            'sa.lecture_present_days',
-
-            'sa.tute_working_days',
-            'sa.tute_present_days',
-
-            'sa.practical_working_days',
-            'sa.practical_present_days'
-        )
-        ->where('sa.month', $this->month)
-        ->where('sa.year', $this->year)
-        ->orderBy('s.name')
-        ->get()
-        ->groupBy('student_id');
-
-    foreach ($data as $studentRows) {
-
-        $first = $studentRows->first();
-
-        // ===== STUDENT SUMMARY =====
-        $lec = round($studentRows->avg(function ($r) {
-            if (is_null($r->lecture_working_days)) {
-                return null;   
-            }
-
-            if ($r->lecture_working_days == 0) {
-                return 0;      
-            }
-            return $r->lecture_working_days > 0
-                ? ($r->lecture_present_days / $r->lecture_working_days) * 100
-                : 0;
-        }), 2);
-
-        $tut = round($studentRows->avg(function ($r) {
-            if (is_null($r->tute_working_days)) {
-                return null;   
-            }
-
-            if ($r->tute_working_days == 0) {
-                return 0;      
-            }
-            return $r->tute_working_days > 0
-                ? ($r->tute_present_days / $r->tute_working_days) * 100
-                : 0;
-        }), 2);
-
-        $prac = round($studentRows->avg(function ($r) {
-            if (is_null($r->practical_working_days)) {
-                return null;   
-            }
-
-            if ($r->practical_working_days == 0) {
-                return 0;      
-            }
-            return $r->practical_working_days > 0
-                ? ($r->practical_present_days / $r->practical_working_days) * 100
-                : 0;
-        }), 2);
-
-        $devide_by = 0;
-        if($lec > 0){$devide_by++;}
-        if($tut > 0){$devide_by++;}
-        if($prac > 0){$devide_by++;}
-        if($devide_by == 0){ $devide_by = 1;}
-        // 🔹 MAIN STUDENT ROW
-        $rows->push([
-            $first->student_name . ' (' . $first->roll_no . ')',
-            $first->department_name,
-            $first->course_name, 
-            $first->semester_id,
-            $first->section,
-            'STUDENT SUMMARY',
-
-            '', '', $lec,
-            '', '', $tut,
-            '', '', $prac,
-            round(($lec + $tut + $prac) / $devide_by, 2),
-        ]);
-
-        // 🔹 PAPER ROWS
-        foreach ($studentRows as $r) {
-
-            $lecP = $r->lecture_working_days > 0
-                ? round(($r->lecture_present_days / $r->lecture_working_days) * 100, 2)
-                : 0;
-
-            $tutP = $r->tute_working_days > 0
-                ? round(($r->tute_present_days / $r->tute_working_days) * 100, 2)
-                : 0;
-
-            $pracP = $r->practical_working_days > 0
-                ? round(($r->practical_present_days / $r->practical_working_days) * 100, 2)
-                : 0;
-
-            $rows->push([
-                '   → ' . $r->paper_name,
-                '', '', '', '','',
-
-                $r->lecture_working_days ?? 0,$r->lecture_present_days ?? 0, $lecP,
-                $r->tute_working_days ?? 0,$r->tute_present_days ?? 0, $tutP,
-                $r->practical_working_days ?? 0,$r->practical_present_days ?? 0, $pracP,
-                '',
-            ]);
+    private function percent($present, $working)
+    {
+        if (! $working) {
+            return 0;
         }
 
-        // 🔹 Spacer row
-        $rows->push(array_fill(0, 15, ''));
+        return round(($present / $working) * 100, 2);
     }
 
-    return $rows;
-}
+    /*
+    |--------------------------------------------------------------------------
+    | DATA
+    |--------------------------------------------------------------------------
+    */
 
+    public function collection()
+    {
+        $rows = collect();
 
-    /**
-     * BASIC STYLES
-     */
+        $data = DB::table('student_attendances as sa')
+            ->join('student_users as s', 's.id', '=', 'sa.student_id')
+            ->join('student_academic as sc', 'sc.student_user_id', '=', 'sa.student_id')
+            ->join('departments as d', 'd.id', '=', 'sc.department_id')
+            ->join('paper_master as p', 'p.id', '=', 'sa.paper_master_id')
+            ->join('courses as c', 'c.id', '=', 'sc.course_id')
+            ->select(
+                'sa.student_id',
+                's.name as student_name',
+                'sc.roll_number',
+                'c.name as course_name',
+                'd.name as department_name',
+                'sa.semester_id',
+                'sa.section',
+                'p.name as paper_name',
+
+                'sa.lecture_working_days',
+                'sa.lecture_present_days',
+
+                'sa.tute_working_days',
+                'sa.tute_present_days',
+
+                'sa.practical_working_days',
+                'sa.practical_present_days'
+            )
+           // month wise report
+            ->when($this->breakup, function ($q) {
+                $q->where('sa.month', $this->month);
+            })
+
+            // complete report
+            ->when(! $this->breakup, function ($q) {
+                $q->where('sa.month', '>=', $this->month);
+            })
+
+            ->orderBy('s.name')
+            ->get()
+            ->groupBy('student_id');
+
+        foreach ($data as $studentRows) {
+
+            $first = $studentRows->first();
+
+            /*
+            |--------------------------------------------------------------------------
+            | STUDENT SUMMARY
+            |--------------------------------------------------------------------------
+            */
+
+            $lec = $this->percent(
+                $studentRows->sum('lecture_present_days'),
+                $studentRows->sum('lecture_working_days')
+            );
+
+            $tut = $this->percent(
+                $studentRows->sum('tute_present_days'),
+                $studentRows->sum('tute_working_days')
+            );
+
+            $prac = $this->percent(
+                $studentRows->sum('practical_present_days'),
+                $studentRows->sum('practical_working_days')
+            );
+
+            $values = collect([$lec, $tut, $prac])->filter(fn ($v) => $v > 0);
+
+            $overall = $values->count()
+                ? round($values->avg(), 2)
+                : 0;
+
+            /*
+            |--------------------------------------------------------------------------
+            | SUMMARY ROW
+            |--------------------------------------------------------------------------
+            */
+
+            $rows->push([
+                $first->student_name.' ('.$first->roll_number.')',
+                $first->department_name,
+                $first->course_name,
+                $first->semester_id,
+                $first->section,
+                $this->breakup ? 'STUDENT SUMMARY' : 'OVERALL SUMMARY',
+
+                '', '', $lec,
+                '', '', $tut,
+                '', '', $prac,
+                $overall,
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | PAPER ROWS (ONLY FOR MONTH REPORT)
+            |--------------------------------------------------------------------------
+            */
+
+            if ($this->breakup) {
+
+                foreach ($studentRows as $r) {
+
+                    $rows->push([
+                        '   → '.$r->paper_name,
+                        '', '', '', '', '',
+
+                        $r->lecture_working_days ?? 0,
+                        $r->lecture_present_days ?? 0,
+                        $this->percent($r->lecture_present_days, $r->lecture_working_days),
+
+                        $r->tute_working_days ?? 0,
+                        $r->tute_present_days ?? 0,
+                        $this->percent($r->tute_present_days, $r->tute_working_days),
+
+                        $r->practical_working_days ?? 0,
+                        $r->practical_present_days ?? 0,
+                        $this->percent($r->practical_present_days, $r->practical_working_days),
+
+                        '',
+                    ]);
+                }
+            }
+
+            if ($this->breakup) {
+                $rows->push(array_fill(0, 16, ''));
+            }
+        }
+
+        return $rows;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | BASIC HEADER STYLE
+    |--------------------------------------------------------------------------
+    */
+
     public function styles(Worksheet $sheet)
     {
         return [
@@ -221,117 +243,111 @@ class StudentAttendanceMasterExport implements
         ];
     }
 
-    /**
-     * ADVANCED STYLING & MERGING
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | EXCEL FORMATTING
+    |--------------------------------------------------------------------------
+    */
+
     public function registerEvents(): array
-{
-    return [
-        AfterSheet::class => function (AfterSheet $event) {
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
 
-            $sheet = $event->sheet->getDelegate();
-            $highestRow = $sheet->getHighestRow();
+                $sheet = $event->sheet->getDelegate();
+                $highestRow = $sheet->getHighestRow();
 
-            // Freeze header
-            $sheet->freezePane('A3');
+                $sheet->freezePane('A3');
 
-            // Header Styling
-            $sheet->getStyle('A1:P1')->applyFromArray([
-                'fill' => [
-                    'fillType' => Fill::FILL_SOLID,
-                    'color' => ['rgb' => '02317C']
-                ],
-                'font' => [
-                    'bold' => true,
-                    'color' => ['rgb' => 'FFFFFF']
-                ],
-                'alignment' => [
-                    'horizontal' => Alignment::HORIZONTAL_CENTER,
-                    'vertical'   => Alignment::VERTICAL_CENTER,
-                ],
-                'borders' => [
-                    'allBorders' => [
-                        'borderStyle' => Border::BORDER_THIN,
+                /*
+                | Header Merge
+                */
+
+                $sheet->mergeCells('A1:F1');
+                $sheet->mergeCells('G1:I1');
+                $sheet->mergeCells('J1:L1');
+                $sheet->mergeCells('M1:O1');
+                $sheet->mergeCells('P1:P2');
+
+                /*
+                | Header Style
+                */
+
+                $sheet->getStyle('A1:P1')->applyFromArray([
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'color' => ['rgb' => '02317C'],
                     ],
-                ],
-            ]);
-            $sheet->getStyle('A2:P2')->applyFromArray([
-                'fill' => [
-                    'fillType' => Fill::FILL_SOLID,
-                    'color' => ['rgb' => 'D9E1F2']
-                ],
-                'font' => [
-                    'bold' => true
-                ],
-                'alignment' => [
-                    'horizontal' => Alignment::HORIZONTAL_CENTER,
-                    'vertical'   => Alignment::VERTICAL_CENTER,
-                ],
-                'borders' => [
-                    'allBorders' => [
-                        'borderStyle' => Border::BORDER_THIN,
+                    'font' => [
+                        'bold' => true,
+                        'color' => ['rgb' => 'FFFFFF'],
                     ],
-                ],
-            ]);
-
-            // Loop rows for coloring
-            for ($row = 3; $row <= $highestRow; $row++) {
-
-                $studentCell = $sheet->getCell("F$row")->getValue();
-
-                // ===== STUDENT SUMMARY ROW =====
-                if ($studentCell === 'STUDENT SUMMARY') {
-
-                    $sheet->getStyle("A$row:P$row")->applyFromArray([
-                        'fill' => [
-                            'fillType' => Fill::FILL_SOLID,
-                            'color' => ['rgb' => 'BDD7EE'] // Blue
-                        ],
-                        'font' => [
-                            'bold' => true
-                        ]
-                    ]);
-                }
-
-                // ===== PERCENTAGE COLORING =====
-                foreach (['I','L','O','P'] as $col) {
-
-                    $value = $sheet->getCell("$col$row")->getValue();
-
-                    if (is_numeric($value)) {
-
-                        if ($value >= 75) {
-                            $color = 'C6EFCE'; // Green
-                        } elseif ($value >= 50) {
-                            $color = 'FFEB9C'; // Yellow
-                        } else {
-                            $color = 'FFC7CE'; // Red
-                        }
-
-                        $sheet->getStyle("$col$row")->applyFromArray([
-                            'fill' => [
-                                'fillType' => Fill::FILL_SOLID,
-                                'color' => ['rgb' => $color]
-                            ],
-                            'alignment' => [
-                                'horizontal' => Alignment::HORIZONTAL_CENTER,
-                            ],
-                        ]);
-                    }
-                }
-            }
-
-            // Full Table Borders
-            $sheet->getStyle("A1:P{$highestRow}")
-                ->applyFromArray([
-                    'borders' => [
-                        'allBorders' => [
-                            'borderStyle' => Border::BORDER_THIN,
-                        ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
                     ],
                 ]);
-        }
-    ];
-}
 
+                $sheet->getStyle('A2:P2')->applyFromArray([
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'color' => ['rgb' => 'D9E1F2'],
+                    ],
+                    'font' => [
+                        'bold' => true,
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]);
+
+                /*
+                | Percentage Coloring
+                */
+
+                for ($row = 3; $row <= $highestRow; $row++) {
+
+                    foreach (['I', 'L', 'O', 'P'] as $col) {
+
+                        $value = $sheet->getCell("$col$row")->getValue();
+
+                        if (is_numeric($value)) {
+
+                            if ($value >= 75) {
+                                $color = 'C6EFCE';
+                            } elseif ($value >= 50) {
+                                $color = 'FFEB9C';
+                            } else {
+                                $color = 'FFC7CE';
+                            }
+
+                            $sheet->getStyle("$col$row")->applyFromArray([
+                                'fill' => [
+                                    'fillType' => Fill::FILL_SOLID,
+                                    'color' => ['rgb' => $color],
+                                ],
+                                'alignment' => [
+                                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                                ],
+                            ]);
+                        }
+                    }
+                }
+
+                /*
+                | Borders
+                */
+
+                $sheet->getStyle("A1:P{$highestRow}")
+                    ->applyFromArray([
+                        'borders' => [
+                            'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN,
+                            ],
+                        ],
+                    ]);
+            },
+        ];
+    }
 }

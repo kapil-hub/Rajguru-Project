@@ -3,27 +3,32 @@
 namespace App\Jobs;
 
 use App\Exports\StudentAttendanceMasterExport;
-use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Maatwebsite\Excel\Facades\Excel;
 
 class GenerateAttendanceExcelJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $month;
+
     protected $year;
+
+    protected $breakup;
+
     protected $userId;
+
     protected $fileName;
 
-    public function __construct($month, $year, $userId)
+    public function __construct($month, $year, $breakup, $userId)
     {
         $this->month = $month;
-        $this->year  = $year;
+        $this->year = $year;
+        $this->breakup = $breakup;
         $this->userId = $userId;
         $this->fileName = "attendance_{$month}_{$year}_user_{$userId}.xlsx";
     }
@@ -31,8 +36,8 @@ class GenerateAttendanceExcelJob implements ShouldQueue
     public function handle()
     {
         Excel::store(
-            new StudentAttendanceMasterExport($this->month, $this->year),
-            "exports/" . $this->fileName,
+            new StudentAttendanceMasterExport($this->month, $this->year, $this->breakup),
+            'exports/'.$this->fileName,
             'public'
         );
 
