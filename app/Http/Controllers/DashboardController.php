@@ -2,22 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
-use App\Models\Student;
-use App\Models\Teacher;
-use App\Models\Paper;
-use App\Models\StudentAttendance;
-use App\Models\StudentPaper;
-use App\Models\StudentDailyAttendance;
 use App\Models\AttendanceSetting;
+use App\Models\Paper;
+use App\Models\Student;
+use App\Models\StudentAttendance;
+use App\Models\StudentDailyAttendance;
+use App\Models\StudentPaper;
+use App\Models\Teacher;
 use App\Models\TeacherClassAssignment;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-       if (Auth::guard('student')->check()) {
+        if (Auth::guard('student')->check()) {
 
             $studentId = auth('student')->id();
 
@@ -44,16 +43,16 @@ class DashboardController extends Controller
                 foreach ($records as $row) {
 
                     // Lecture
-                    $lectureHeld     += $row->lecture_working_days ?? 0;
-                    $lecturePresent  += $row->lecture_present_days ?? 0;
+                    $lectureHeld += $row->lecture_working_days ?? 0;
+                    $lecturePresent += $row->lecture_present_days ?? 0;
 
                     // Tute
-                    $tuteHeld        += $row->tute_working_days ?? 0;
-                    $tutePresent     += $row->tute_present_days ?? 0;
+                    $tuteHeld += $row->tute_working_days ?? 0;
+                    $tutePresent += $row->tute_present_days ?? 0;
 
                     // Practical
-                    $practicalHeld   += $row->practical_working_days ?? 0;
-                    $practicalPresent+= $row->practical_present_days ?? 0;
+                    $practicalHeld += $row->practical_working_days ?? 0;
+                    $practicalPresent += $row->practical_present_days ?? 0;
                 }
 
                 $totalHeld =
@@ -77,21 +76,27 @@ class DashboardController extends Controller
                 foreach ($records as $row) {
 
                     // Lecture
-                    if ($row->lecture !== null) {
+                    if ($row->lecture !== null && $row->lecture !== 0) {
                         $lectureHeld++;
-                        if ($row->lecture == 1) $lecturePresent++;
+                        if ($row->lecture == 1) {
+                            $lecturePresent++;
+                        }
                     }
 
                     // Tute
-                    if ($row->tute !== null) {
+                    if ($row->tute !== null && $row->tute !== 0) {
                         $tuteHeld++;
-                        if ($row->tute == 1) $tutePresent++;
+                        if ($row->tute == 1) {
+                            $tutePresent++;
+                        }
                     }
 
                     // Practical
-                    if ($row->practical !== null) {
+                    if ($row->practical !== null && $row->practical !== 0) {
                         $practicalHeld++;
-                        if ($row->practical == 1) $practicalPresent++;
+                        if ($row->practical == 1) {
+                            $practicalPresent++;
+                        }
                     }
                 }
 
@@ -131,17 +136,17 @@ class DashboardController extends Controller
             $teachers = Teacher::get()->count();
             $papers = Paper::get()->count();
 
-            return view('pages.dashboards.admin',compact('students','teachers','papers'));
+            return view('pages.dashboards.admin', compact('students', 'teachers', 'papers'));
         }
 
         if (Auth::guard('teacher')->check()) {
 
-            $teacher = Teacher::with('details')->where('id',auth('teacher')->user()->id)->first();
+            $teacher = Teacher::with('details')->where('id', auth('teacher')->user()->id)->first();
             $teacherSubjects = $teacher->details->count();
 
-            $assignedClasses = TeacherClassAssignment::where('teacher_id',auth('teacher')->user()->id)->get()->count();
+            $assignedClasses = TeacherClassAssignment::where('teacher_id', auth('teacher')->user()->id)->get()->count();
 
-            return view('pages.dashboards.teacher',compact('teacherSubjects','assignedClasses'));
+            return view('pages.dashboards.teacher', compact('teacherSubjects', 'assignedClasses'));
         }
 
         return redirect()->route('login');
