@@ -11,12 +11,45 @@
             ← Back
         </a>
     </div>
+    <!-- Attendance Warning Modal -->
+    <div id="attendanceModal"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
 
-    <form method="POST" action="{{ route('students.update', $student) }}"
+        <div class="bg-white w-[420px] rounded-xl shadow-xl p-6 text-center">
+
+    <h2 class="text-xl font-semibold text-purple-600 mb-4">
+        Attendance Found
+    </h2>
+
+    <p class="text-gray-600 mb-2">
+        Attendance exists for the following papers and will be deleted:
+    </p>
+
+    <ul id="attendancePapers"
+        class="text-sm text-red-600 mb-6 list-disc text-left pl-6"></ul>
+
+    <div class="flex justify-center gap-4">
+
+        <button id="cancelBtn"
+            class="px-5 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg">
+            Cancel
+        </button>
+
+        <button id="confirmBtn"
+            class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+            Yes Delete
+        </button>
+
+    </div>
+
+</div>
+
+    </div>
+    <form method="POST" id="studentForm" action="{{ route('students.update', $student) }}"
           class="bg-white rounded-xl shadow p-6 space-y-8">
         @csrf
         @method('PUT')
-
+        <input type="hidden" id="confirm_delete_attendance" name="confirm_delete_attendance" value="0">
         <!-- ================= BASIC INFORMATION ================= -->
         <section>
             <h3 class="text-lg font-semibold mb-4">Basic Information</h3>
@@ -381,7 +414,74 @@ function removePaper(btn) {
 </script>
 
 
+<script>
+
+let allowSubmit = false;
+
+document.getElementById("studentForm").addEventListener("submit", function(e){
+
+    if(allowSubmit) return;
+
+    e.preventDefault();
+
+    let form = this;
+    let formData = new FormData(form);
+
+    fetch(form.action,{
+        method:"POST",
+        headers:{
+            "X-CSRF-TOKEN":document.querySelector('meta[name="csrf-token"]').content,
+            "Accept":"application/json",
+            "X-Requested-With":"XMLHttpRequest"
+        },
+        body:formData
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if(data.attendance_found){
+
+            let list = document.getElementById("attendancePapers");
+            list.innerHTML = "";
+
+            data.papers.forEach(function(paper){
+                let li = document.createElement("li");
+                li.textContent = paper;
+                list.appendChild(li);
+            });
+
+            document.getElementById("attendanceModal").classList.remove("hidden");
+            document.getElementById("attendanceModal").classList.add("flex");
+
+        }else{
+
+            allowSubmit = true;
+            form.submit(); // normal form submit
+
+        }
+
+    })
+    .catch(err => console.error(err));
+
+});
 
 
+document.getElementById("confirmBtn").addEventListener("click", function(){
+
+    document.getElementById("confirm_delete_attendance").value = 1;
+
+    allowSubmit = true;
+
+    document.getElementById("studentForm").submit();
+});
+
+
+document.getElementById("cancelBtn").addEventListener("click", function(){
+
+    document.getElementById("attendanceModal").classList.add("hidden");
+
+});
+
+</script>
 
 @endsection
