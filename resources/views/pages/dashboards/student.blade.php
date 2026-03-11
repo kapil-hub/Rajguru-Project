@@ -15,7 +15,7 @@
     $lecturePercent   = percent($lecturePresent, $lectureHeld);
     $tutePercent      = percent($tutePresent, $tuteHeld);
     $practicalPercent = percent($practicalPresent, $practicalHeld);
-    $attendancePercent = ($lecturePercent + $tutePercent + $practicalPercent) / count(array_filter([$lectureHeld+ $tuteHeld + $practicalHeld]))
+    $attendancePercent = ($lecturePercent + $tutePercent + $practicalPercent) / count(array_filter([$lectureHeld, $tuteHeld ,$practicalHeld]))
 @endphp
 
 <div class="max-w-7xl mx-auto rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
@@ -33,7 +33,7 @@
         <div class="bg-white p-6 rounded-xl shadow border">
             <p class="text-sm text-gray-500">Overall Attendance</p>
             <p class="text-3xl font-bold {{ explode(' ', colorClass($attendancePercent))[1] }}">
-                {{ $attendancePercent }}%
+                {{ round($attendancePercent,2) }}%
             </p>
         </div>
 
