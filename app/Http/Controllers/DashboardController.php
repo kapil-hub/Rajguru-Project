@@ -125,6 +125,8 @@ class DashboardController extends Controller
                 'practicalHeld',
                 'practicalPresent',
                 'setting',
+                'totalHeld',
+                'totalPresent',
                 'attendancePercent'
             ));
         }

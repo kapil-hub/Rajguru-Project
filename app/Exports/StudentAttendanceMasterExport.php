@@ -158,11 +158,18 @@ class StudentAttendanceMasterExport implements FromCollection, ShouldAutoSize, W
                 $studentRows->sum('practical_working_days')
             );
 
-            $values = collect([$lec, $tut, $prac])->filter(fn ($v) => $v > 0);
-
-            $overall = $values->count()
-                ? round($values->avg(), 2)
-                : 0;
+            // $values = collect([$lec, $tut, $prac])->filter(fn ($v) => $v > 0);
+            $overall = $this->percent(
+                $studentRows->sum('lecture_present_days')
+                + $studentRows->sum('tute_present_days')
+                + $studentRows->sum('practical_present_days'),
+                $studentRows->sum('lecture_working_days')
+                + $studentRows->sum('tute_working_days')
+                + $studentRows->sum('practical_working_days')
+            );
+            // $overall = $values->count()
+            //     ? round($values->avg(), 2)
+            //     : 0;
 
             /*
             |--------------------------------------------------------------------------
