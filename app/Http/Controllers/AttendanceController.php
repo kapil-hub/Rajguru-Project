@@ -37,6 +37,7 @@ class AttendanceController extends Controller
             // ->where('section', $request->section)
             ->where('paper_master_id', $request->paper_id);
         })->get();
+       
         $attendance = StudentAttendance::where('paper_master_id', $request->paper_id)
             // ->where('attendance_date', $date)
             ->get()
@@ -133,9 +134,10 @@ class AttendanceController extends Controller
             // Case 1: DSC / DSE → course required
             $q->whereHas('papers', function ($p) use ($assignment) {
                     $p->where('paper_master_id', $assignment->paper_master_id)
-                    ->whereHas('paper', function ($pm) {
-                        $pm->whereIn('paper_type', ['DSC', 'DSE']);
-                    });
+                        ->whereHas('paper', function ($pm) {
+                            $pm->whereIn('paper_type', ['DSC', 'DSE']);
+                        })
+                        ->where("is_backlog",0);
                 })
                 ->whereHas('academic', function ($a) use ($assignment) {
                     $a->where('course_id', $assignment->course_id);
@@ -152,7 +154,7 @@ class AttendanceController extends Controller
         })
         ->orderBy('name')
         ->get();
-
+      
         
         $oldAttendences = StudentAttendance::where(
                 [
