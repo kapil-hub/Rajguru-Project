@@ -27,7 +27,11 @@ class BlankPaperTemplate implements
             'Status (Active / Inactive)',
             'Credit Of Lectures',
             'Credit Of Tutorials',
-            'Credit Of Practicals'
+            'Credit Of Practicals',
+            'Eligibilty',
+            'Prereqisites',
+            'Capping',
+            'Remark'
         ];
     }
 
@@ -39,11 +43,11 @@ class BlankPaperTemplate implements
     public function styles(Worksheet $sheet)
     {
         /** 🔒 Lock header row */
-        $sheet->getStyle('A1:J1')->getProtection()
+        $sheet->getStyle('A1:N1')->getProtection()
             ->setLocked(Protection::PROTECTION_PROTECTED);
 
         /** 🔓 Unlock all other rows for data entry */
-        $sheet->getStyle('A2:J1000')->getProtection()
+        $sheet->getStyle('A2:N5000')->getProtection()
             ->setLocked(Protection::PROTECTION_UNPROTECTED);
 
         /** 🔐 Protect the sheet */
