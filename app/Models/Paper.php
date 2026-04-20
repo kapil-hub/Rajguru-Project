@@ -16,4 +16,8 @@ class Paper extends Model
     public function course(){
        return $this->hasOne('App\Models\Courses','id','course_id');
     }
+
+    public function students(){
+      return $this->hasMany(StudentPaper::class,'paper_master_id');
+    }
 }
