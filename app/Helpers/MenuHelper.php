@@ -172,6 +172,13 @@ class MenuHelper
                 'permission' => auth('admin')->check() ? true : False,
                 'class' => request()->routeIs('admin.attendance.master') ? 'menu-item-active' : 'menu-item-inactive',
             ],
+            [
+                'icon' => 'pages',
+                'name' => 'How To Choose Next Semester Subjects ',
+                'path' => '/students/notification/',
+                'permission' => auth('student')->check() ? true : False,
+                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
         ];
     }
 
