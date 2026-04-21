@@ -17,6 +17,10 @@ use App\Http\Controllers\Registration\RegistrationController;
 use App\Http\Controllers\Admin\RegistrationWindowController;
 use App\Http\Controllers\Admin\AdminAttendanceController;
 use App\Livewire\Teacher\PracticalMarks;
+use App\Http\Controllers\NotificationController;
+
+
+
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
@@ -153,6 +157,7 @@ Route::middleware('auth:admin')->group(function() {
 
 
             Route::post('/', [StudentController::class, 'store'])->name('store');
+
     });
 
     Route::get('admin/attendance-monitoring', 
@@ -200,6 +205,15 @@ Route::middleware('auth:admin,student')->group(function() {
          Route::get('/my-attendance',
             [StudentAttendanceController::class, 'index']
         )->name('student.attendance.index');
+
+
+        Route::get('/notification', [NotificationController::class, 'view'])
+            ->name('notification.view');
+
+        Route::get('/notification/download', [NotificationController::class, 'download'])
+            ->name('notification.download');
+
+
         Route::get('/{student}', [StudentController::class, 'show'])->name('show');
 
 
@@ -212,6 +226,11 @@ Route::middleware('auth:admin,student')->group(function() {
            Route::post('registration/{student}',
             [RegistrationController::class,'store']
         )->name('registration.store');
+
+       
+
+
+
     });
 });
 
@@ -267,7 +286,7 @@ Route::middleware('auth:admin')
         });
 
     });
-
+    
 
 
 
