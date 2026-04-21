@@ -174,7 +174,7 @@ class MenuHelper
             ],
             [
                 'icon' => 'pages',
-                'name' => 'How To Choose Next Semester Subjects ',
+                'name' => 'Notification',
                 'path' => '/students/notification/',
                 'permission' => auth('student')->check() ? true : False,
                 'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
