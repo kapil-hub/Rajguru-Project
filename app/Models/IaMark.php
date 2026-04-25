@@ -13,6 +13,7 @@ class IaMark extends Model
         'semester_id',
         'section',
         'tute_ca',
+        'tute_attendance',
         'class_test',
         'assignment',
         'attendance',

@@ -28,13 +28,17 @@ if (!function_exists('tutorialMarksBreakup')) {
             return [
             'ca'  => 0,
             'activities'=>0,
-            'attendance'=>0
+            'attendance'=>0,
+            'total_tute' => $total,
+            'ia_breakup' => iaBreakup(5),
         ];
         }
         return [
             'ca'  => $total,
             'activities'=>35,
-            'attendance'=>5
+            'attendance'=>5,
+            'total_tute' => $total,
+            'ia_breakup' => iaBreakup(5),
         ];
     }
 }
@@ -49,6 +53,7 @@ if (!function_exists('practicalMarksBreakup')) {
             'ca' => round($total * 0.25),
             'written_exam' => round($total * 0.50),
             'viva_voce' => round($total * 0.25),
+            'total'=>$total
         ];
     }
 }
@@ -62,6 +67,7 @@ if (!function_exists('iaBreakup')) {
             'class_test' => round($iaMarks * 0.40),
             'assignment' => round($iaMarks * 0.40),
             'attendance' => round($iaMarks * 0.20),
+            'total'=> $iaMarks,
         ];
     }
 }

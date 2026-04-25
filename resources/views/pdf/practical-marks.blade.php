@@ -113,10 +113,15 @@
                 <th>Semester</th>
                 <th>Roll No</th>
                 <th>College Roll</th>
-                <th class="center">CA</th>
-                <th class="center">ESP</th>
-                <th class="center">Viva</th>
-                <th class="center">Total</th>
+                @if($showTotalOnly)
+                    <th class="center">Total</th>
+                    <th class="center">Grand Total</th>
+                @else
+                    <th class="center">CA</th>
+                    <th class="center">ESP</th>
+                    <th class="center">Viva</th>
+                    <th class="center">Total</th>
+                @endif
             </tr>
         </thead>
 
@@ -136,12 +141,17 @@
                     </td>
                     <td>{{ $record->student->academic->roll_number ?? '-' }}</td>
                     <td>{{ $record->student->academic->college_roll_number ?? '-' }}</td>
+                    @if($showTotalOnly)
+                        <td class="center total">{{ $record->total_marks }}</td>
+                        <td class="center total">{{ $record->total_marks }}</td>
+                    @else
 
-                    <td class="center">{{ $record->continuous_assessment }}</td>
-                    <td class="center">{{ $record->end_sem_practical }}</td>
-                    <td class="center">{{ $record->viva_voce }}</td>
+                        <td class="center">{{ $record->continuous_assessment }}</td>
+                        <td class="center">{{ $record->end_sem_practical }}</td>
+                        <td class="center">{{ $record->viva_voce }}</td>
 
-                    <td class="center total">{{ $record->total_marks }}</td>
+                        <td class="center total">{{ $record->total_marks }}</td>
+                    @endif
                 </tr>
             @endforeach
         </tbody>

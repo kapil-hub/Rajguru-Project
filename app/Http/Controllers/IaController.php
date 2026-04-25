@@ -18,7 +18,7 @@ class IaController extends Controller
 {
     public function index($paperId){
         $paper = Paper::where("id",$paperId)->get()->first();
-
+        // dd($paper->toArray());
         return view("pages.teacher.ia-attendance",compact('paper'));
     }
 
@@ -80,8 +80,8 @@ public function loadStudents(Request $request)
                 'course_id' => $request->course_id,
                 'semester_id' => $request->semester_id,
                 'section' => $request->section,
-
                 'tute_ca' => $request->tuteCaMarks[$studentId] ?? null,
+                'tute_attendance'=>$request->tuteAttendanceMarks[$studentId] ?? null,
                 'class_test' => $request->iaclassTest[$studentId] ?? null,
                 'assignment' => $request->iaAssignment[$studentId] ?? null,
                 'attendance' => $request->iaAttendance[$studentId] ?? null,
@@ -229,11 +229,13 @@ public function history()
     $teacherId = auth('teacher')->id();
     $paper = Paper::findOrFail($paperId);
     $marks = IaMark::with('student')
-        ->where('paper_master_id', $paperId)
-        ->where('semester_id', $semesterId)
-        ->where('section', $section)
-        ->where('created_by', $teacherId)
-        ->orderBy('student_id')
+        ->join('student_users', 'student_users.id', '=', 'ia_marks.student_id')
+        ->where('ia_marks.paper_master_id', $paperId)
+        ->where('ia_marks.semester_id', $semesterId)
+        ->where('ia_marks.section', $section)
+        ->where('ia_marks.created_by', $teacherId)
+        ->orderBy('student_users.name')
+        ->select('ia_marks.*') 
         ->get();
 
         abort_if($marks->isEmpty(), 403, 'Unauthorized access');

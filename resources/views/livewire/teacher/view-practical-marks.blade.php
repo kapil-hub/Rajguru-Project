@@ -23,7 +23,7 @@
 
                     <button wire:click="viewStudents({{ $subject->id }})"
                         class="mt-4 px-5 py-2 bg-indigo-600 text-white 
-                                                                                                                                                                                                                                       rounded-xl hover:bg-indigo-700 transition">
+                                                                                                                                                                                                                                                               rounded-xl hover:bg-indigo-700 transition">
 
                         View Students
                     </button>
@@ -104,10 +104,15 @@
                             <th class="px-4 py-3">Student Program Code / Semester</th>
                             <th class="px-4 py-3">Roll No</th>
                             <th class="px-4 py-3">College Roll No</th>
-                            <th class="px-4 py-3 text-center">CA</th>
-                            <th class="px-4 py-3 text-center">ESP</th>
-                            <th class="px-4 py-3 text-center">Viva</th>
-                            <th class="px-4 py-3 text-center">Total</th>
+                            @if($this->isOnlyTotal())
+                                <th class="px-4 py-3 text-center">Total Practical</th>
+                                <th class="px-4 py-3 text-center">Grand Total</th>
+                            @else
+                                <th class="px-4 py-3 text-center">CA</th>
+                                <th class="px-4 py-3 text-center">ESP</th>
+                                <th class="px-4 py-3 text-center">Viva</th>
+                                <th class="px-4 py-3 text-center">Grand Total</th>
+                            @endif
                         </tr>
                     </thead>
 
@@ -132,21 +137,30 @@
                                 <td class="px-4 py-3">
                                     {{ $record->student->academic->college_roll_number ?? '-' }}
                                 </td>
-                                <td class="px-4 py-3 text-center">
-                                    {{ $record->continuous_assessment }}
-                                </td>
+                                @if($this->isOnlyTotal())
+                                    <td class="px-4 py-3 text-center font-bold text-indigo-600">
+                                        {{ $record->total_marks }}
+                                    </td>
+                                    <td class="px-4 py-3 text-center font-bold text-indigo-600">
+                                        {{ $record->total_marks }}
+                                    </td>
+                                @else
+                                    <td class="px-4 py-3 text-center">
+                                        {{ $record->continuous_assessment }}
+                                    </td>
 
-                                <td class="px-4 py-3 text-center">
-                                    {{ $record->end_sem_practical }}
-                                </td>
+                                    <td class="px-4 py-3 text-center">
+                                        {{ $record->end_sem_practical }}
+                                    </td>
 
-                                <td class="px-4 py-3 text-center">
-                                    {{ $record->viva_voce }}
-                                </td>
+                                    <td class="px-4 py-3 text-center">
+                                        {{ $record->viva_voce }}
+                                    </td>
 
-                                <td class="px-4 py-3 text-center font-bold text-indigo-600">
-                                    {{ $record->total_marks }}
-                                </td>
+                                    <td class="px-4 py-3 text-center font-bold text-indigo-600">
+                                        {{ $record->total_marks }}
+                                    </td>
+                                @endif
 
                             </tr>
 

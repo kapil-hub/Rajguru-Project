@@ -17,6 +17,7 @@ class PracticalMarks extends Component
     public $marks = [];
     public $practicleBreakup = [];
     public $showStudents = false;
+    public $paper =[];
 
     public function mount()
     {
@@ -62,6 +63,7 @@ class PracticalMarks extends Component
                 'ca'   => $existing->continuous_assessment ?? 0,
                 'esp'  => $existing->end_sem_practical ?? 0,
                 'viva' => $existing->viva_voce ?? 0,
+                'total' => $existing->total_marks ?? 0,
             ];
         }
         
@@ -71,13 +73,40 @@ class PracticalMarks extends Component
             session()->flash('error', 'Selected Paper does not has practical');
             return;
         }
+        $this->paper = Paper::where('id',$this->selectedPaper)->first();
+      
         $this->practicleBreakup = practicalMarksBreakup($credit);
 
         $this->showStudents = true;
     }
 
+
+    public function isOnlyTotal()
+{
+    if (!$this->paper) return false;
+
+    $p = $this->paper;
+
+    return (
+        (
+            in_array($p->paper_type, ['SEC', 'VAC']) &&
+            $p->number_of_lectures == 0 &&
+            $p->number_of_tutorials == 0 &&
+            $p->number_of_practicals == 2
+        )
+        ||
+        (
+            in_array($p->paper_type, ['SEC', 'VAC', 'AEC']) &&
+            $p->number_of_lectures == 1 &&
+            $p->number_of_tutorials == 0 &&
+            $p->number_of_practicals == 1
+        )
+    );
+}
     public function updatedMarks($value, $key)
     {
+  
+    
         // $key format: studentId.field (example: 5.ca)
         [$studentId, $field] = explode('.', $key);
 
@@ -85,6 +114,7 @@ class PracticalMarks extends Component
             'ca' => $this->practicleBreakup['ca'],
             'esp' => $this->practicleBreakup['written_exam'],
             'viva' => $this->practicleBreakup['viva_voce'],
+            'total' => $this->practicleBreakup['total'],
         ];
 
         if (isset($maxLimits[$field]) && $value > $maxLimits[$field]) {
@@ -103,6 +133,7 @@ class PracticalMarks extends Component
             $ca   = $this->marks[$student->id]['ca'] ?? 0;
             $esp  = $this->marks[$student->id]['esp'] ?? 0;
             $viva = $this->marks[$student->id]['viva'] ?? 0;
+            $total = $this->marks[$student->id]['total'] ?? 0;
 
             StudentPracticalMark::updateOrCreate(
                 [
@@ -114,7 +145,7 @@ class PracticalMarks extends Component
                     'continuous_assessment' => $ca,
                     'end_sem_practical'     => $esp,
                     'viva_voce'             => $viva,
-                    'total_marks'           => $ca + $esp + $viva,
+                    'total_marks'           => $total ?? ($ca + $esp + $viva),
                 ]
             );
         }
