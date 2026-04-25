@@ -17,6 +17,7 @@ class ViewPracticalMarks extends Component
     public $showStudents = false;
     public $selectedSubject = null;
     public $assignment = [];
+   
 
     public function mount()
     {
@@ -41,6 +42,30 @@ class ViewPracticalMarks extends Component
         $this->showStudents = true;
     }
 
+     public function isOnlyTotal()
+{
+    if (!$this->selectedSubject) return false;
+
+    $p = $this->selectedSubject;
+
+    return (
+        (
+            in_array($p->paper_type, ['SEC', 'VAC']) &&
+            $p->number_of_lectures == 0 &&
+            $p->number_of_tutorials == 0 &&
+            $p->number_of_practicals == 2
+        )
+        ||
+        (
+            in_array($p->paper_type, ['SEC', 'VAC', 'AEC']) &&
+            $p->number_of_lectures == 1 &&
+            $p->number_of_tutorials == 0 &&
+            $p->number_of_practicals == 1
+        )
+    );
+}
+
+
     public function downloadPdf()
     {
         if (!$this->selectedSubject) {
@@ -51,6 +76,7 @@ class ViewPracticalMarks extends Component
             'subject' => $this->selectedSubject,
             'students' => $this->students,
             'assignment' => $this->assignment,
+            'showTotalOnly'=>$this->isOnlyTotal(),
         ])->setPaper('a4', 'landscape');
 
         return response()->streamDownload(
