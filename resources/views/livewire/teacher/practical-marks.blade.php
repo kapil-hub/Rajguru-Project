@@ -83,7 +83,7 @@
                                     Viva <br>(max: <b>{{$practicleBreakup['viva_voce']}}</b>)
                                 </th>
                                 <th class="px-4 py-3 text-center">
-                                    Grand Total <br>(max: <b>{{array_sum($practicleBreakup)}}</b>)
+                                    Grand Total <br>(max: <b>{{$practicleBreakup['total']}}</b>)
                                 </th>
                             @endif
                         </tr>
@@ -92,19 +92,21 @@
                     <tbody class="divide-y">
 
                         @forelse($students as $index => $student)
-                            <tr wire:key="student-{{ $student->id }}" x-data="{
-                                                                    ca: {{ $marks[$student->id]['ca'] ?? 'null' }},
-                                                                    esp: {{ $marks[$student->id]['esp'] ?? 'null' }},
-                                                                    viva: {{ $marks[$student->id]['viva'] ?? 'null' }},
-                                                                    total: {{ $marks[$student->id]['total_marks'] ?? 'null' }},
-                                                                    get grandTotal() {
-                                                                        return this.total
-                                                                            ? Number(this.total)
-                                                                            : (Number(this.ca) || 0)
-                                                                                + (Number(this.esp) || 0)
-                                                                                + (Number(this.viva) || 0);
-                                                                    }
-                                                                }" class="hover:bg-gray-50 transition">
+                            <tr wire:key="student-{{ $student->id }}"
+                                x-data="{
+                                                                                ca: {{ $marks[$student->id]['ca'] ?? 'null' }},
+                                                                                esp: {{ $marks[$student->id]['esp'] ?? 'null' }},
+                                                                                viva: {{ $marks[$student->id]['viva'] ?? 'null' }},
+                                                                                total: {{ $marks[$student->id]['total_marks'] ?? 'null' }},
+                                                                                get grandTotal() {
+                                                                                    return this.total
+                                                                                        ? Number(this.total)
+                                                                                        : (Number(this.ca) || 0)
+                                                                                            + (Number(this.esp) || 0)
+                                                                                            + (Number(this.viva) || 0);
+                                                                                }
+                                                                                                                                                                                                                }"
+                                class="hover:bg-gray-50 transition">
 
                                 <td class="px-4 py-3">
                                     {{ $index + 1 }}
@@ -133,7 +135,7 @@
 
                                     <td class="px-4 py-3 text-center">
                                         <input type="number" min="0" max="{{ $practicleBreakup['total'] }}"
-                                            wire:model.defer="marks.{{ $student->id }}.total" x-model="total"
+                                            wire:model.blur="marks.{{ $student->id }}.total" x-model="total"
                                             class="w-20 p-2 border rounded-lg text-center">
                                     </td>
                                     <td class="px-4 py-3 text-center font-semibold text-indigo-600" x-text="grandTotal">
@@ -142,21 +144,21 @@
 
                                     <td class="px-4 py-3 text-center">
                                         <input type="number" min="0" max="{{ $practicleBreakup['ca'] }}"
-                                            wire:model.defer="marks.{{ $student->id }}.ca" x-model="ca"
+                                            wire:model.blur="marks.{{ $student->id }}.ca" x-model="ca"
                                             class="w-20 p-2 border rounded-lg text-center">
                                     </td>
 
                                     <!-- ESP -->
                                     <td class="px-4 py-3 text-center">
                                         <input type="number" min="0" max="{{ $practicleBreakup['written_exam'] }}"
-                                            wire:model.defer="marks.{{ $student->id }}.esp" x-model="esp"
+                                            wire:model.blur="marks.{{ $student->id }}.esp" x-model="esp"
                                             class="w-20 p-2 border rounded-lg text-center">
                                     </td>
 
                                     <!-- Viva -->
                                     <td class="px-4 py-3 text-center">
                                         <input type="number" min="0" max="{{ $practicleBreakup['viva_voce'] }}"
-                                            wire:model.defer="marks.{{ $student->id }}.viva" x-model="viva"
+                                            wire:model.blur="marks.{{ $student->id }}.viva" x-model="viva"
                                             class="w-20 p-2 border rounded-lg text-center">
                                     </td>
 
@@ -183,7 +185,7 @@
             <div class="mt-6 text-right">
                 <button wire:click="saveMarks" wire:loading.attr="disabled" wire:target="saveMarks"
                     class="px-8 py-3 bg-green-600 text-white rounded-xl
-                                                                                                                                                                                                                                                                                                                                                                                                                                                   hover:bg-green-700 transition shadow-md">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           hover:bg-green-700 transition shadow-md">
 
                     <span wire:loading.remove wire:target="saveMarks">
                         Save Marks
