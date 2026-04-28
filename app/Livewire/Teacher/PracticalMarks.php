@@ -48,7 +48,7 @@ class PracticalMarks extends Component
         $this->students = Student::with(['academic', 'papers'])
             ->whereHas('papers', function ($q) {
                 $q->where('paper_master_id', $this->selectedPaper);
-            })
+            })->orderBy('name','asc')
             ->get();
 
         // Preload existing marks
@@ -103,28 +103,45 @@ class PracticalMarks extends Component
         )
     );
 }
-    public function updatedMarks($value, $key)
-    {
-  
-    
-        // $key format: studentId.field (example: 5.ca)
-        [$studentId, $field] = explode('.', $key);
-
-        $maxLimits = [
-            'ca' => $this->practicleBreakup['ca'],
-            'esp' => $this->practicleBreakup['written_exam'],
-            'viva' => $this->practicleBreakup['viva_voce'],
-            'total' => $this->practicleBreakup['total'],
-        ];
-
-        if (isset($maxLimits[$field]) && $value > $maxLimits[$field]) {
-
-            // Reset to max value
-            $this->marks[$studentId][$field] = $maxLimits[$field];
-
-            session()->flash('error', ucfirst($field) . " marks cannot be greater than " . $maxLimits[$field]);
-        }
+    public function updated($property, $value)
+{
+    // Only handle marks updates
+    if (!str_starts_with($property, 'marks.')) {
+        return;
     }
+
+    // marks.5.ca → [marks, 5, ca]
+    $parts = explode('.', $property);
+
+    if (count($parts) !== 3) {
+        return;
+    }
+
+    [, $studentId, $field] = $parts;
+
+    $maxLimits = [
+        'ca'    => $this->practicleBreakup['ca'] ?? 0,
+        'esp'   => $this->practicleBreakup['written_exam'] ?? 0,
+        'viva'  => $this->practicleBreakup['viva_voce'] ?? 0,
+        'total' => $this->practicleBreakup['total'] ?? 0,
+    ];
+
+    // Prevent negative values
+    if ($value < 0) {
+        $this->marks[$studentId][$field] = 0;
+        return;
+    }
+
+    // Enforce max limit
+    if (isset($maxLimits[$field]) && $value > $maxLimits[$field]) {
+        $this->marks[$studentId][$field] = $maxLimits[$field];
+
+        session()->flash(
+            'error',
+            ucfirst($field) . " cannot be greater than " . $maxLimits[$field]
+        );
+    }
+}
 
     public function saveMarks()
     {
@@ -133,7 +150,8 @@ class PracticalMarks extends Component
             $ca   = $this->marks[$student->id]['ca'] ?? 0;
             $esp  = $this->marks[$student->id]['esp'] ?? 0;
             $viva = $this->marks[$student->id]['viva'] ?? 0;
-            $total = $this->marks[$student->id]['total'] ?? 0;
+            $total = ($this->marks[$student->id]['total'] != 0 ) ? $this->marks[$student->id]['total']
+                     : ($ca + $esp + $viva);
 
             StudentPracticalMark::updateOrCreate(
                 [

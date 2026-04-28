@@ -35,8 +35,11 @@ class ViewPracticalMarks extends Component
     {
         $this->selectedSubject = $this->subjects->firstWhere('id', $id);
         $this->selectedPaper = $id;
-        $this->students = StudentPracticalMark::with(['student.academic'])
-            ->where('paper_id', $id)
+       $this->students = StudentPracticalMark::with(['student.academic'])
+            ->join('student_users', 'student_practical_marks.student_id', '=', 'student_users.id')
+            ->where('student_practical_marks.paper_id', $id)
+            ->orderBy('student_users.name', 'asc')
+            ->select('student_practical_marks.*') // important to avoid column conflicts
             ->get();
         $this->assignment = TeacherClassAssignment::where("teacher_id", Auth::id())->where('paper_master_id', $id)->first();
         $this->showStudents = true;
