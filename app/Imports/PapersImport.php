@@ -55,6 +55,7 @@ class PapersImport implements ToCollection, WithHeadingRow, SkipsEmptyRows
             $duplicate = Paper::where([
                 'dept_id'   => $department->id,
                 'course_id' => $course->id,
+                'semester' => $course->semester,
                 'code'      => trim($row['paper_code']),
             ])->exists();
 
