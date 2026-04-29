@@ -150,8 +150,12 @@ class PracticalMarks extends Component
             $ca   = $this->marks[$student->id]['ca'] ?? 0;
             $esp  = $this->marks[$student->id]['esp'] ?? 0;
             $viva = $this->marks[$student->id]['viva'] ?? 0;
-            $total = ($this->marks[$student->id]['total'] != 0 ) ? $this->marks[$student->id]['total']
-                     : ($ca + $esp + $viva);
+            if($this->isOnlyTotal()){
+                $total =  $this->marks[$student->id]['total'];
+            }else{
+                $total =  $ca + $esp + $viva;
+            }
+           
 
             StudentPracticalMark::updateOrCreate(
                 [
