@@ -11,7 +11,11 @@
             {{ session('message') }}
         </div>
     @endif
-
+    @if (session()->has('error'))
+        <div class="bg-red-100 p-2 mb-3 rounded">
+            {{ session('error') }}
+        </div>
+    @endif
     <!-- ✅ GLOBAL LOADER -->
     <div wire:loading.flex wire:target.except="student_user_id"
         class="fixed inset-0 bg-black bg-opacity-40 z-50 items-center justify-center">
@@ -40,6 +44,9 @@
                         </option>
                     @endforeach
                 </select>
+                @error('student_user_id')
+                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                @enderror
             </div>
 
             <!-- ✅ Loader when student changes -->
@@ -67,15 +74,23 @@
                     @endforeach
 
                 </select>
+                @error('paper_master_id')
+                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                @enderror
 
             </div>
 
             <!-- Log Count -->
             <input type="number" wire:model="log_count" placeholder="Log Count" class="border p-2 rounded w-full">
-
+            @error('log_count')
+                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+            @enderror
             <!-- Remark -->
             <input type="text" wire:model="remark" placeholder="Remark" class="border p-2 rounded w-full md:col-span-3">
 
+            @error('remark')
+                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+            @enderror
         </div>
 
         <div class="mt-4 flex gap-2">
