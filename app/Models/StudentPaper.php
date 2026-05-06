@@ -14,4 +14,7 @@ class StudentPaper extends Model
         return $this->belongsTo(Paper::class,'paper_master_id');
     }
     
+    
+
+
 }

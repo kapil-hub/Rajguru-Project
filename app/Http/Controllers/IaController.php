@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use App\Models\AttendanceSetting;
 use App\Models\StudentDailyAttendance;
 use App\Models\IaMark;
+use App\Models\StudentLog;
 use Auth;
 use DB;
 
@@ -124,7 +125,7 @@ public function loadStudents(Request $request)
         })
         ->orderBy('name')
         ->get();
-        
+      
         $oldAttendences = StudentAttendance::where(
                 [
                     'paper_master_id' => $assignment->paper_master_id,
@@ -132,7 +133,7 @@ public function loadStudents(Request $request)
                     'semester_id'     => $assignment->semester_id,
                 ]
             )->get()->groupBy('student_id');
-            
+           
         $oldAttendences = $oldAttendences->map(function ($records) {
 
                 $first = $records->first();
@@ -145,7 +146,8 @@ public function loadStudents(Request $request)
 
                 $practicalWorking = $records->sum('practical_working_days');
                 $practicalPresent = $records->sum('practical_present_days');
-
+                $log = StudentLog::where("student_user_id",$first['student_id'])->where('paper_master_id',$first['paper_master_id'])->first();
+                $logCount = (int) $log->log_count ?? 0;
                 return [
                     'student_id' => $first['student_id'],
                     'teacher_id' => $first['teacher_id'],
@@ -164,7 +166,7 @@ public function loadStudents(Request $request)
 
                     // PERCENTAGES
                     'lecture_percentage' => $lectureWorking > 0
-                        ? round(($lecturePresent / $lectureWorking) * 100, 2)
+                        ? round(($lecturePresent+ $logCount) / ($lectureWorking) * 100, 2)
                         : 0,
 
                     'tute_percentage' => $tuteWorking > 0
