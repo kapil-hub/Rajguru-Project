@@ -62,6 +62,14 @@ class StudentLogs extends Component
             'paper_master_id' => 'required',
             'log_count' => 'required|integer',
         ]);
+         $exists = StudentLog::where('student_user_id', $this->student_user_id)
+            ->where('paper_master_id', $this->paper_master_id)
+            ->exists();
+
+        if ($exists) {
+            session()->flash('error', 'This student already has a log for this paper.');
+            return;
+        }
 
         StudentLog::create([
             'student_user_id' => $this->student_user_id,
