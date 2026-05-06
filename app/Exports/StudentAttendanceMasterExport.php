@@ -16,9 +16,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class StudentAttendanceMasterExport implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings
 {
     protected $month;
-
     protected $year;
-
     protected $breakup;
 
     public function __construct($month, $year, $breakup)
@@ -28,68 +26,37 @@ class StudentAttendanceMasterExport implements FromCollection, ShouldAutoSize, W
         $this->breakup = $breakup;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | HEADERS
-    |--------------------------------------------------------------------------
-    */
-
+    /* ================= HEADINGS ================= */
     public function headings(): array
     {
         return [
             [
-                'Student Info', '', '', '', '', '',
-                'Lecture', '', '',
-                'Tutorial', '', '',
-                'Practical', '', '',
-                'Overall',
+                'Student Info','','','','','',
+                'Lecture','','',
+                'Tutorial','','',
+                'Practical','','',
+                'Total','',''
+            
             ],
             [
-                'Student',
-                'Department',
-                'Course',
-                'Semester',
-                'Section',
-                'Paper',
+                'Student','Department','Course','Semester','Section','Paper',
 
-                'Classes Held',
-                'Classes Attended',
-                '%',
-
-                'Classes Held',
-                'Classes Attended',
-                '%',
-
-                'Classes Held',
-                'Classes Attended',
-                '%',
-
-                '%',
-            ],
+                'Held','Attended','%',
+                'Held','Attended','%',
+                'Held','Attended','%',
+                'Held','Attended','%'
+                
+            ]
         ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | PERCENTAGE HELPER
-    |--------------------------------------------------------------------------
-    */
-
+    /* ================= HELPER ================= */
     private function percent($present, $working)
     {
-        if (! $working) {
-            return 0;
-        }
-
-        return round(($present / $working) * 100, 2);
+        return $working ? round(($present / $working) * 100, 2) : 0;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | DATA
-    |--------------------------------------------------------------------------
-    */
-
+    /* ================= DATA ================= */
     public function collection()
     {
         $rows = collect();
@@ -112,23 +79,13 @@ class StudentAttendanceMasterExport implements FromCollection, ShouldAutoSize, W
 
                 'sa.lecture_working_days',
                 'sa.lecture_present_days',
-
                 'sa.tute_working_days',
                 'sa.tute_present_days',
-
                 'sa.practical_working_days',
                 'sa.practical_present_days'
             )
-           // month wise report
-            ->when($this->breakup, function ($q) {
-                $q->where('sa.month', $this->month);
-            })
-
-            // complete report
-            ->when(! $this->breakup, function ($q) {
-                $q->where('sa.month', '>=', $this->month);
-            })
-
+            ->when($this->breakup, fn($q) => $q->where('sa.month', $this->month))
+            ->when(!$this->breakup, fn($q) => $q->where('sa.month', '>=', $this->month))
             ->orderBy('s.name')
             ->get()
             ->groupBy('student_id');
@@ -137,72 +94,65 @@ class StudentAttendanceMasterExport implements FromCollection, ShouldAutoSize, W
 
             $first = $studentRows->first();
 
-            /*
-            |--------------------------------------------------------------------------
-            | STUDENT SUMMARY
-            |--------------------------------------------------------------------------
-            */
+            /* ===== TOTALS ===== */
+            $lecHeld = $studentRows->sum('lecture_working_days');
+            $lecAtt = $studentRows->sum('lecture_present_days');
 
-            $lec = $this->percent(
-                $studentRows->sum('lecture_present_days'),
-                $studentRows->sum('lecture_working_days')
-            );
+            $tutHeld = $studentRows->sum('tute_working_days');
+            $tutAtt = $studentRows->sum('tute_present_days');
 
-            $tut = $this->percent(
-                $studentRows->sum('tute_present_days'),
-                $studentRows->sum('tute_working_days')
-            );
+            $pracHeld = $studentRows->sum('practical_working_days');
+            $pracAtt = $studentRows->sum('practical_present_days');
 
-            $prac = $this->percent(
-                $studentRows->sum('practical_present_days'),
-                $studentRows->sum('practical_working_days')
-            );
+            $tch = $lecHeld + $tutHeld + $pracHeld;
+            $tca = $lecAtt + $tutAtt + $pracAtt;
 
-            // $values = collect([$lec, $tut, $prac])->filter(fn ($v) => $v > 0);
-            $overall = $this->percent(
-                $studentRows->sum('lecture_present_days')
-                + $studentRows->sum('tute_present_days')
-                + $studentRows->sum('practical_present_days'),
-                $studentRows->sum('lecture_working_days')
-                + $studentRows->sum('tute_working_days')
-                + $studentRows->sum('practical_working_days')
-            );
-            // $overall = $values->count()
-            //     ? round($values->avg(), 2)
-            //     : 0;
+            /* ===== PERCENTAGES ===== */
+            $lec = $this->percent($lecAtt, $lecHeld);
+            $tut = $this->percent($tutAtt, $tutHeld);
+            $prac = $this->percent($pracAtt, $pracHeld);
+            $overall = $this->percent($tca, $tch);
 
-            /*
-            |--------------------------------------------------------------------------
-            | SUMMARY ROW
-            |--------------------------------------------------------------------------
-            */
-
+            /* ===== SUMMARY ROW ===== */
             $rows->push([
-                $first->student_name.' ('.$first->roll_number.')',
+                $first->student_name . ' (' . $first->roll_number . ')',
                 $first->department_name,
                 $first->course_name,
                 $first->semester_id,
                 $first->section,
                 $this->breakup ? 'STUDENT SUMMARY' : 'OVERALL SUMMARY',
 
-                '', '', $lec,
-                '', '', $tut,
-                '', '', $prac,
-                $overall,
+                // Lecture
+                $lecHeld, $lecAtt, $lec,
+
+                // Tutorial
+                $tutHeld, $tutAtt, $tut,
+
+                // Practical
+                $pracHeld, $pracAtt, $prac,
+
+                // Total
+                $tch, $tca,$overall,
+
+                // Overall %
+                
             ]);
 
-            /*
-            |--------------------------------------------------------------------------
-            | PAPER ROWS (ONLY FOR MONTH REPORT)
-            |--------------------------------------------------------------------------
-            */
-
+            /* ===== PAPER ROWS ===== */
             if ($this->breakup) {
 
                 foreach ($studentRows as $r) {
 
+                    $ptch = ($r->lecture_working_days ?? 0)
+                        + ($r->tute_working_days ?? 0)
+                        + ($r->practical_working_days ?? 0);
+
+                    $ptca = ($r->lecture_present_days ?? 0)
+                        + ($r->tute_present_days ?? 0)
+                        + ($r->practical_present_days ?? 0);
+
                     $rows->push([
-                        '   → '.$r->paper_name,
+                        ' → ' . $r->paper_name,
                         '', '', '', '', '',
 
                         $r->lecture_working_days ?? 0,
@@ -217,45 +167,28 @@ class StudentAttendanceMasterExport implements FromCollection, ShouldAutoSize, W
                         $r->practical_present_days ?? 0,
                         $this->percent($r->practical_present_days, $r->practical_working_days),
 
-                        '',
+                        $ptch, $ptca, ' ',
                     ]);
                 }
-            }
 
-            if ($this->breakup) {
-                $rows->push(array_fill(0, 16, ''));
+                // spacer row
+                $rows->push(array_fill(0, 18, ''));
             }
         }
 
         return $rows;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | BASIC HEADER STYLE
-    |--------------------------------------------------------------------------
-    */
-
+    /* ================= STYLES ================= */
     public function styles(Worksheet $sheet)
     {
         return [
-            1 => [
-                'font' => ['bold' => true],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-            ],
-            2 => [
-                'font' => ['bold' => true],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-            ],
+            1 => ['font' => ['bold' => true]],
+            2 => ['font' => ['bold' => true]],
         ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | EXCEL FORMATTING
-    |--------------------------------------------------------------------------
-    */
-
+    /* ================= EVENTS ================= */
     public function registerEvents(): array
     {
         return [
@@ -266,92 +199,49 @@ class StudentAttendanceMasterExport implements FromCollection, ShouldAutoSize, W
 
                 $sheet->freezePane('A3');
 
-                /*
-                | Header Merge
-                */
-
+                /* ===== MERGE ===== */
                 $sheet->mergeCells('A1:F1');
                 $sheet->mergeCells('G1:I1');
                 $sheet->mergeCells('J1:L1');
                 $sheet->mergeCells('M1:O1');
-                $sheet->mergeCells('P1:P2');
+                $sheet->mergeCells('P1:R1'); // Total
 
-                /*
-                | Header Style
-                */
-
-                $sheet->getStyle('A1:P1')->applyFromArray([
-                    'fill' => [
-                        'fillType' => Fill::FILL_SOLID,
-                        'color' => ['rgb' => '02317C'],
-                    ],
-                    'font' => [
-                        'bold' => true,
-                        'color' => ['rgb' => 'FFFFFF'],
-                    ],
-                    'alignment' => [
-                        'horizontal' => Alignment::HORIZONTAL_CENTER,
-                        'vertical' => Alignment::VERTICAL_CENTER,
-                    ],
+                /* ===== HEADER STYLE ===== */
+                $sheet->getStyle('A1:R1')->applyFromArray([
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => '02317C']],
+                    'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
                 ]);
 
-                $sheet->getStyle('A2:P2')->applyFromArray([
-                    'fill' => [
-                        'fillType' => Fill::FILL_SOLID,
-                        'color' => ['rgb' => 'D9E1F2'],
-                    ],
-                    'font' => [
-                        'bold' => true,
-                    ],
-                    'alignment' => [
-                        'horizontal' => Alignment::HORIZONTAL_CENTER,
-                        'vertical' => Alignment::VERTICAL_CENTER,
-                    ],
+                $sheet->getStyle('A2:R2')->applyFromArray([
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'D9E1F2']],
+                    'font' => ['bold' => true],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
                 ]);
 
-                /*
-                | Percentage Coloring
-                */
-
-                for ($row = 3; $row <= $highestRow; $row++) {
-
-                    foreach (['I', 'L', 'O', 'P'] as $col) {
+                /* ===== % COLORING ===== */
+                foreach (range(3, $highestRow) as $row) {
+                    foreach (['I', 'L', 'O', 'R'] as $col) {
 
                         $value = $sheet->getCell("$col$row")->getValue();
 
                         if (is_numeric($value)) {
-
-                            if ($value >= 75) {
-                                $color = 'C6EFCE';
-                            } elseif ($value >= 50) {
-                                $color = 'FFEB9C';
-                            } else {
-                                $color = 'FFC7CE';
-                            }
+                            $color = $value >= 75 ? 'C6EFCE'
+                                : ($value >= 50 ? 'FFEB9C' : 'FFC7CE');
 
                             $sheet->getStyle("$col$row")->applyFromArray([
-                                'fill' => [
-                                    'fillType' => Fill::FILL_SOLID,
-                                    'color' => ['rgb' => $color],
-                                ],
-                                'alignment' => [
-                                    'horizontal' => Alignment::HORIZONTAL_CENTER,
-                                ],
+                                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => $color]],
+                                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
                             ]);
                         }
                     }
                 }
 
-                /*
-                | Borders
-                */
-
-                $sheet->getStyle("A1:P{$highestRow}")
+                /* ===== BORDERS ===== */
+                $sheet->getStyle("A1:R{$highestRow}")
                     ->applyFromArray([
                         'borders' => [
-                            'allBorders' => [
-                                'borderStyle' => Border::BORDER_THIN,
-                            ],
+                            'allBorders' => ['borderStyle' => Border::BORDER_THIN],
                         ],
                     ]);
             },

@@ -53,6 +53,13 @@ class MenuHelper
             ],
             [
                 'icon' => 'calendar',
+                'name' => 'Student Logs',
+                'path' => '/admin/student-logs',
+                'permission' => auth('admin')->check(),
+                'class' => request()->routeIs('admin.student-logs') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+            [
+                'icon' => 'calendar',
                 'name' => 'Attendance',
                 'path' => '/teacher/attendance',
                 'permission' =>  auth('teacher')->check() ? true : False, 
