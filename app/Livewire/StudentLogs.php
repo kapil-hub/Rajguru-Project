@@ -94,6 +94,7 @@ class StudentLogs extends Component
 
         $this->log_id = $id;
         $this->isEdit = true;
+        $this->dispatch('setStudentSelect', studentId: $this->student_user_id);
     }
 
     public function update()

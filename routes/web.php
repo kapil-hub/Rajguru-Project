@@ -123,7 +123,9 @@ Route::middleware('auth:admin')->group(function() {
     Route::get('attendance-settings', 
         [AdminAttendanceSettingController::class, 'index']
     )->name('admin.attendance.settings');
-
+    Route::get('/admin/student-logs', function () {
+        return view('student-logs-page');
+    })->name('admin.student-logs');
     Route::post('attendance-settings', 
         [AdminAttendanceSettingController::class, 'store']
     )->name('admin.attendance.settings.store');
