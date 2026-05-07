@@ -147,7 +147,7 @@ public function loadStudents(Request $request)
                 $practicalWorking = $records->sum('practical_working_days');
                 $practicalPresent = $records->sum('practical_present_days');
                 $log = StudentLog::where("student_user_id",$first['student_id'])->where('paper_master_id',$first['paper_master_id'])->first();
-                $logCount = (int) $log->log_count ?? 0;
+                $logCount = $log ? (int) $log->log_count : 0;
                 return [
                     'student_id' => $first['student_id'],
                     'teacher_id' => $first['teacher_id'],
