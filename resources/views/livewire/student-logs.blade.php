@@ -124,14 +124,37 @@
 
     <!-- TABLE -->
     <div class="bg-white shadow rounded overflow-x-auto">
-
+        <div class="mb-4">
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search student or paper..."
+                class="border p-2 rounded w-full">
+        </div>
         <table class="w-full text-sm text-center">
             <thead class="bg-gray-100">
                 <tr>
-                    <th class="p-2">ID</th>
-                    <th>Student</th>
-                    <th>Paper</th>
-                    <th>Count</th>
+                    <th wire:click="sortBy('id')" class="cursor-pointer">
+                        @if($sortField === 'id')
+                            {{ $sortDirection === 'asc' ? '↑' : '↓' }}
+                        @endif
+                        ID
+                    </th>
+                    <th wire:click="sortBy('student_user_id')" class="cursor-pointer">
+                        @if($sortField === 'student_user_id')
+                            {{ $sortDirection === 'asc' ? '↑' : '↓' }}
+                        @endif
+                        Student
+                    </th>
+                    <th wire:click="sortBy('paper_master_id')" class="cursor-pointer">
+                        @if($sortField === 'paper_master_id')
+                            {{ $sortDirection === 'asc' ? '↑' : '↓' }}
+                        @endif
+                        Paper
+                    </th>
+                    <th wire:click="sortBy('log_count')" class="cursor-pointer">
+                        @if($sortField === 'log_count')
+                            {{ $sortDirection === 'asc' ? '↑' : '↓' }}
+                        @endif
+                        Count
+                    </th>
                     <th>Remark</th>
                     <th>Action</th>
                 </tr>
@@ -161,6 +184,9 @@
             </tbody>
 
         </table>
+        <div class="p-3">
+            {{ $logs->links() }}
+        </div>
     </div>
     <script>
         document.addEventListener('livewire:load', function () {

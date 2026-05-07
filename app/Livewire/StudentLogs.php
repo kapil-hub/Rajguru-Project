@@ -7,12 +7,22 @@ use App\Models\Student;
 use App\Models\StudentPaper;
 use App\Models\StudentLog;
 use Illuminate\Support\Facades\Auth;
+use Livewire\WithPagination;
 
 class StudentLogs extends Component
 {
+     use WithPagination;
+
+    protected $paginationTheme = 'tailwind';
+
+    public $search = '';
+    public $sortField = 'id';
+    public $sortDirection = 'desc';
+    public $filterStudent = '';
+    public $filterPaper = '';
     public $students = [];
     public $papers = [];
-    public $logs = [];
+
 
     public $student_user_id;
     public $paper_master_id;
@@ -25,14 +35,21 @@ class StudentLogs extends Component
     public function mount()
     {
         $this->students = Student::with('academic')->get();
-        $this->loadLogs();
+   
     }
-
-    public function loadLogs()
+    public function sortBy($field)
     {
-        $this->logs = StudentLog::with(['student', 'paper'])->latest()->get();
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
     }
-
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
     public function updatedStudentUserId($value)
     {
         $this->papers = StudentPaper::with('paper')
@@ -83,7 +100,7 @@ class StudentLogs extends Component
         session()->flash('message', 'Created successfully');
 
         $this->resetForm();
-        $this->loadLogs();
+      
         $this->dispatch('resetStudentSelect');
     }
 
@@ -123,7 +140,7 @@ class StudentLogs extends Component
         session()->flash('message', 'Updated successfully');
 
         $this->resetForm();
-        $this->loadLogs();
+
         $this->dispatch('resetStudentSelect');
     }
 
@@ -133,11 +150,29 @@ class StudentLogs extends Component
 
         session()->flash('message', 'Deleted successfully');
 
-        $this->loadLogs();
+     
     }
 
     public function render()
-    {
-        return view('livewire.student-logs');
-    }
+{
+    $logs = StudentLog::with(['student', 'paper'])
+        ->when($this->search, function ($query) {
+            $query->whereHas('student', function ($q) {
+                $q->where('name', 'like', '%' . $this->search . '%');
+            })->orWhereHas('paper', function ($q) {
+                $q->where('name', 'like', '%' . $this->search . '%');
+            });
+        })
+        ->when($this->filterStudent, fn($q) =>
+                $q->where('student_user_id', $this->filterStudent)
+            )
+            ->when($this->filterPaper, fn($q) =>
+                $q->where('paper_master_id', $this->filterPaper)
+            )
+        ->orderBy($this->sortField, $this->sortDirection)
+        ->paginate(10);
+    return view('livewire.student-logs', [
+        'logs' => $logs
+    ]);
+}
 }
