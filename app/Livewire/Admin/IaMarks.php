@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\IaMark;
 use App\Models\Courses;
+use App\Models\Paper;
 use App\Models\Departments;
 use App\Exports\IaMarksExport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -22,6 +23,8 @@ class IaMarks extends Component
     public $departments = [];
     public $semesters = [];
     public $courseIds = [];
+    public $paperMamsterID = [];
+
 
     public function mount()
     {
@@ -45,10 +48,11 @@ class IaMarks extends Component
             'selectedDepartment' => 'required',
             'selectedSemester' => 'required',
         ]);
+        $this->paperMamsterID = Paper::where('dept_id',$this->selectedDepartment)->pluck("id")->toArray();
         $this->courseIds = Courses::where('dept_id', $this->selectedDepartment)
             ->pluck('id')
             ->toArray();
-
+       
         $this->resetPage();
     }
     public function exportExcel()
@@ -64,10 +68,14 @@ class IaMarks extends Component
             ->pluck('id')
             ->toArray();
     }
+    if (empty($this->paperMamsterID)) {
+
+        $this->paperMamsterID = Paper::where('dept_id',$this->selectedDepartment)->pluck("id")->toArray();
+    }
     $departmentName = $this->departments->where('id',$this->selectedDepartment)->first();
     $filename = "FOR SAMARTH__".$departmentName->name.'__SEM__'.$this->selectedSemester;
     return Excel::download(
-        new IaMarksExport($this->courseIds, $this->selectedSemester),
+        new IaMarksExport($this->paperMamsterID, $this->selectedSemester),
         $filename.'.xlsx'
     );
 }
@@ -76,7 +84,7 @@ class IaMarks extends Component
     {
         $marksData = IaMark::query();
 
-        if (!empty($this->courseIds) && !empty($this->selectedSemester)) {
+        if (!empty($this->paperMamsterID) && !empty($this->selectedSemester)) {
 
             $marksData = $marksData
                 ->with([
@@ -85,7 +93,7 @@ class IaMarks extends Component
                     'paper',
                     'course'
                 ])
-                ->whereIn('course_id', $this->courseIds)
+                ->whereIn('paper_master_id', $this->paperMamsterID)
                 ->where('semester_id', $this->selectedSemester)
                 ->orderBy('id', 'DESC');
 

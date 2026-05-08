@@ -11,7 +11,26 @@
                 Section {{ $section }}
             </p>
         </div>
+        <div class="mb-4 flex gap-3">
 
+            <a href="{{ route('teacher.iaMarks.exportPdf', [
+        'paperId' => $paper->id,
+        'semesterId' => $semesterId,
+        'section' => $section
+    ]) }}" class="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+
+                Export PDF
+
+            </a>
+
+            <a href="{{ route('teacher.iaMarks.history') }}"
+                class="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+
+                Back
+
+            </a>
+
+        </div>
         <div class="bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
             <table class="min-w-full divide-y">
                 <thead class="bg-gray-100">

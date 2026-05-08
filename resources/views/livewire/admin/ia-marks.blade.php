@@ -195,7 +195,7 @@
                             {{ round($mark->total) ?? 0 }}
                         </td>
                         <td class="p-3">
-                            {{ tutorialMarksBreakup($mark->paper->number_of_tutorial ?? 0)['total_tute'] ?? 0 }}
+                            {{ tutorialMarksBreakup($mark->paper->number_of_tutorials ?? 0)['total_tute'] ?? 0 }}
                         </td>
 
                         <td class="p-3">
