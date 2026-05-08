@@ -165,9 +165,12 @@ public function loadStudents(Request $request)
                     'total_practical_present_days' => $practicalPresent,
 
                     // PERCENTAGES
-                    'lecture_percentage' => $lectureWorking > 0
-                        ? round(($lecturePresent+ $logCount) / ($lectureWorking) * 100, 2)
-                        : 0,
+                   'lecture_percentage' => $lectureWorking > 0
+                    ? min(
+                        round((($lecturePresent + $logCount) / $lectureWorking) * 100, 2),
+                        100
+                    )
+                    : 0,
 
                     'tute_percentage' => $tuteWorking > 0
                         ? round(($tutePresent / $tuteWorking) * 100, 2)

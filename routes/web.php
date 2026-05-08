@@ -198,6 +198,9 @@ Route::middleware('auth:admin')->prefix('admin')->group(function(){
     Route::get('faculty/{faculty}/edit', [AdminFacultyController::class,'edit'])->name('admin.faculty.edit');
     Route::put('admin/faculty/{faculty}',[AdminFacultyController::class, 'update'])->name('admin.faculty.update');
     Route::delete('faculty/{faculty}/delete', [AdminFacultyController::class,'destroy'])->name('admin.faculty.delete');
+    Route::get('ia-marks',function(){
+        return view('pages.admin.ia-marks');
+    })->name('admin.ia-marks');
 });
 
 

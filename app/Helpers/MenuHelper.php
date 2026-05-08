@@ -174,6 +174,13 @@ class MenuHelper
             ],
             [
                 'icon' => 'pages',
+                'name' => 'IA Marks',
+                'path' => '/admin/ia-marks',
+                'permission' => auth('admin')->check() ? true : False,
+                'class' => request()->routeIs('admin.ia-marks') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+            [
+                'icon' => 'pages',
                 'name' => 'Attendence Master Report',
                 'path' => '/admin/student-attendance-master',
                 'permission' => auth('admin')->check() ? true : False,
