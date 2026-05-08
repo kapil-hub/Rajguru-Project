@@ -88,7 +88,10 @@ Route::middleware('auth:teacher')->prefix('teacher')->group(function () {
     Route::get('/attendance/history/{paper}/{month}/{year}', 
         [AttendanceController::class, 'show']
     )->name('teacher.attendance.history.show');
-
+    Route::get(
+        '/teacher/ia-marks/export/{paperId}/{semesterId}/{section}',
+        [IaController::class, 'exportPdf']
+    )->name('teacher.iaMarks.exportPdf');
     Route::get('daily/attendance/fill/{assignment}/{month}/{year}', [DailyAttendanceController::class,'fillAttendance'])->name('teacher.daily.attendance.fill');
     Route::post('attendance/daily/store', [DailyAttendanceController::class,'store'])->name('teacher.attendance.daily.store');
     
