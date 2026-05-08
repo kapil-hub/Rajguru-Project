@@ -27,4 +27,13 @@ class IaMark extends Model
     {
         return $this->belongsTo(Student::class, 'student_id');
     }
+    public function paper()
+    {
+        return $this->belongsTo(Paper::class, 'paper_master_id');
+    }
+    public function course()
+    {
+        return $this->belongsTo(Courses::class, 'course_id');
+    }
+    
 }
