@@ -145,6 +145,13 @@ class MenuHelper
             ],
              [
                 'icon' => 'pages',
+                'name' => 'IA Marks',
+                'path' => '/students/ia-marks/',
+                'permission' => auth('student')->check(),
+                'class' => request()->routeIs('students.ia-marks') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+             [
+                'icon' => 'pages',
                 'name' => 'My Attendence Portfolio',
                 'path' => '/students/my-attendance/',
                 'permission' => auth('student')->check() ? true : False,

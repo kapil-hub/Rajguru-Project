@@ -18,7 +18,7 @@ use App\Http\Controllers\Admin\RegistrationWindowController;
 use App\Http\Controllers\Admin\AdminAttendanceController;
 use App\Livewire\Teacher\PracticalMarks;
 use App\Http\Controllers\NotificationController;
-
+use App\Livewire\Student\IaMarks;
 
 
 
@@ -198,6 +198,11 @@ Route::middleware('auth:admin')->prefix('admin')->group(function(){
     Route::get('faculty/{faculty}/edit', [AdminFacultyController::class,'edit'])->name('admin.faculty.edit');
     Route::put('admin/faculty/{faculty}',[AdminFacultyController::class, 'update'])->name('admin.faculty.update');
     Route::delete('faculty/{faculty}/delete', [AdminFacultyController::class,'destroy'])->name('admin.faculty.delete');
+});
+Route::middleware('auth:student')->prefix('students')->group(function(){
+    Route::get('/ia-marks', function(){
+        return view("pages.ia-marks-show");
+    })->name('students.ia-marks');
 });
 
 
