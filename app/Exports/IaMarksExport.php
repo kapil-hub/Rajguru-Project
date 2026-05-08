@@ -10,12 +10,12 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
 class IaMarksExport implements FromCollection, WithHeadings, ShouldAutoSize
 {
-    protected $courseIds;
+    protected $paperMamsterID;
     protected $semester;
 
-    public function __construct($courseIds, $semester)
+    public function __construct($paperMamsterID, $semester)
     {
-        $this->courseIds = $courseIds;
+        $this->paperMamsterID = $paperMamsterID;
         $this->semester = $semester;
     }
 
@@ -27,7 +27,7 @@ class IaMarksExport implements FromCollection, WithHeadings, ShouldAutoSize
                 'paper',
                 'course'
             ])
-            ->whereIn('course_id', $this->courseIds)
+            ->whereIn('paper_master_id', $this->paperMamsterID)
             ->where('semester_id', $this->semester)
             ->get()
             ->map(function ($mark) {
@@ -42,7 +42,7 @@ class IaMarksExport implements FromCollection, WithHeadings, ShouldAutoSize
                     'Program Name'       => $mark->course->name ?? '',
                     'Maximum Marks (IA)' => lectureMarksBreakup($mark->paper->number_of_lectures ?? 0)['ia'] ?? 0,
                     'Obtained Marks (IA)' => round($mark->total) ?? 0,
-                    'Maximum Marks (Tutorial)' =>tutorialMarksBreakup($mark->paper->number_of_tutorial ?? 0)['total_tute'] ?? 0,
+                    'Maximum Marks (Tutorial)' =>tutorialMarksBreakup($mark->paper->number_of_tutorials ?? 0)['total_tute'] ?? 0,
                     'Obtained Marks (Tutorial)' => round($mark->tute_ca + $mark->tute_attendance) ?? 0,
                 ];
             });

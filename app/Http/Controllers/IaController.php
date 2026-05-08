@@ -14,6 +14,7 @@ use App\Models\IaMark;
 use App\Models\StudentLog;
 use Auth;
 use DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class IaController extends Controller
 {
@@ -250,6 +251,44 @@ public function history()
         'section'));
 
     }
+ public function exportPdf($paperId, $semesterId, $section)
+    {
 
+        $teacherId = auth('teacher')->id();
+
+        $paper = Paper::findOrFail($paperId);
+
+        $marks = IaMark::with('student.academic')
+            ->join('student_users', 'student_users.id', '=', 'ia_marks.student_id')
+            ->where('ia_marks.paper_master_id', $paperId)
+            ->where('ia_marks.semester_id', $semesterId)
+            ->where('ia_marks.section', $section)
+            ->where('ia_marks.created_by', $teacherId)
+            ->orderBy('student_users.name')
+            ->select('ia_marks.*')
+            ->get();
+
+        abort_if($marks->isEmpty(), 403, 'Unauthorized access');
+
+        $pdf = Pdf::loadView(
+            'pages.teacher.iaAttendance.pdf',
+            compact(
+                'paper',
+                'marks',
+                'semesterId',
+                'section'
+            )
+        )->setPaper('a4', 'landscape');
+
+        return $pdf->download(
+            'IA_Marks_' .
+            $paper->code .
+            '_Sem_' .
+            $semesterId .
+            '_Section_' .
+            $section .
+            '.pdf'
+        );
+    }
 
 }
