@@ -5,21 +5,23 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-<link href="https://cdn.tailwindcss.com" rel="stylesheet">
-<link rel="icon" type="image/png" href="{{ '/images/logo/logo.png' }}">
- <script src="https://cdn.tailwindcss.com"></script>
-<!-- jQuery (FIRST) -->
-<link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+    <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ '/images/logo/logo.png' }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jQuery (FIRST) -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
-
-    <title>{{ $title ?? 'Dashboard' }} | TailAdmin - Laravel Tailwind CSS Admin Dashboard Template</title>    <!-- Scripts -->
+    <title>{{ $title ?? 'Dashboard' }} | TailAdmin - Laravel Tailwind CSS Admin Dashboard Template</title>
+    <!-- Scripts -->
     @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- Alpine.js -->
-    {{-- <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script> --}}
+    {{--
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script> --}}
 
     <!-- Theme Store -->
     <script>
@@ -84,101 +86,101 @@
     <style>
         /*Phones – 600px*/
 
-@media (max-width: 37.5em) {
+        @media (max-width: 37.5em) {
 
-  img.dark\:hidden {
+            img.dark\:hidden {
 
-    width: 40%;
+                width: 40%;
 
-    margin-left: 7rem;
+                margin-left: 7rem;
 
-  }
+            }
 
-}
-
-
-/*Tablets – 768px*/
-
-@media (min-width: 37.6em) and (max-width: 48em) {
-
-  img.dark\:hidden {
-
-    width: 20%;
-
-    margin-left: 17rem;
-
-  }
-
-  .flex.flex-col.gap-4 {
-
-    margin-top: 5rem;
-
-  }
-
-}
+        }
 
 
-/*Laptops – 992px*/
+        /*Tablets – 768px*/
 
-@media (min-width: 49em) and (max-width: 62em) {
+        @media (min-width: 37.6em) and (max-width: 48em) {
 
-  img.dark\:hidden {
+            img.dark\:hidden {
 
-    width: 30%;
+                width: 20%;
 
-    margin-left: 14rem;
+                margin-left: 17rem;
 
-  }
+            }
 
-  .flex.flex-col.gap-4 {
+            .flex.flex-col.gap-4 {
 
-    margin-top: 10rem;
+                margin-top: 5rem;
 
-  }
+            }
 
-}
-
-
-/*Large Screens – 1200px*/
-
-@media (min-width: 63em) and (max-width: 75em) {
-
-  img.dark\:hidden {
-
-    width: 16%;
-
-    margin-left: 27rem;
-
-  }
-
-  .flex.flex-col.gap-4 {
-
-    margin-top: 5.5rem;
-
-  }
-
-}
+        }
 
 
-/*Large Screens – 1200px*/
+        /*Laptops – 992px*/
 
-@media (min-width: 75em) {
+        @media (min-width: 49em) and (max-width: 62em) {
 
-  img.dark\:hidden {
+            img.dark\:hidden {
 
-    width: 55%;
+                width: 30%;
 
-    margin-left: 3rem;
+                margin-left: 14rem;
 
-  }
+            }
 
-}
+            .flex.flex-col.gap-4 {
+
+                margin-top: 10rem;
+
+            }
+
+        }
+
+
+        /*Large Screens – 1200px*/
+
+        @media (min-width: 63em) and (max-width: 75em) {
+
+            img.dark\:hidden {
+
+                width: 16%;
+
+                margin-left: 27rem;
+
+            }
+
+            .flex.flex-col.gap-4 {
+
+                margin-top: 5.5rem;
+
+            }
+
+        }
+
+
+        /*Large Screens – 1200px*/
+
+        @media (min-width: 75em) {
+
+            img.dark\:hidden {
+
+                width: 55%;
+
+                margin-left: 3rem;
+
+            }
+
+        }
     </style>
     <!-- Apply dark mode immediately to prevent flash -->
     <script>
         const width = window.innerWidth;
- 
-        (function() {
+
+        (function () {
             const savedTheme = localStorage.getItem('theme');
             const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             const theme = savedTheme || systemTheme;
@@ -191,12 +193,10 @@
             }
         })();
     </script>
-    
+
 </head>
 
-<body class= "font-outfit"
-    x-data="{ 'loaded': true}"
-    x-init="$store.sidebar.isExpanded = window.innerWidth >= 1280;
+<body class="font-outfit" x-data="{ 'loaded': true}" x-init="$store.sidebar.isExpanded = window.innerWidth >= 1280;
     const checkMobile = () => {
         if (window.innerWidth < 1280) {
             $store.sidebar.setMobileOpen(false);
@@ -209,15 +209,14 @@
     window.addEventListener('resize', checkMobile);">
 
     {{-- preloader --}}
-    <x-common.preloader/>
+    <x-common.preloader />
     {{-- preloader end --}}
 
     <div class="min-h-screen xl:flex">
         @include('layouts.backdrop')
         @include('layouts.sidebar')
 
-        <div class="flex-1 transition-all duration-300 ease-in-out"
-            :class="{
+        <div class="flex-1 transition-all duration-300 ease-in-out" :class="{
                 'xl:ml-[290px]': $store.sidebar.isExpanded || $store.sidebar.isHovered,
                 'xl:ml-[90px]': !$store.sidebar.isExpanded && !$store.sidebar.isHovered,
                 'ml-0': $store.sidebar.isMobileOpen
@@ -226,10 +225,10 @@
 
                 {{-- SUCCESS --}}
                 @if (session('success'))
-                    <div class="flex items-center justify-between bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded-lg">
+                    <div
+                        class="flex items-center justify-between bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded-lg">
                         <span>{{ session('success') }}</span>
-                        <button onclick="this.parentElement.remove()"
-                                class="font-bold text-green-800 hover:text-green-900">
+                        <button onclick="this.parentElement.remove()" class="font-bold text-green-800 hover:text-green-900">
                             &times;
                         </button>
                     </div>
@@ -237,10 +236,10 @@
 
                 {{-- ERROR --}}
                 @if (session('error'))
-                    <div class="flex items-center justify-between bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded-lg">
+                    <div
+                        class="flex items-center justify-between bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded-lg">
                         <span>{{ session('error') }}</span>
-                        <button onclick="this.parentElement.remove()"
-                                class="font-bold text-red-800 hover:text-red-900">
+                        <button onclick="this.parentElement.remove()" class="font-bold text-red-800 hover:text-red-900">
                             &times;
                         </button>
                     </div>
@@ -273,4 +272,5 @@
 
 @stack('scripts')
 @livewireScripts
+
 </html>
