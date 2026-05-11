@@ -113,7 +113,7 @@ class AttendanceController extends Controller
             ->where('teacher_id', $teacherId)
             ->where('is_active', 1)
             ->get();
-
+        $isLocked = [1,2,3,4];
         // Group attendance settings by semester for easy access
         $attendanceSettings = AttendanceSetting::where('status', 1)
             ->get()
@@ -121,7 +121,8 @@ class AttendanceController extends Controller
             // echo "<pre>"; print_r($attendanceSettings->toArray());die;
         return view('pages.teacher.attendance.pending', compact(
             'assignments',
-            'attendanceSettings'
+            'attendanceSettings',
+            'isLocked'
         ));
     }
 
