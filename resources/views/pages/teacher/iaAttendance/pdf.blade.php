@@ -214,7 +214,7 @@
                     </td>
 
                     <td>
-                        {{ $m->total_tute_marks ?? '-' }}
+                        {{ $m->total_tute_marks + $m->tute_attendance ?? '-' }}
                     </td>
 
                     <td>
@@ -259,7 +259,7 @@
 
                                 <br><br>
 
-                                <strong>Internal Examiner</strong>
+                                <strong>Name</strong>
 
                             </td>
 
@@ -269,7 +269,7 @@
 
                                 <br><br>
 
-                                <strong>External Examiner</strong>
+                                <strong>Signature</strong>
 
                             </td>
 

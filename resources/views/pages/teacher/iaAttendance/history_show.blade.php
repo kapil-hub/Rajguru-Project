@@ -81,7 +81,7 @@
                             @endif
                             <td class="px-4 py-2 text-center">{{ $m->tute_ca ?? '-' }}</td>
                             <td class="px-4 py-2 text-center">{{ $m->tute_attendance ?? '-' }}</td>
-                            <td class="px-4 py-2 text-center">{{ $m->total_tute_marks ?? '-' }}</td>
+                            <td class="px-4 py-2 text-center">{{ $m->total_tute_marks + $m->tute_attendance ?? '-' }}</td>
                             <td class="px-4 py-2 text-center font-semibold">
                                 {{ $m->grand_total }}
                             </td>
