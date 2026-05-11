@@ -93,9 +93,9 @@ class StudentSubjectRegistration extends Component
 
             'selectedPapers.AEC' => 'required',
 
-            'selectedPapers.DSE' => 'nullable|array|max:1',
+            'selectedPapers.DSE' => 'nullable|max:1',
 
-            'selectedPapers.GE' => 'nullable|array|max:1',
+            'selectedPapers.GE' => 'nullable|max:1',
 
         ];
     }
