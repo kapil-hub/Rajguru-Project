@@ -79,8 +79,11 @@
                     $attendance = $mark['attendance'] ?? 0;
                     $tuteCa = $mark['tute_ca'] ?? 0;
                     $tuteAttendance = $mark['tute_attendance'] ?? 0;
-
-                    $total = $classTest + $assignment + $attendance;
+                    if ($this->isOnlyTotal($paperId)) {
+                        $total = $mark["total"];
+                    } else {
+                        $total = $classTest + $assignment + $attendance;
+                    }
 
                     $tuteTotal = $tuteCa + $tuteAttendance;
 
@@ -151,51 +154,66 @@
 
                             {{-- MARKS GRID --}}
                             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                                @if($this->isOnlyTotal($paperId))
+                                    <div class="bg-white rounded-2xl shadow-md p-4 text-center border border-indigo-100">
 
-                                {{-- CLASS TEST --}}
-                                <div class="bg-white rounded-2xl shadow-md p-4 text-center border border-indigo-100">
+                                        <p class="text-sm text-gray-500">
+                                            IA Total
+                                        </p>
 
-                                    <p class="text-sm text-gray-500">
-                                        IA Class Test Marks
-                                    </p>
+                                        <h2 class="text-2xl md:text-3xl font-bold text-indigo-600 mt-2">
 
-                                    <h2 class="text-2xl md:text-3xl font-bold text-indigo-600 mt-2">
+                                            {{ $total }}
 
-                                        {{ $classTest }}
+                                        </h2>
 
-                                    </h2>
+                                    </div>
+                                @else
+                                    {{-- CLASS TEST --}}
+                                    <div class="bg-white rounded-2xl shadow-md p-4 text-center border border-indigo-100">
 
-                                </div>
+                                        <p class="text-sm text-gray-500">
+                                            IA Class Test Marks
+                                        </p>
 
-                                {{-- ASSIGNMENT --}}
-                                <div class="bg-white rounded-2xl shadow-md p-4 text-center border border-purple-100">
+                                        <h2 class="text-2xl md:text-3xl font-bold text-indigo-600 mt-2">
 
-                                    <p class="text-sm text-gray-500">
-                                        IA Assignment Marks
-                                    </p>
+                                            {{ $classTest }}
 
-                                    <h2 class="text-2xl md:text-3xl font-bold text-purple-600 mt-2">
+                                        </h2>
 
-                                        {{ $assignment }}
+                                    </div>
 
-                                    </h2>
+                                    {{-- ASSIGNMENT --}}
+                                    <div class="bg-white rounded-2xl shadow-md p-4 text-center border border-purple-100">
 
-                                </div>
+                                        <p class="text-sm text-gray-500">
+                                            IA Assignment Marks
+                                        </p>
 
-                                {{-- ATTENDANCE --}}
-                                <div class="bg-white rounded-2xl shadow-md p-4 text-center border border-pink-100">
+                                        <h2 class="text-2xl md:text-3xl font-bold text-purple-600 mt-2">
 
-                                    <p class="text-sm text-gray-500">
-                                        IA Attendance Marks
-                                    </p>
+                                            {{ $assignment }}
 
-                                    <h2 class="text-2xl md:text-3xl font-bold text-pink-600 mt-2">
+                                        </h2>
 
-                                        {{ $attendance }}
+                                    </div>
 
-                                    </h2>
+                                    {{-- ATTENDANCE --}}
+                                    <div class="bg-white rounded-2xl shadow-md p-4 text-center border border-pink-100">
 
-                                </div>
+                                        <p class="text-sm text-gray-500">
+                                            IA Attendance Marks
+                                        </p>
+
+                                        <h2 class="text-2xl md:text-3xl font-bold text-pink-600 mt-2">
+
+                                            {{ $attendance }}
+
+                                        </h2>
+
+                                    </div>
+                                @endif
 
                                 {{-- TUTE CA --}}
                                 <div class="bg-white rounded-2xl shadow-md p-4 text-center border border-green-100">
