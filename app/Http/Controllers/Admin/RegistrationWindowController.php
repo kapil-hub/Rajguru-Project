@@ -37,7 +37,9 @@ class RegistrationWindowController extends Controller
 
         RegistrationWindow::create($request->all());
 
-        return back()->with('success', 'Registration window created');
+        return redirect()
+            ->route('admin.registration-window.index')
+            ->with('success','Registration window created');
     }
 
     public function create()

@@ -20,4 +20,9 @@ class Paper extends Model
     public function students(){
       return $this->hasMany(StudentPaper::class,'paper_master_id');
     }
+
+    public function registrations()
+{
+    return $this->hasMany(StudentSubjectRegistrationForm::class, 'paper_master_id');
+}
 }
