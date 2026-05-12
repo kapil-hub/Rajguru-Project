@@ -49,7 +49,7 @@
                             </div>
 
                             <div class="font-bold text-gray-800">
-                                {{ $academic->department_id }}
+                                {{ $academic->department->name }}
                             </div>
                         </div>
 
@@ -59,7 +59,7 @@
                             </div>
 
                             <div class="font-bold text-gray-800">
-                                {{ $academic->course_id }}
+                                {{ $academic->course->name }}
                             </div>
                         </div>
 
@@ -688,21 +688,21 @@
                                 if (eligibility) {
 
                                     html += `
-                                                                                                                                                    <div style="margin-bottom:16px">
-                                                                                                                                                        <strong>• Eligibility</strong><br>
-                                                                                                                                                        ${eligibility}
-                                                                                                                                                    </div>
-                                                                                                                                                `;
+                                                                                                                                                        <div style="margin-bottom:16px">
+                                                                                                                                                            <strong>• Eligibility</strong><br>
+                                                                                                                                                            ${eligibility}
+                                                                                                                                                        </div>
+                                                                                                                                                    `;
                                 }
 
                                 if (prerequisites) {
 
                                     html += `
-                                                                                                                                                    <div>
-                                                                                                                                                        <strong>• Prerequisites</strong><br>
-                                                                                                                                                        ${prerequisites}
-                                                                                                                                                    </div>
-                                                                                                                                                `;
+                                                                                                                                                        <div>
+                                                                                                                                                            <strong>• Prerequisites</strong><br>
+                                                                                                                                                            ${prerequisites}
+                                                                                                                                                        </div>
+                                                                                                                                                    `;
                                 }
 
                                 html += `</div>`;

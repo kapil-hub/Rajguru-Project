@@ -5,6 +5,7 @@ namespace App\Livewire\Student;
 use Livewire\Component;
 use App\Models\IaMark;
 use App\Models\Student;
+use App\Models\Paper;
 use Illuminate\Support\Facades\Auth;
 
 class IaMarks extends Component
@@ -36,12 +37,25 @@ class IaMarks extends Component
             'tute_ca' => (float) ($ia?->tute_ca ?? 0),
             'tute_attendance' => (float) ($ia?->tute_attendance ?? 0),
             'class_test' => (float) ($ia?->class_test ?? 0),
+            'total' => (float) ($ia?->total ?? 0),
             'assignment' => (float) ($ia?->assignment ?? 0),
             'attendance' => (float) ($ia?->attendance ?? 0),
         ];
     }
 }
 
+
+public function isOnlyTotal($paperId)
+{
+    if (!$paperId) return false;
+
+    $p = Paper::where('id',$paperId)->get()->first();
+
+    return (
+        (($p->paper_type == 'SEC' || $p->paper_type == 'VAC' || $p->paper_type == 'AEC') && ($p->number_of_lectures == 1 && $p->number_of_tutorials == 0 && $p->number_of_practicals == 1))
+        || ($p->paper_type == 'AEC' && $p->number_of_lectures == 2 && $p->number_of_tutorials == 0 && $p->number_of_practicals == 0)
+    );
+}
     public function togglePaper($paperId)
     {
         $this->openPaper = $this->openPaper === $paperId ? null : $paperId;

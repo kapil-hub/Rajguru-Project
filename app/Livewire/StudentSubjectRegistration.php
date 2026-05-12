@@ -93,9 +93,8 @@ class StudentSubjectRegistration extends Component
 
             'selectedPapers.AEC' => 'required',
 
-            'selectedPapers.DSE' => 'nullable|max:1',
-
-            'selectedPapers.GE' => 'nullable|max:1',
+            'selectedPapers.DSE' => 'nullable|required_without:selectedPapers.GE',
+            'selectedPapers.GE'  => 'nullable|required_without:selectedPapers.DSE',
 
         ];
     }
@@ -110,9 +109,9 @@ class StudentSubjectRegistration extends Component
 
         return [
 
-            'selectedPapers.DSE' => 'required|array|min:1|max:1',
+            'selectedPapers.DSE' => 'required',
 
-            'selectedPapers.GE' => 'required|array|min:1|max:1',
+            'selectedPapers.GE' => 'required',
 
             'selectedPapers.SEC' => 'required',
 
@@ -347,7 +346,7 @@ public function validateSemesterRules()
     {
         $student = Auth::guard('student')->user();
 
-        $academic = StudentAcademic::where(
+        $academic = StudentAcademic::with(['department','course'])->where(
             'student_user_id',
             $student->id
         )->first();
@@ -408,7 +407,7 @@ public function validateSemesterRules()
 
                     return $paper->registrations_count < $paper->capping;
                 });
-
+            
             /*
             |--------------------------------------------------------------------------
             | GE

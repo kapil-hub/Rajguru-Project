@@ -10,7 +10,7 @@ if (! function_exists('is_registration_open')) {
         if (!auth('student')->check()) {
             return false;
         }
-        if (auth('student')->user()->id == 2024) {
+        if (auth('student')->user()->id == 2019) {
             return true;
         }else{
              return false;
