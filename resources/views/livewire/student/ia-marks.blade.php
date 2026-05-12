@@ -160,13 +160,9 @@
                                         <p class="text-sm text-gray-500">
                                             IA Total
                                         </p>
-
                                         <h2 class="text-2xl md:text-3xl font-bold text-indigo-600 mt-2">
-
                                             {{ $total }}
-
                                         </h2>
-
                                     </div>
                                 @else
                                     {{-- CLASS TEST --}}
@@ -211,7 +207,6 @@
                                             {{ $attendance }}
 
                                         </h2>
-
                                     </div>
                                 @endif
 

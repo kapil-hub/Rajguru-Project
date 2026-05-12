@@ -41,9 +41,7 @@ class IaMarks extends Component
             'assignment' => (float) ($ia?->assignment ?? 0),
             'attendance' => (float) ($ia?->attendance ?? 0),
         ];
-        // if($paperId == 25){
-        //     dd($this->marks[$paperId]);
-        // }
+ 
     }
 }
 
@@ -56,21 +54,18 @@ public function isOnlyTotal($paperId)
 
     return (
         (
-            in_array($p->paper_type, ['SEC', 'VAC']) &&
-            $p->number_of_lectures == 0 &&
-            $p->number_of_tutorials == 0 &&
-            $p->number_of_practicals == 2
+            ($p->paper_type == 'SEC' || $p->paper_type == 'VAC' || $p->paper_type == 'AEC')
+            &&
+            ($p->number_of_lectures == 1 && $p->number_of_tutorials == 0 && $p->number_of_practicals == 1)
         )
-        ||
-        (
-            in_array($p->paper_type, ['SEC', 'VAC', 'AEC']) &&
-            $p->number_of_lectures == 1 &&
-            $p->number_of_tutorials == 0 &&
-            $p->number_of_practicals == 1
+        || (
+            $p->paper_type == 'AEC'
+            && $p->number_of_lectures == 2
+            && $p->number_of_tutorials == 0
+            && $p->number_of_practicals == 0
         )
     );
-}
-
+    }
     public function togglePaper($paperId)
     {
         $this->openPaper = $this->openPaper === $paperId ? null : $paperId;
