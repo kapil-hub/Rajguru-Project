@@ -19,4 +19,13 @@ class StudentPracticalMark extends Model
 {
     return $this->belongsTo(Student::class);
 }
+
+      public function paper()
+    {
+        return $this->belongsTo(Paper::class, 'paper_id');
+    }
+    public function course()
+    {
+        return $this->belongsTo(Courses::class, 'course_id');
+    }
 }

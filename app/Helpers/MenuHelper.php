@@ -98,6 +98,7 @@ class MenuHelper
                     ['name' => 'IA Marks History', 'path' => '/teacher/iaMarks/history'],
                 ],
                 'permission' =>  auth('teacher')->check() ? true : False, 
+                'description'=>"For Fill and View IA Marks",
                 'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
                 
             ],
@@ -150,7 +151,7 @@ class MenuHelper
                 'permission' => auth('student')->check(),
                 'class' => request()->routeIs('students.ia-marks') ? 'menu-item-active' : 'menu-item-inactive',
             ],
-             [
+            [
                 'icon' => 'pages',
                 'name' => 'My Attendence Portfolio',
                 'path' => '/students/my-attendance/',
@@ -163,6 +164,13 @@ class MenuHelper
                 'path' => '/admin/faculty/',
                 'permission' => auth('admin')->check() ? true : False,
                 'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+            [
+                'icon' => 'pages',
+                'name' => 'Roles',
+                'path' => '/admin/roles/',
+                'permission' => auth('admin')->check() ? true : False,
+                'class' => request()->routeIs('admin.roles') ? 'menu-item-active' : 'menu-item-inactive',
             ],
 
             [
@@ -185,6 +193,13 @@ class MenuHelper
                 'path' => '/admin/ia-marks',
                 'permission' => auth('admin')->check() ? true : False,
                 'class' => request()->routeIs('admin.ia-marks') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+             [
+                'icon' => 'pages',
+                'name' => 'Practical Marks',
+                'path' => '/admin/practical-marks',
+                'permission' => auth('admin')->check() ? true : False,
+                'class' => request()->routeIs('admin.practical-marks') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
                 'icon' => 'pages',

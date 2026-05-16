@@ -167,19 +167,24 @@ public function loadStudents(Request $request)
 
                     // PERCENTAGES
                    'lecture_percentage' => $lectureWorking > 0
-                    ? min(
-                        round((($lecturePresent + $logCount) / $lectureWorking) * 100, 2),
-                        100
-                    )
-                    : 0,
+                        ? min(
+                            round((($lecturePresent + $logCount) / $lectureWorking) * 100, 2),
+                            100
+                        )
+                        : 0,
 
                     'tute_percentage' => $tuteWorking > 0
-                        ? round(($tutePresent / $tuteWorking) * 100, 2)
-                        : 0,
-
+						? min(
+							round(($tutePresent / $tuteWorking) * 100, 2),
+							100
+						)
+						: 0,
                     'practical_percentage' => $practicalWorking > 0
-                        ? round(($practicalPresent / $practicalWorking) * 100, 2)
-                        : 0,
+						? min(
+							round(($practicalPresent / $practicalWorking) * 100, 2),
+							100
+						)
+						: 0,
                 ];
             })->toArray();
 

@@ -381,7 +381,7 @@ public function validateSemesterRules()
                         return true;
                     }
 
-                    return $paper->registrations_count < $paper->capping;
+                     return $paper->registrations()->count() < $paper->capping;
                 });
 
             /*
@@ -405,7 +405,7 @@ public function validateSemesterRules()
                         return true;
                     }
 
-                    return $paper->registrations_count < $paper->capping;
+                     return $paper->registrations()->count() < $paper->capping;
                 });
             
             /*
@@ -429,7 +429,7 @@ public function validateSemesterRules()
                         return true;
                     }
 
-                    return $paper->registrations_count < $paper->capping;
+                     return $paper->registrations()->count() < $paper->capping;
                 });
 
             /*
@@ -451,7 +451,7 @@ public function validateSemesterRules()
                         return true;
                     }
 
-                    return $paper->registrations_count < $paper->capping;
+                    return $paper->registrations()->count() < $paper->capping;
                 });
 
             /*
@@ -473,7 +473,7 @@ public function validateSemesterRules()
                         return true;
                     }
 
-                    return $paper->registrations_count < $paper->capping;
+                    return $paper->registrations()->count() < $paper->capping;
                 });
 
             /*
@@ -495,7 +495,7 @@ public function validateSemesterRules()
                         return true;
                     }
 
-                    return $paper->registrations_count < $paper->capping;
+                     return $paper->registrations()->count() < $paper->capping;
                 });
         }
 
@@ -509,7 +509,7 @@ public function validateSemesterRules()
                         return true;
                     }
 
-                    return $paper->registrations_count < $paper->capping;
+                    return $paper->registrations()->count() < $paper->capping;
                 });
 
         return view(
