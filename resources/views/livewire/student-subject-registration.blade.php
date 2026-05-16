@@ -688,21 +688,21 @@
                                 if (eligibility) {
 
                                     html += `
-                                                                                                                                                        <div style="margin-bottom:16px">
-                                                                                                                                                            <strong>• Eligibility</strong><br>
-                                                                                                                                                            ${eligibility}
-                                                                                                                                                        </div>
-                                                                                                                                                    `;
+                                                                                                                                                                                                                                <div style="margin-bottom:16px">
+                                                                                                                                                                                                                                    <strong>• Eligibility</strong><br>
+                                                                                                                                                                                                                                    ${eligibility}
+                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                            `;
                                 }
 
                                 if (prerequisites) {
 
                                     html += `
-                                                                                                                                                        <div>
-                                                                                                                                                            <strong>• Prerequisites</strong><br>
-                                                                                                                                                            ${prerequisites}
-                                                                                                                                                        </div>
-                                                                                                                                                    `;
+                                                                                                                                                                                                                                <div>
+                                                                                                                                                                                                                                    <strong>• Prerequisites</strong><br>
+                                                                                                                                                                                                                                    ${prerequisites}
+                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                            `;
                                 }
 
                                 html += `</div>`;
@@ -899,12 +899,16 @@
 
                             </h3>
 
-                            @if($item->is_approved)
+                            @if($item->is_approved == 1)
 
                                 <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
                                     Approved
                                 </span>
+                            @elseif($item->is_approved == 2)
 
+                                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold">
+                                    Rejected
+                                </span>
                             @else
 
                                 <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-semibold">
@@ -918,7 +922,7 @@
                         <div class="text-sm text-gray-500">
 
                             Semester :
-                            {{ $item->semester }}
+                            {{ $item->semester }} - {{ $item->paper->paper_type ?? '-' }}
 
                         </div>
 
