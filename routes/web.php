@@ -192,6 +192,12 @@ Route::middleware('auth:admin')->group(function(){
     Route::get('teacher-assignments/{id}', [AdminController::class, 'edit']);
     Route::post('teacher-assignments/{id}', [AdminController::class, 'update']);
     Route::patch('/admin/teacher-assignments/{id}/status',[AdminController::class, 'toggleStatus'])->name('admin.teacher.assignments.status');
+    Route::get(
+        '/admin/roles',
+        function(){
+            return view('pages.admin.roles');
+        }
+    )->name('admin.roles');
 });
 
 Route::middleware('auth:admin')->prefix('admin')->group(function(){
@@ -204,6 +210,9 @@ Route::middleware('auth:admin')->prefix('admin')->group(function(){
     Route::get('ia-marks',function(){
         return view('pages.admin.ia-marks');
     })->name('admin.ia-marks');
+    Route::get('practical-marks',function(){
+        return view('pages.admin.practical-marks');
+    })->name('admin.practical-marks');
 });
 Route::middleware('auth:student')->prefix('students')->group(function(){
     Route::get('/ia-marks', function(){
