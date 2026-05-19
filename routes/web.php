@@ -221,6 +221,20 @@ Route::middleware('auth:student')->prefix('students')->group(function(){
 });
 
 
+
+Route::middleware('auth:admin,teacher')->prefix('admin')->group(function(){
+    Route::get(
+        '/registration-management',
+        function(){
+            return view("pages.admin.registration-manage");
+        }
+    )->name('admin.registration-management');
+});
+
+
+
+
+
 Route::middleware('auth:admin,student')->group(function() {
 
     Route::prefix('students')->name('students.')->group(function () {

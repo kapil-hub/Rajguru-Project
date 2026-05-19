@@ -203,6 +203,13 @@ class MenuHelper
             ],
             [
                 'icon' => 'pages',
+                'name' => 'Registration Management',
+                'path' => '/admin/registration-management',
+                'permission' => auth('admin')->check() || auth()->user()->hasRole("TIC")  ? true : False,
+                'class' => request()->routeIs('admin.registration-management') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+            [
+                'icon' => 'pages',
                 'name' => 'Attendence Master Report',
                 'path' => '/admin/student-attendance-master',
                 'permission' => auth('admin')->check() ? true : False,
