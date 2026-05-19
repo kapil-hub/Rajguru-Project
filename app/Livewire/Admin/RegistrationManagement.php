@@ -52,49 +52,66 @@ class RegistrationManagement extends Component
         }
     }
 
-        $data =  StudentSubjectRegistrationForm::query()
+        $data = StudentSubjectRegistrationForm::query()
 
-            ->with('student.academic')
+    ->with('student.academic')
 
-            ->select(
-                'student_user_id',
-                'semester',
-                DB::raw('COUNT(*) as total_subjects'),
-                DB::raw('SUM(CASE WHEN is_approved = 0 THEN 1 ELSE 0 END) as pending_count'),
-                DB::raw('SUM(CASE WHEN is_approved = 1 THEN 1 ELSE 0 END) as approved_count')
-            )
+    ->select(
+        'student_user_id',
+        'semester',
 
-            ->when($this->search, function ($q) {
+        DB::raw('COUNT(*) as total_subjects'),
 
-                $q->whereHas('student', function ($sub) {
+        DB::raw('SUM(CASE WHEN is_approved = 0 THEN 1 ELSE 0 END) as pending_count'),
 
-                    $sub->where('name', 'like', '%' . $this->search . '%')
-                            ->orWhereHas('academic', function ($subsss) {
-                                $subsss->where('roll_number', 'like', '%' . $this->search . '%');
+        DB::raw('SUM(CASE WHEN is_approved = 1 THEN 1 ELSE 0 END) as approved_count'),
 
-                            });
+        DB::raw('MAX(created_at) as latest_created_at')
+    )
+
+    ->when($this->search, function ($q) {
+
+        $q->whereHas('student', function ($sub) {
+
+            $sub->where('name', 'like', '%' . $this->search . '%')
+
+                ->orWhereHas('academic', function ($subsss) {
+
+                    $subsss->where(
+                        'roll_number',
+                        'like',
+                        '%' . $this->search . '%'
+                    );
 
                 });
 
-            })
+        });
 
-            ->when($this->semester, function ($q) {
+    })
 
-                $q->where('semester', $this->semester);
+    ->when($this->semester, function ($q) {
 
-            })
-            ->when(!empty($sameDepartMentStudentIds),function ($q) use($sameDepartMentStudentIds) {
-                 $q->whereIn('student_user_id', $sameDepartMentStudentIds);
-             })
+        $q->where('semester', $this->semester);
 
-            ->groupBy(
-                'student_user_id',
-                'semester'
-            )
+    })
 
-            ->latest()
+    ->when(!empty($sameDepartMentStudentIds), function ($q) use ($sameDepartMentStudentIds) {
 
-            ->paginate(15);
+        $q->whereIn(
+            'student_user_id',
+            $sameDepartMentStudentIds
+        );
+
+    })
+
+    ->groupBy(
+        'student_user_id',
+        'semester'
+    )
+
+    ->orderByDesc('latest_created_at')
+
+    ->paginate(15);
 
         return $data;
     }
