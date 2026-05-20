@@ -44,4 +44,8 @@ class Student extends Authenticatable
     {
         return $this->hasMany(\App\Models\StudentDailyAttendance::class, 'student_id', 'id');
     }
+
+    public function hasRole($dd){
+        return false;
+    }
 }
