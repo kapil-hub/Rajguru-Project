@@ -39,6 +39,13 @@ class MenuHelper
             ],
             [
                 'icon' => 'calendar',
+                'name' => 'Timetable',
+                'path' => '/admin/timetable',
+                'permission' => auth('admin')->check(),
+                'class' => request()->routeIs('admin.timetable') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+            [
+                'icon' => 'calendar',
                 'name' => 'Courses',
                 'path' => '/admin/courses/index',
                 'permission' => auth('admin')->check(),
