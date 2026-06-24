@@ -147,10 +147,72 @@ class StudentController extends Controller
             'academic.course',
             'academic.department',
             'enrolDetails',
-            'papers',
+            'papers.paper',
         ]);
 
-        return view('pages.students.show', compact('student'));
+        $academicHistory = [];
+        if (auth('admin')->check()) {
+            $historyRecords = DB::table('student_academic_history')
+                ->leftJoin('departments', 'student_academic_history.department_id', '=', 'departments.id')
+                ->leftJoin('courses', 'student_academic_history.course_id', '=', 'courses.id')
+                ->where('student_academic_history.student_user_id', $student->id)
+                ->select('student_academic_history.*', 'departments.name as department_name', 'courses.name as course_name')
+                ->get();
+
+            $historyPapers = DB::table('student_papers_history')
+                ->join('paper_master', 'student_papers_history.paper_master_id', '=', 'paper_master.id')
+                ->where('student_papers_history.student_user_id', $student->id)
+                ->select('student_papers_history.*', 'paper_master.name as paper_name', 'paper_master.code as paper_code', 'paper_master.paper_type')
+                ->get();
+
+            $semesters = collect();
+
+            foreach ($historyRecords as $record) {
+                $sem = $record->current_semester;
+                $semesters->put($sem, [
+                    'is_current' => false,
+                    'academic' => $record,
+                    'papers' => $historyPapers->where('semester', $sem),
+                ]);
+            }
+
+            if ($student->academic) {
+                $currentSem = $student->academic->current_semester;
+                if (!$semesters->has($currentSem)) {
+                    $currentAcademicObj = (object)[
+                        'roll_number' => $student->academic->roll_number,
+                        'college_roll_number' => $student->academic->college_roll_number,
+                        'department_name' => optional($student->academic->department)->name,
+                        'course_name' => optional($student->academic->course)->name,
+                        'current_semester' => $currentSem,
+                        'section' => $student->academic->section,
+                        'current_academic_year' => $student->academic->current_academic_year,
+                    ];
+                    
+                    $currentPapersMapped = $student->papers->map(function($sp) {
+                        return (object)[
+                            'paper_code' => optional($sp->paper)->code,
+                            'paper_name' => optional($sp->paper)->name,
+                            'paper_type' => optional($sp->paper)->paper_type,
+                            'is_backlog' => $sp->is_backlog,
+                            'academic_year' => $sp->academic_year,
+                        ];
+                    });
+
+                    $semesters->put($currentSem, [
+                        'is_current' => true,
+                        'academic' => $currentAcademicObj,
+                        'papers' => $currentPapersMapped,
+                    ]);
+                }
+            }
+
+            $academicHistory = $semesters->sortByDesc(function ($value, $key) {
+                return (int)$key;
+            });
+        }
+
+        return view('pages.students.show', compact('student', 'academicHistory'));
     }
 
     /* =======================
@@ -161,12 +223,76 @@ class StudentController extends Controller
         $this->authorize('update', $student);
         $allPapers = Paper::select('id', 'name', 'code', 'semester')->orderBy('name')->get();
 
+        $student->load(['academic', 'enrolDetails', 'papers.paper']);
+
+        $academicHistory = [];
+        if (auth('admin')->check()) {
+            $historyRecords = DB::table('student_academic_history')
+                ->leftJoin('departments', 'student_academic_history.department_id', '=', 'departments.id')
+                ->leftJoin('courses', 'student_academic_history.course_id', '=', 'courses.id')
+                ->where('student_academic_history.student_user_id', $student->id)
+                ->select('student_academic_history.*', 'departments.name as department_name', 'courses.name as course_name')
+                ->get();
+
+            $historyPapers = DB::table('student_papers_history')
+                ->join('paper_master', 'student_papers_history.paper_master_id', '=', 'paper_master.id')
+                ->where('student_papers_history.student_user_id', $student->id)
+                ->select('student_papers_history.*', 'paper_master.name as paper_name', 'paper_master.code as paper_code', 'paper_master.paper_type')
+                ->get();
+
+            $semesters = collect();
+
+            foreach ($historyRecords as $record) {
+                $sem = $record->current_semester;
+                $semesters->put($sem, [
+                    'is_current' => false,
+                    'academic' => $record,
+                    'papers' => $historyPapers->where('semester', $sem),
+                ]);
+            }
+
+            if ($student->academic) {
+                $currentSem = $student->academic->current_semester;
+                if (!$semesters->has($currentSem)) {
+                    $currentAcademicObj = (object)[
+                        'roll_number' => $student->academic->roll_number,
+                        'college_roll_number' => $student->academic->college_roll_number,
+                        'department_name' => optional($student->academic->department)->name,
+                        'course_name' => optional($student->academic->course)->name,
+                        'current_semester' => $currentSem,
+                        'section' => $student->academic->section,
+                        'current_academic_year' => $student->academic->current_academic_year,
+                    ];
+                    
+                    $currentPapersMapped = $student->papers->map(function($sp) {
+                        return (object)[
+                            'paper_code' => optional($sp->paper)->code,
+                            'paper_name' => optional($sp->paper)->name,
+                            'paper_type' => optional($sp->paper)->paper_type,
+                            'is_backlog' => $sp->is_backlog,
+                            'academic_year' => $sp->academic_year,
+                        ];
+                    });
+
+                    $semesters->put($currentSem, [
+                        'is_current' => true,
+                        'academic' => $currentAcademicObj,
+                        'papers' => $currentPapersMapped,
+                    ]);
+                }
+            }
+
+            $academicHistory = $semesters->sortByDesc(function ($value, $key) {
+                return (int)$key;
+            });
+        }
+
         return view('pages.students.edit', [
-            'student' => $student->load(['academic', 'enrolDetails',
-                'papers.paper']),
+            'student' => $student,
             'courses' => Courses::all(),
             'departments' => Departments::all(),
             'allPapers' => $allPapers,
+            'academicHistory' => $academicHistory,
         ]);
     }
 

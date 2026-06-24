@@ -22,7 +22,7 @@
     background: #ca8a04;
 }
 
-/* Firefox */
+/* Firefox */ 
 
 .custom-scrollbar {
     scrollbar-width: thin;
@@ -48,7 +48,102 @@
 
         </div>
 
+        @if(Auth::guard('admin')->check())
+
+            <div class="flex items-center gap-3">
+
+                <button wire:click="migrateRegistrations" wire:loading.attr="disabled"
+                    class="px-5 py-3 rounded-2xl font-semibold transition bg-rose-600 text-white shadow-lg hover:bg-rose-700 disabled:opacity-60">
+
+                    Migrate Registrations
+
+                </button>
+
+                <span wire:loading wire:target="migrateRegistrations" class="text-sm font-medium text-rose-600">
+                    Running migration...
+                </span>
+
+            </div>
+
+        @endif
+
     </div>
+
+    @if($showMigrationPanel && Auth::guard('admin')->check())
+
+        <div class="bg-rose-50 border border-rose-200 rounded-3xl p-5 mb-6">
+
+            <div class="flex items-start justify-between gap-4">
+
+                <div>
+
+                    <h2 class="text-lg font-bold text-rose-900">
+                        Registration Migration Status
+                    </h2>
+
+                    <p class="text-sm text-rose-700 mt-1">
+                        The process archives current student papers, clears the live table, imports approved registrations, and updates student semesters in a single transaction.
+                    </p>
+
+                </div>
+
+                @if($migrationSuccess)
+
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                        Completed
+                    </span>
+
+                @elseif($migrationError)
+
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                        Failed
+                    </span>
+
+                @else
+
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                        In Progress
+                    </span>
+
+                @endif
+
+            </div>
+
+            @if($migrationError)
+
+                <div class="mt-4 rounded-2xl bg-red-100 text-red-700 px-4 py-3 text-sm">
+                    {{ $migrationError }}
+                </div>
+
+            @endif
+
+            @if(count($migrationLogs))
+
+                <ol class="mt-4 space-y-2">
+
+                    @foreach($migrationLogs as $log)
+
+                        <li class="flex gap-3 text-sm text-rose-900">
+
+                            <span class="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-rose-600 text-white text-xs font-bold">
+                                {{ $loop->iteration }}
+                            </span>
+
+                            <span class="leading-6">
+                                {{ $log }}
+                            </span>
+
+                        </li>
+
+                    @endforeach
+
+                </ol>
+
+            @endif
+
+        </div>
+
+    @endif
 
     <!-- TABS -->
 
