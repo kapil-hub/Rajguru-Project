@@ -19,7 +19,7 @@ use App\Http\Controllers\Admin\AdminAttendanceController;
 use App\Livewire\Teacher\PracticalMarks;
 use App\Http\Controllers\NotificationController;
 use App\Livewire\Student\IaMarks;
-
+use App\Livewire\Admin\TimetableManager;
 
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
@@ -320,6 +320,10 @@ Route::middleware('auth:admin')
         Route::get('courses/index',function(){
             return view('pages.admin.courses.index');
         });
+        Route::view(
+            '/timetable',
+            'pages.admin.timetable.index'
+        )->name('admin.timetable');
 
     });
     

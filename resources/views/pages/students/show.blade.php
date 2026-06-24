@@ -106,6 +106,90 @@
     </table>
 </div>
 
+    @if(auth('admin')->check() && !empty($academicHistory))
+        <!-- ACADEMIC HISTORY (ADMIN ONLY) -->
+        <div class="bg-white rounded-xl shadow p-6 mt-6 border-t-4 border-indigo-600">
+            <h3 class="font-bold text-xl mb-4 text-indigo-700 flex items-center gap-2">
+                📜 Academic History (All Semesters)
+            </h3>
+            
+            <div class="space-y-6">
+                @foreach($academicHistory as $sem => $history)
+                    <div class="border rounded-xl p-4 bg-gray-50 shadow-sm">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between border-b pb-3 mb-4">
+                            <div>
+                                <span class="text-lg font-bold text-gray-800">Semester {{ $sem }}</span>
+                                @if($history['is_current'])
+                                    <span class="ml-2 inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-800">
+                                        Current Active
+                                    </span>
+                                @else
+                                    <span class="ml-2 inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-800">
+                                        Historical
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="mt-2 md:mt-0 text-sm text-gray-600 flex flex-wrap gap-x-4">
+                                <div><strong>Course:</strong> {{ $history['academic']->course_name ?? '-' }}</div>
+                                <div><strong>Section:</strong> {{ $history['academic']->section ?? '-' }}</div>
+                                <div><strong>Acad Year:</strong> {{ $history['academic']->current_academic_year ?? '-' }}</div>
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-4 mb-4 text-sm text-gray-600">
+                            <div><strong>Exam Roll No:</strong> {{ $history['academic']->roll_number ?? '-' }}</div>
+                            <div><strong>College Roll No:</strong> {{ $history['academic']->college_roll_number ?? '-' }}</div>
+                        </div>
+
+                        <h4 class="font-semibold text-sm mb-2 text-gray-700">Papers Registered:</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm border bg-white rounded-lg overflow-hidden">
+                                <thead class="bg-gray-100 text-gray-700 font-medium">
+                                    <tr>
+                                        <th class="p-2 text-left">Code</th>
+                                        <th class="p-2 text-left">Paper Name</th>
+                                        <th class="p-2 text-left">Type</th>
+                                        <th class="p-2 text-center">Status</th>
+                                        <th class="p-2 text-center">Year</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y text-gray-600">
+                                    @forelse($history['papers'] as $paper)
+                                        <tr class="{{ $paper->is_backlog ? 'bg-red-50 text-red-800' : '' }}">
+                                            <td class="p-2 font-mono text-xs">{{ $paper->paper_code }}</td>
+                                            <td class="p-2">
+                                                {{ $paper->paper_name }}
+                                                @if($paper->is_backlog)
+                                                    <span class="ml-2 inline-flex items-center text-xs font-bold px-1.5 py-0.2 rounded bg-red-200 text-red-800">
+                                                        Backlog
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="p-2 text-xs">{{ $paper->paper_type }}</td>
+                                            <td class="p-2 text-center text-xs">
+                                                @if($paper->is_backlog)
+                                                    <span class="text-red-600">Backlog</span>
+                                                @else
+                                                    <span class="text-green-600">Regular</span>
+                                                @endif
+                                            </td>
+                                            <td class="p-2 text-center text-xs">{{ $paper->academic_year }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="p-4 text-center text-gray-400 text-sm">
+                                                No papers registered in this semester.
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 
 </div>
 @endsection

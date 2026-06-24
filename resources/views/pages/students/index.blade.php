@@ -5,7 +5,7 @@
 
     <h2 class="text-xl font-semibold mb-4">Manage Students</h2>
 
-    <div class="max-w-6xl mx-auto rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
+    <div class="w-full bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
     <!-- Page Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
@@ -62,7 +62,7 @@
 
 </div>
 
-    <div class="max-w-7xl mx-auto px-4 py-6">
+    <div class="w-full py-6">
 
     <!-- ================= HEADER ================= -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
@@ -89,9 +89,10 @@
     </div>
 
     <!-- ================= TABLE CARD ================= -->
-    <div class="bg-white text-3xl font-bold rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
+    <div class="bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
-        <table class="w-full text-sm text-left">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
             <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
                 <tr>
                     <th class="p-3">Name</th>
@@ -151,7 +152,8 @@
                 </tr>
             @endforelse
             </tbody>
-        </table>
+            </table>
+        </div>
     </div>
 
     <!-- ================= PAGINATION ================= -->
