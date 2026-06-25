@@ -20,7 +20,10 @@ class PaperTimetable extends Model
         'is_lecture',
         'is_tutorial',
         'is_practical',
-        'is_coordinator'
+        'is_coordinator',
+        'created_by_id',
+        'created_by_type',
+        'batches'
     ];
 
     public function paper()

@@ -10,11 +10,12 @@ use App\Models\Paper;
 use App\Models\Room;
 use App\Models\Teacher;
 use App\Models\PaperTimetable;
+use App\Models\TimetableSlot;
 
 class TimetableManager extends Component
 {
     public $department_id = '';
-    public $course_id = '';
+    public $course_id = ''; 
     public $semester = '';
     public $paper_id = '';
     public $teacher_id = '';
@@ -44,20 +45,30 @@ class TimetableManager extends Component
     'Saturday'
 ];
 
-public $timeSlots = [
-    '09:00-10:00',
-    '10:00-11:00',
-    '11:00-12:00',
-    '12:00-01:00',
-    '01:00-02:00',
-    '02:00-03:00',
-    '03:00-04:00',
-    '04:00-05:00',
-    '05:00-06:00',
-];
+public $timeSlots = [];
+public $availableBatches = [];
+public $selectedBatches = [];
   protected $listeners = [
     'open-slot-modal'
 ];
+
+    public function mount()
+    {
+        $this->timeSlots = TimetableSlot::orderBy('start_time')
+            ->get()
+            ->map(fn($s) => $s->formatted_slot)
+            ->toArray();
+
+        if (auth('teacher')->check()) {
+            $teacher = auth('teacher')->user();
+            if ($teacher->hasRole('Timetable Controller')) {
+                $this->department_id = $teacher->department_id;
+                $this->courses = Courses::where('dept_id', $this->department_id)->get();
+            } else {
+                abort(403, 'Unauthorized.');
+            }
+        }
+    }
 
     protected function normalizeTimeValue($time): string
     {
@@ -133,6 +144,13 @@ public $timeSlots = [
     {
         $timetable = PaperTimetable::findOrFail($timetableId);
 
+        if (auth('teacher')->check() && $mode === 'edit') {
+            if (is_null($timetable->created_by_type) || $timetable->created_by_type === 'admin') {
+                session()->flash('error', 'You cannot edit timetables created by an admin.');
+                return;
+            }
+        }
+
         $this->loadFiltersFromTimetable($timetable);
         $this->activeSection = 'create';
         $this->calendarMode = $mode === 'edit' ? 'edit' : 'view';
@@ -188,6 +206,13 @@ public $timeSlots = [
 
         $slot = PaperTimetable::with(['paper', 'room', 'teacher'])->findOrFail($slotId);
 
+        if (auth('teacher')->check()) {
+            if (is_null($slot->created_by_type) || $slot->created_by_type === 'admin') {
+                session()->flash('error', 'You cannot edit timetables created by an admin.');
+                return;
+            }
+        }
+
         $this->selectedTimetableId = $slot->id;
         $this->day_name = $slot->day_name;
         $this->start_time = $slot->start_time;
@@ -198,18 +223,42 @@ public $timeSlots = [
         $this->is_tutorial = $slot->is_tutorial;
         $this->is_practical = $slot->is_practical;
         $this->is_coordinator = $slot->is_coordinator;
+        $this->paper_id = $slot->paper_id;
+        $this->loadAvailableBatches();
+        $this->selectedBatches = $slot->batches ? explode(',', $slot->batches) : [];
 
-        $this->faculty = Teacher::all();
+        if (auth('teacher')->check()) {
+            $this->faculty = Teacher::where('department_id', auth('teacher')->user()->department_id)->get();
+        } else {
+            $this->faculty = Teacher::all();
+        }
         $this->loadAvailableRooms();
         $this->modalKey++;
 
         $this->showModal = true;
     }
 
+    public function loadAvailableBatches()
+    {
+        if ($this->paper_id) {
+            $this->availableBatches = \App\Models\StudentPaper::where('paper_master_id', $this->paper_id)
+                ->whereNotNull('batch')
+                ->where('batch', '!=', '')
+                ->distinct()
+                ->pluck('batch')
+                ->sort()
+                ->toArray();
+        } else {
+            $this->availableBatches = [];
+        }
+    }
+
     public function updatedPaperId()
     {
         $this->hideCalendar();
         $this->room_id = '';
+        $this->loadAvailableBatches();
+        $this->selectedBatches = [];
     }
 
     public function updatedDepartmentId()
@@ -256,10 +305,16 @@ public $timeSlots = [
     $this->day_name = $day;
     $this->selectedTimetableId = null;
     $this->resetSlotForm();
+    $this->selectedBatches = [];
+    $this->loadAvailableBatches();
 
     [$start,$end] = explode('-', $slot);
 
-    $this->faculty = Teacher::all();
+    if (auth('teacher')->check()) {
+        $this->faculty = Teacher::where('department_id', auth('teacher')->user()->department_id)->get();
+    } else {
+        $this->faculty = Teacher::all();
+    }
     $this->start_time = $start;
     $this->end_time = $end;
 
@@ -303,6 +358,7 @@ public $timeSlots = [
                         'end_time' => $slot->end_time,
                         'paper_name' => $slot->paper?->name,
                         'room_label' => $roomLabel,
+                        'batches' => $slot->batches,
                     ],
                 ];
             })
@@ -343,7 +399,8 @@ public function closeModal()
         $this->showCalendar = true;
         $this->activeSection = 'create';
     $this->calendarMode = 'create';
-    $this->selectedTimetableId = null;
+        $this->selectedTimetableId = null;
+        $this->loadAvailableBatches();
         $this->loadOccupiedSlots();
 
         $this->dispatch(
@@ -353,6 +410,7 @@ public function closeModal()
     }
 public function save()
 {
+    // dd($this->selectedBatches);
    $this->validate([
             'department_id' => 'required',
             'course_id'     => 'required',
@@ -387,12 +445,27 @@ public function save()
             'is_tutorial'   => $this->is_tutorial,
             'is_practical'  => $this->is_practical,
             'is_coordinator'=> $this->is_coordinator,
+            'batches'       => count($this->selectedBatches) > 0 ? implode(',', $this->selectedBatches) : null,
         ];
 
         if ($this->selectedTimetableId) {
+            $slot = PaperTimetable::findOrFail($this->selectedTimetableId);
+            if (auth('teacher')->check()) {
+                if (is_null($slot->created_by_type) || $slot->created_by_type === 'admin') {
+                    session()->flash('error', 'You cannot edit timetables created by an admin.');
+                    return;
+                }
+            }
             PaperTimetable::whereKey($this->selectedTimetableId)->update($payload);
             session()->flash('success', 'Timetable updated successfully.');
         } else {
+            if (auth('admin')->check()) {
+                $payload['created_by_id'] = auth('admin')->id();
+                $payload['created_by_type'] = 'admin';
+            } elseif (auth('teacher')->check()) {
+                $payload['created_by_id'] = auth('teacher')->id();
+                $payload['created_by_type'] = 'teacher';
+            }
             PaperTimetable::create($payload);
             session()->flash('success', 'Timetable created successfully.');
         }
@@ -418,13 +491,20 @@ public function save()
 }
     public function render()
     {
+        $departmentsQuery = Departments::query();
+        $timetablesQuery = PaperTimetable::with(['paper', 'room', 'teacher'])->latest();
+
+        if (auth('teacher')->check()) {
+            $deptId = auth('teacher')->user()->department_id;
+            $departmentsQuery->where('id', $deptId);
+            $timetablesQuery->where('department_id', $deptId);
+        }
+
         return view(
             'livewire.admin.timetable-manager',
             [
-                'departments' => Departments::all(),
-                'timetables' => PaperTimetable::with(['paper', 'room', 'teacher'])
-                    ->latest()
-                    ->get()
+                'departments' => $departmentsQuery->get(),
+                'timetables' => $timetablesQuery->get()
             ]
         );
     }

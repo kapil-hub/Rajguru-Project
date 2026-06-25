@@ -13,6 +13,10 @@ class StudentPaper extends Model
     public function paper(){
         return $this->belongsTo(Paper::class,'paper_master_id');
     }
+
+    public function student(){
+        return $this->belongsTo(Student::class,'student_user_id');
+    }
     
     
 

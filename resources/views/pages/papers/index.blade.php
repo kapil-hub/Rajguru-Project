@@ -57,13 +57,21 @@
                     <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
                 </div>
 
+                <div class="w-full md:w-48">
+                    <select name="semester_filter" onchange="this.form.submit()" class="w-full border rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm text-gray-700">
+                        <option value="">All Semesters</option>
+                        <option value="odd" {{ ($semesterFilter ?? '') === 'odd' ? 'selected' : '' }}>Odd Semesters</option>
+                        <option value="even" {{ ($semesterFilter ?? '') === 'even' ? 'selected' : '' }}>Even Semesters</option>
+                    </select>
+                </div>
+
                 <div class="flex gap-2">
-                    <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-lg">
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition">
                         Search
                     </button>
 
-                    @if(!empty($search))
-                        <a href="{{ route('papers.index') }}" class="px-5 py-2 bg-gray-200 rounded-lg">
+                    @if(!empty($search) || !empty($semesterFilter))
+                        <a href="{{ route('papers.index') }}" class="px-5 py-2 bg-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-300 transition text-center flex items-center justify-center">
                             Reset
                         </a>
                     @endif
@@ -83,7 +91,7 @@
                 <table class="min-w-full border-collapse">
                     <thead class="bg-gray-50 sticky top-0 z-10">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-semibold">Department</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold">Department</th> 
                             <th class="px-4 py-3 text-left text-xs font-semibold">Course</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold">Semester</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold">Paper Code</th>
@@ -93,14 +101,13 @@
                             <th class="px-4 py-3 text-left text-xs font-semibold">Credit Of Lectures</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold">Credit Of Tutorials</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold">Credit Of Practicals</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold"> Number Of Students</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold"> Marks Breakup</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold">Action</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold">Number Of Students</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold">Actions</th>
                         </tr>
                     </thead>
 
                     <tbody class="divide-y">
-                        @forelse($papers as $paper)
+                        @forelse($papers as $paper) 
                                         <tr class="hover:bg-gray-50 transition">
                                             <td class="px-4 py-3">{{ $paper->department->name ?? '-' }}</td>
                                             <td class="px-4 py-3">{{ $paper->course->name ?? '-' }}</td>
@@ -123,11 +130,15 @@
                                             <td class="px-4 py-3">{{ $paper->number_of_lectures }}</td>
                                             <td class="px-4 py-3 font-medium">{{ $paper->number_of_tutorials }}</td>
                                             <td class="px-4 py-3">{{ $paper->number_of_practicals }}</td>
-                                            <td class="px-4 py-3">{{ $paper->students()->count() }}</td>
-                                            <td> <a href="/teacher/marksBreakup/{{ $paper->id }}"
-                                                    class="px-3 py-1 bg-yellow-600 text-white rounded">Breakup</a></td>
-                                            <td> <a href="/paper/edit/{{ $paper->id }}"
-                                                    class="px-3 py-1 bg-blue-600 text-white rounded">edit</a></td>
+                                            <td class="px-4 py-3 text-center font-medium">{{ $paper->students()->count() }}</td>
+                                            <td class="px-4 py-3 text-center space-x-1 whitespace-nowrap">
+                                                <a href="/teacher/marksBreakup/{{ $paper->id }}"
+                                                    class="inline-flex items-center px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-xs font-semibold transition">Breakup</a>
+                                                <a href="/paper/edit/{{ $paper->id }}"
+                                                    class="inline-flex items-center px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition">Edit</a>
+                                                <a href="{{ route('papers.batches', $paper->id) }}"
+                                                    class="inline-flex items-center px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold transition">Batches</a>
+                                            </td>
                                         </tr>
                         @empty
                             <tr>

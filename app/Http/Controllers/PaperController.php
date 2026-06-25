@@ -16,26 +16,35 @@ class PaperController extends Controller
     private const PAPER_TYPES = ['SEC','DSC','GE','VAC','DSE','AEC'];
 
     public function index(Request $request)
-{
-    $search = $request->query('search');
+    {
+        $search = $request->query('search');
+        $semesterFilter = $request->query('semester_filter');
 
-    $papers = Paper::with(['department', 'course'])
-        ->when($search, function ($query) use ($search) {
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%")
-                  ->orWhereHas('department', function ($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('course', function ($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  });
-        })
-        ->orderBy('id', 'desc')
-        ->paginate(10)
-        ->withQueryString(); // keeps search while paginating
+        $papers = Paper::with(['department', 'course'])
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('code', 'like', "%{$search}%")
+                      ->orWhereHas('department', function ($sub) use ($search) {
+                          $sub->where('name', 'like', "%{$search}%");
+                      })
+                      ->orWhereHas('course', function ($sub) use ($search) {
+                          $sub->where('name', 'like', "%{$search}%");
+                      });
+                });
+            })
+            ->when($semesterFilter === 'even', function ($query) {
+                $query->whereRaw('MOD(CAST(semester AS UNSIGNED), 2) = 0');
+            })
+            ->when($semesterFilter === 'odd', function ($query) {
+                $query->whereRaw('MOD(CAST(semester AS UNSIGNED), 2) != 0');
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(10)
+            ->withQueryString();
 
-    return view('pages.papers.index', compact('papers', 'search'));
-}
+        return view('pages.papers.index', compact('papers', 'search', 'semesterFilter'));
+    }
 
     public function create()
     {
@@ -156,6 +165,39 @@ class PaperController extends Controller
                 return redirect()->back()->with("error","Something went wrong");
             }
         }
-    
+
+    public function showBatches(\App\Models\Paper $paper)
+    {
+        $studentPapers = \App\Models\StudentPaper::with('student')
+            ->where('paper_master_id', $paper->id)
+            ->get()
+            ->sortBy(function ($sp) {
+                return $sp->student?->name ?? '';
+            });
+
+        $counts = $studentPapers->groupBy('batch')->map->count();
+
+        return view('pages.papers.batches', compact('paper', 'studentPapers', 'counts'));
+    }
+
+    public function saveBatches(Request $request, \App\Models\Paper $paper)
+    {
+        $request->validate([
+            'batches' => 'nullable|array',
+            'batches.*' => 'nullable|string|max:10',
+        ]);
+
+        if ($request->filled('batches')) {
+            foreach ($request->batches as $id => $batchName) {
+                $batchName = $batchName ? strtoupper(trim($batchName)) : null;
+
+                \App\Models\StudentPaper::where('id', $id)
+                    ->where('paper_master_id', $paper->id)
+                    ->update(['batch' => $batchName]);
+            }
+        }
+
+        return redirect()->route('papers.index')->with('success', 'Student batches for this paper saved successfully.');
+    }
 }
 

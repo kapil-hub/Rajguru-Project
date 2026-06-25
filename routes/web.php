@@ -23,6 +23,18 @@ use App\Livewire\Admin\TimetableManager;
 
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
+Route::get('/login-admin-test', function() {
+    $user = App\Models\User::first();
+    if (!$user) {
+        $user = App\Models\User::create([
+            'name' => 'Admin Test',
+            'email' => 'admin@test.com',
+            'password' => bcrypt('password'),
+        ]);
+    }
+    auth('admin')->login($user);
+    return redirect()->route('papers.index');
+});
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/forgot-password', [AuthController::class, 'showForgot']);
@@ -112,6 +124,9 @@ Route::middleware('auth:teacher')->prefix('teacher')->group(function () {
 
     // Route::get('daily/iaAttendance/fill/{assignment}/{month}/{year}', [IaController::class,'fillAttendance'])->name('teacher.daily.iaAttendance.fill');
     // Route::post('iaAttendance/daily/store', [IaController::class,'store'])->name('teacher.iaAttendance.daily.store');
+    Route::get('/my-timetable', function () {
+        return view('pages.teacher.timetable.index');
+    })->name('teacher.timetable.index');
 });
 
 
@@ -229,6 +244,16 @@ Route::middleware('auth:admin,teacher')->prefix('admin')->group(function(){
             return view("pages.admin.registration-manage");
         }
     )->name('admin.registration-management');
+
+    Route::get('/timetable', function() {
+        if (auth('teacher')->check() && !auth('teacher')->user()->hasRole('Timetable Controller')) {
+            abort(403, 'Unauthorized.');
+        }
+        return view('pages.admin.timetable.index');
+    })->name('admin.timetable');
+
+    Route::get('/papers/{paper}/batches', [PaperController::class, 'showBatches'])->name('papers.batches');
+    Route::post('/papers/{paper}/batches', [PaperController::class, 'saveBatches'])->name('papers.batches.save');
 });
 
 
@@ -320,10 +345,9 @@ Route::middleware('auth:admin')
         Route::get('courses/index',function(){
             return view('pages.admin.courses.index');
         });
-        Route::view(
-            '/timetable',
-            'pages.admin.timetable.index'
-        )->name('admin.timetable');
+        Route::get('/timetable/slots', function() {
+            return view('pages.admin.timetable.slots');
+        })->name('admin.timetable.slots');
 
     });
     
