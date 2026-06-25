@@ -63,7 +63,7 @@ public $selectedBatches = [];
             $teacher = auth('teacher')->user();
             if ($teacher->hasRole('Timetable Controller')) {
                 $this->department_id = $teacher->department_id;
-                $this->courses = Courses::where('dept_id', $this->department_id)->get();
+                $this->courses = Courses::where('dept_id', $this->department_id)->orWhere('id', 15)->get();
             } else {
                 abort(403, 'Unauthorized.');
             }
@@ -128,7 +128,7 @@ public $selectedBatches = [];
         $this->semester = $timetable->semester;
         $this->paper_id = $timetable->paper_id;
 
-        $this->courses = Courses::where('dept_id', $this->department_id)->get();
+        $this->courses = Courses::where('dept_id', $this->department_id)->orWhere('id', 15)->get();
         $this->semesters = Paper::where('course_id', $this->course_id)
             ->select('semester')
             ->distinct()
