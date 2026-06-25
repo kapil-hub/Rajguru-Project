@@ -41,8 +41,15 @@ class MenuHelper
                 'icon' => 'calendar',
                 'name' => 'Timetable',
                 'path' => '/admin/timetable',
-                'permission' => auth('admin')->check(),
+                'permission' => auth('admin')->check() || (auth('teacher')->check() && auth('teacher')->user()->hasRole('Timetable Controller')),
                 'class' => request()->routeIs('admin.timetable') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+            [
+                'icon' => 'calendar',
+                'name' => 'Timetable Slots',
+                'path' => '/admin/timetable/slots',
+                'permission' => auth('admin')->check(),
+                'class' => request()->routeIs('admin.timetable.slots') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
                 'icon' => 'calendar',
@@ -88,6 +95,13 @@ class MenuHelper
                 'permission' =>  auth('teacher')->check() ? true : False, 
                 'class' => request()->routeIs('teacher.attendance.history') ? 'menu-item-active' : 'menu-item-inactive',
                 
+            ],
+            [
+                'icon' => 'calendar',
+                'name' => 'My Timetable',
+                'path' => '/teacher/my-timetable',
+                'permission' => auth('teacher')->check() ? true : false,
+                'class' => request()->routeIs('teacher.timetable.index') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             // [
             //     'icon' => 'pages',

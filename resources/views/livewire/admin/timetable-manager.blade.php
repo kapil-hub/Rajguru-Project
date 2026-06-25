@@ -103,6 +103,16 @@
 
     @endif
 
+    @if (session('error'))
+
+        <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+
+            {{ session('error') }}
+
+        </div>
+
+    @endif
+
     @if($activeSection === 'created')
 
     <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -260,7 +270,8 @@
 
                 <select
                     wire:model.live="department_id"
-                    class="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                    @disabled(auth('teacher')->check())
+                    class="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:cursor-not-allowed">
 
                     <option value="">
                         Select Department
@@ -533,22 +544,28 @@
                                         $occupiedSlot = $occupiedSlots[$slotKey];
                                     @endphp
 
-                                    <div
-                                        class="flex h-24 flex-col items-center justify-center rounded-xl border-2 border-green-400 bg-green-100 px-2 text-center text-green-700">
+                                     <div
+                                         class="flex h-24 flex-col items-center justify-center rounded-xl border-2 border-green-400 bg-green-100 px-2 text-center text-green-700">
 
-                                        <span class="text-sm font-semibold">
-                                            Occupied
-                                        </span>
+                                         <span class="text-sm font-semibold">
+                                             Occupied
+                                         </span>
 
-                                        <span class="text-xs font-medium">
-                                            Paper: {{ $occupiedSlot['paper_name'] ?? 'N/A' }}
-                                        </span>
+                                         <span class="text-xs font-medium">
+                                             Paper: {{ $occupiedSlot['paper_name'] ?? 'N/A' }}
+                                         </span>
 
-                                        <span class="text-xs">
-                                            Room: {{ $occupiedSlot['room_label'] ?: 'N/A' }}
-                                        </span>
+                                         <span class="text-xs">
+                                             Room: {{ $occupiedSlot['room_label'] ?: 'N/A' }}
+                                         </span>
 
-                                    </div>
+                                         @if(!empty($occupiedSlot['batches']))
+                                             <span class="mt-1 rounded bg-green-200 px-1.5 py-0.5 text-[10px] font-bold text-green-800">
+                                                 Batches: {{ $occupiedSlot['batches'] }}
+                                             </span>
+                                         @endif
+
+                                     </div>
 
                                 @else
 
@@ -725,20 +742,36 @@
 
                 </label>
 
-                <select
-                    wire:model="teacher_id"
-                    class="w-full rounded-xl border border-gray-300 px-4 py-3">
-
-                    <option value="">
-                        Select Teacher
-                    </option>
-                    @foreach($faculty as $teacher)
-
-                        <option value="{{ $teacher->id }}">
-                            {{ $teacher->name }}
+                <div wire:ignore>
+                    <select
+                        id="teacherSelect"
+                        x-init="
+                            let select = new TomSelect($el, {
+                                create: false,
+                                maxOptions: 1000,
+                                searchField: ['text'],
+                            });
+                            select.setValue($wire.get('teacher_id') || '');
+                            select.on('change', function(value) {
+                                $wire.set('teacher_id', value);
+                            });
+                            $watch('$wire.teacher_id', value => {
+                                if (select.getValue() !== value) {
+                                    select.setValue(value || '');
+                                }
+                            });
+                        "
+                        class="w-full rounded-xl border border-gray-300 px-4 py-3">
+                        <option value="">
+                            Select Teacher
                         </option>
-                    @endforeach
-                </select>
+                        @foreach($faculty as $teacher)
+                            <option value="{{ $teacher->id }}">
+                                {{ $teacher->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
             </div>
             <div class="flex flex-wrap items-center gap-6">
@@ -796,6 +829,24 @@
                 </label>
 
             </div>
+
+            @if(count($availableBatches) > 0)
+                <div class="border-t border-gray-100 pt-4">
+                    <label class="mb-2 block text-sm font-semibold text-gray-700">Select Batches (Practical / Tutorial)</label>
+                    <div class="flex flex-wrap gap-4">
+                        @foreach($availableBatches as $b)
+                            <label class="inline-flex items-center gap-2 text-sm font-medium">
+                                <input
+                                    type="checkbox"
+                                    value="{{ $b }}"
+                                    wire:model="selectedBatches"
+                                    class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span>Batch {{ $b }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
         <div
             class="mt-6 flex justify-end gap-2">

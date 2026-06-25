@@ -28,13 +28,12 @@ return new class extends Migration
             $table->integer(
                 'semester'
             );
-
             $table->unsignedBigInteger(
                 'paper_id'
             );
 
             $table->unsignedBigInteger(
-                'faculty_user_id'
+                'teacher_id'
             );
 
             $table->unsignedBigInteger(

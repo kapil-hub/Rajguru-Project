@@ -14,10 +14,31 @@ use Illuminate\Validation\Rule;
 
 class AdminFacultyController extends Controller
 {
-   public function index()
+    public function index(Request $request)
     {
-        $facultyUsers = Teacher::with('details')->orderBy('name')->get();
-        return view('pages.admin.faculty.index', compact('facultyUsers'));
+        $query = Teacher::with(['details.course', 'details.paperMaster', 'department'])->orderBy('name');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('designation', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $facultyUsers = $query->paginate(15)->withQueryString();
+        $departments = Departments::orderBy('name')->get();
+
+        return view('pages.admin.faculty.index', compact('facultyUsers', 'departments'));
     }
 
     // Show create form
