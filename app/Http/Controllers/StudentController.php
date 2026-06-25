@@ -221,7 +221,7 @@ class StudentController extends Controller
     public function edit(Student $student)
     {
         $this->authorize('update', $student);
-        $allPapers = Paper::select('id', 'name', 'code', 'semester')->orderBy('name')->get();
+        $allPapers = Paper::select('id', 'name', 'code', 'semester')->where('status','Active')->orderBy('name')->get();
 
         $student->load(['academic', 'enrolDetails', 'papers.paper']);
 
