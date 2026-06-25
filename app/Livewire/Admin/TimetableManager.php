@@ -271,7 +271,7 @@ public $selectedBatches = [];
         $this->courses = Courses::where(
             'dept_id',
             $this->department_id
-        )->get();
+        )->orWhere('id',15)->get();
 
         $this->semesters = [];
         $this->papers = [];
