@@ -168,7 +168,7 @@ class PaperController extends Controller
 
     public function showBatches(\App\Models\Paper $paper)
     {
-        $studentPapers = \App\Models\StudentPaper::with('student')
+        $studentPapers = \App\Models\StudentPaper::with('student.academic')
             ->where('paper_master_id', $paper->id)
             ->get()
             ->sortBy(function ($sp) {
