@@ -52,6 +52,13 @@ class MenuHelper
                 'class' => request()->routeIs('admin.timetable.slots') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
+                'icon' => 'tables',
+                'name' => 'Rooms',
+                'path' => '/admin/rooms',
+                'permission' => auth('admin')->check(),
+                'class' => request()->routeIs('admin.rooms') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+            [
                 'icon' => 'calendar',
                 'name' => 'Courses',
                 'path' => '/admin/courses/index',
