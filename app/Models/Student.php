@@ -45,6 +45,17 @@ class Student extends Authenticatable
         return $this->hasMany(\App\Models\StudentDailyAttendance::class, 'student_id', 'id');
     }
 
+    public function academicHistory()
+    {
+        return $this->hasMany(StudentAcademicHistory::class, 'student_user_id')
+                    ->latest('archived_at');
+    }
+
+    public function papersHistory()
+    {
+        return $this->hasMany(StudentPapersHistory::class, 'student_user_id');
+    }
+
     public function hasRole($dd){
         return false;
     }
