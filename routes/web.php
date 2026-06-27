@@ -349,8 +349,13 @@ Route::middleware('auth:admin')
             return view('pages.admin.timetable.slots');
         })->name('admin.timetable.slots');
 
+        Route::get('/rooms', function () {
+            return view('pages.admin.rooms');
+        })->name('admin.rooms');
+
     });
     
+
 
 
 
