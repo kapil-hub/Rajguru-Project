@@ -27,26 +27,64 @@ class StudentController extends Controller
     ========================*/
     public function index(Request $request)
     {
-        $query = Student::with(['academic.course'])->latest();
+        // 'current' = has a student_academic record (active students)
+        // 'past'    = no student_academic record (alumni / removed)
+        // 'all'     = everyone
+        $view = $request->get('view', 'current');
 
+        $query = Student::with(['academic.course', 'academic.department'])->latest();
+
+        // ── View filter ──────────────────────────────────────────────
+        if ($view === 'current') {
+            $query->whereHas('academic');
+        } elseif ($view === 'past') {
+            $query->whereDoesntHave('academic');
+        }
+        // 'all' → no extra filter
+
+        // ── Search ───────────────────────────────────────────────────
         if ($request->filled('search')) {
             $search = $request->search;
-
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('control_number', 'like', "%{$search}%");
+                  ->orWhere('control_number', 'like', "%{$search}%");
             });
         }
 
-        $students = $query->paginate(20)->withQueryString();
+        // ── Department filter ─────────────────────────────────────────
+        if ($request->filled('department_id')) {
+            $query->whereHas('academic', function ($q) use ($request) {
+                $q->where('department_id', $request->department_id);
+            });
+        }
 
-        $courses = Courses::all();
+        // ── Course filter ─────────────────────────────────────────────
+        if ($request->filled('course_id')) {
+            $query->whereHas('academic', function ($q) use ($request) {
+                $q->where('course_id', $request->course_id);
+            });
+        }
+
+        // ── Semester filter ───────────────────────────────────────────
+        if ($request->filled('semester')) {
+            $query->whereHas('academic', function ($q) use ($request) {
+                $q->where('current_semester', $request->semester);
+            });
+        }
+
+        $students    = $query->paginate(20)->withQueryString();
+        $courses     = Courses::all();
         $departments = Departments::all();
 
-        return view(
-            'pages.students.index',
-            compact('students', 'courses', 'departments')
-        );
+        // Counts for the toggle tabs
+        $totalCurrent = Student::whereHas('academic')->count();
+        $totalPast    = Student::whereDoesntHave('academic')->count();
+        $totalAll     = Student::count();
+
+        return view('pages.students.index', compact(
+            'students', 'courses', 'departments',
+            'view', 'totalCurrent', 'totalPast', 'totalAll'
+        ));
     }
 
     /* =======================
