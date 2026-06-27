@@ -88,7 +88,7 @@
                                 <input type="checkbox" onclick="toggleSelectAll(this)" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                             </th>
                             <th class="px-6 py-4">#</th>
-                            <th class="px-6 py-4">Control / Roll No</th>
+                            <th class="px-6 py-4">Roll No</th>
                             <th class="px-6 py-4">Student Name</th>
                             <th class="px-6 py-4">Email</th>
                             <th class="px-6 py-4 w-48 text-right">Assigned Batch</th>
@@ -104,7 +104,7 @@
                                     {{ $index + 1 }}
                                 </td>
                                 <td class="px-6 py-4 text-gray-700 font-mono">
-                                    {{ $sp->student->control_number ?? '-' }}
+                                    {{ $sp->student->academic?->roll_number ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 text-gray-900 font-semibold">
                                     {{ $sp->student->name ?? 'N/A' }}
