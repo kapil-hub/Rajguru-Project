@@ -129,7 +129,7 @@ public $selectedBatches = [];
         $this->paper_id = $timetable->paper_id;
 
         $this->courses = Courses::where('dept_id', $this->department_id)->orWhere('id', 15)->get();
-        $this->semesters = Paper::where('course_id', $this->course_id)->where('is_active', 1)
+        $this->semesters = Paper::where('course_id', $this->course_id)->where('status', 'Active')
             ->select('semester')
             ->distinct()
             ->pluck('semester')
@@ -137,7 +137,7 @@ public $selectedBatches = [];
 
         $this->papers = Paper::where('course_id', $this->course_id)
             ->where('semester', $this->semester)
-            ->where('is_active', 1)
+            ->where('status', 'Active')
             ->get();
     }
 
@@ -288,7 +288,7 @@ public $selectedBatches = [];
             'course_id',
             $this->course_id
         )
-        ->where('is_active', 1)
+        ->where('status', 'Active')
         ->select('semester')
         ->distinct()
         ->pluck('semester')
@@ -382,7 +382,7 @@ public function closeModal()
             'course_id',
             $this->course_id
         )
-        ->where('is_active', 1)
+        ->where('status', 'Active')
         ->where(
             'semester',
             $this->semester
