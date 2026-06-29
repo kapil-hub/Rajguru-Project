@@ -228,11 +228,7 @@ public $selectedBatches = [];
         $this->loadAvailableBatches();
         $this->selectedBatches = $slot->batches ? explode(',', $slot->batches) : [];
 
-        if (auth('teacher')->check()) {
-            $this->faculty = Teacher::where('department_id', auth('teacher')->user()->department_id)->get();
-        } else {
-            $this->faculty = Teacher::all();
-        }
+        $this->faculty = Teacher::all();
         $this->loadAvailableRooms();
         $this->modalKey++;
 
@@ -312,11 +308,7 @@ public $selectedBatches = [];
 
     [$start,$end] = explode('-', $slot);
 
-    if (auth('teacher')->check()) {
-        $this->faculty = Teacher::where('department_id', auth('teacher')->user()->department_id)->get();
-    } else {
-        $this->faculty = Teacher::all();
-    }
+    $this->faculty = Teacher::all();
     $this->start_time = $start;
     $this->end_time = $end;
 
