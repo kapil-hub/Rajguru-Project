@@ -492,6 +492,15 @@ public function save()
         $this->selectedTimetableId = null;
         $this->closeModal(); 
 }
+
+public function deleteTimetable($id){
+    $timetable = PaperTimetable::findOrFail($id);
+    if (auth('teacher')->check()  || auth('admin')->check()) {
+       $timetable->delete();
+       session()->flash('success', 'Timetable deleted successfully.');
+    }
+}
+
     public function render()
     {
         $departmentsQuery = Departments::query();
