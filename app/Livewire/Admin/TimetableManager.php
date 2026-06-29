@@ -487,10 +487,19 @@ public function save()
 
 public function deleteTimetable($id){
     $timetable = PaperTimetable::findOrFail($id);
-    if (auth('teacher')->check()  || auth('admin')->check()) {
-       $timetable->delete();
-       session()->flash('success', 'Timetable deleted successfully.');
+    if (auth('teacher')->check()) {
+        if (is_null($timetable->created_by_type) || $timetable->created_by_type === 'admin') {
+            session()->flash('error', 'You cannot delete timetables created by an admin.');
+            return;
+        }
+        $timetable->delete();
+        session()->flash('success', 'Timetable deleted successfully.');
     }
+
+    if(auth('admin')->check()) {
+        $timetable->delete();
+        session()->flash('success', 'Timetable deleted successfully.');
+    }   
 }
 
     public function render()
