@@ -40,7 +40,7 @@
                 <span class="inline-flex items-center rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-800 border">
                     Unassigned: {{ $counts->get('') ?? 0 }}
                 </span>
-                @foreach(['A', 'B', 'C', 'D', 'E', 'F'] as $b)
+                @foreach(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'] as $b)
                     @if($counts->get($b) > 0)
                         <span class="inline-flex items-center rounded-xl bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 border border-indigo-200">
                             Batch {{ $b }}: {{ $counts->get($b) }}
@@ -72,6 +72,10 @@
                         <option value="D">Batch D</option>
                         <option value="E">Batch E</option>
                         <option value="F">Batch F</option>
+                        <option value="G">Batch G</option>
+                        <option value="H">Batch H</option>
+                        <option value="I">Batch I</option>
+                        <option value="J">Batch J</option>
                     </select>
                     <button type="button" onclick="assignBulkBatch()" class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
                         Apply to Selected
@@ -123,6 +127,10 @@
                                         <option value="D" {{ $sp->batch === 'D' ? 'selected' : '' }}>Batch D</option>
                                         <option value="E" {{ $sp->batch === 'E' ? 'selected' : '' }}>Batch E</option>
                                         <option value="F" {{ $sp->batch === 'F' ? 'selected' : '' }}>Batch F</option>
+                                        <option value="G" {{ $sp->batch === 'G' ? 'selected' : '' }}>Batch G</option>
+                                        <option value="H" {{ $sp->batch === 'H' ? 'selected' : '' }}>Batch H</option>
+                                        <option value="I" {{ $sp->batch === 'I' ? 'selected' : '' }}>Batch I</option>
+                                        <option value="J" {{ $sp->batch === 'J' ? 'selected' : '' }}>Batch J</option>
                                     </select>
                                 </td>
                             </tr>
