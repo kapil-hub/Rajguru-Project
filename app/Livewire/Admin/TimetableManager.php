@@ -48,6 +48,7 @@ class TimetableManager extends Component
 public $timeSlots = [];
 public $availableBatches = [];
 public $selectedBatches = [];
+public $selected_filter_batches = [];
   protected $listeners = [
     'open-slot-modal'
 ];
@@ -127,6 +128,7 @@ public $selectedBatches = [];
         $this->course_id = $timetable->course_id;
         $this->semester = $timetable->semester;
         $this->paper_id = $timetable->paper_id;
+        $this->selected_filter_batches = explode(',', $timetable->batches);
 
         $this->courses = Courses::where('dept_id', $this->department_id)->orWhere('id', 15)->get();
         $this->semesters = Paper::where('course_id', $this->course_id)->where('status', 'Active')
@@ -158,7 +160,7 @@ public $selectedBatches = [];
         $this->selectedTimetableId = null;
         $this->showModal = false;
         $this->showCalendar = true;
-
+        $this->loadAvailableBatches();
         $this->loadOccupiedSlots();
     }
 
@@ -256,6 +258,7 @@ public $selectedBatches = [];
         $this->room_id = '';
         $this->loadAvailableBatches();
         $this->selectedBatches = [];
+        $this->selected_filter_batches = [];
     }
 
     public function updatedDepartmentId()
@@ -264,6 +267,7 @@ public $selectedBatches = [];
         $this->course_id = '';
         $this->semester = '';
         $this->paper_id = '';
+        $this->selected_filter_batches = [];
 
         $this->courses = Courses::where(
             'dept_id',
@@ -273,12 +277,15 @@ public $selectedBatches = [];
         $this->semesters = [];
         $this->papers = [];
     }
-
+    public function updateSelectedFilterBatches() {
+       $this->hideCalendar();
+    }
     public function updatedCourseId()
     {
         $this->hideCalendar();
         $this->semester = '';
         $this->paper_id = '';
+        $this->selected_filter_batches = [];
 
         $this->semesters = Paper::where(
             'course_id',
@@ -331,21 +338,35 @@ public $selectedBatches = [];
             return;
         }
 
-        $this->occupiedSlots = PaperTimetable::with(['paper', 'room'])
+        $query = PaperTimetable::with(['paper', 'room'])
             ->where('department_id', $this->department_id)
             ->where('course_id', $this->course_id)
             ->where('semester', $this->semester)
-            ->where('paper_id', $this->paper_id)
-            ->get()
-            ->mapWithKeys(function ($slot) {
-                $roomLabel = trim(collect([
-                    $slot->room?->building_name,
-                    $slot->room?->floor_no,
-                    $slot->room?->room_number,
-                ])->filter()->implode(' - '));
+            ->where('paper_id', $this->paper_id);
 
-                return [
-                    $slot->day_name . '|' . $this->formatSlotKey($slot->start_time, $slot->end_time) => [
+        if (count($this->selected_filter_batches) > 0) {
+            $query->where(function ($q) {
+                $q->whereNull('batches')
+                  ->orWhere('batches', '');
+                foreach ($this->selected_filter_batches as $batch) {
+                    $q->orWhere('batches', 'like', '%' . $batch . '%');
+                }
+            });
+        }
+
+        $this->occupiedSlots = $query->get()
+            ->groupBy(function ($slot) {
+                return $slot->day_name . '|' . $this->formatSlotKey($slot->start_time, $slot->end_time);
+            })
+            ->map(function ($group) {
+                return $group->map(function ($slot) {
+                    $roomLabel = trim(collect([
+                        $slot->room?->building_name,
+                        $slot->room?->floor_no,
+                        $slot->room?->room_number,
+                    ])->filter()->implode(' - '));
+
+                    return [
                         'id' => $slot->id,
                         'day_name' => $slot->day_name,
                         'start_time' => $slot->start_time,
@@ -353,8 +374,8 @@ public $selectedBatches = [];
                         'paper_name' => $slot->paper?->name,
                         'room_label' => $roomLabel,
                         'batches' => $slot->batches,
-                    ],
-                ];
+                    ];
+                })->toArray();
             })
             ->toArray();
     }
@@ -369,6 +390,7 @@ public function closeModal()
     {
             $this->hideCalendar();
         $this->paper_id = '';
+        $this->selected_filter_batches = [];
 
         $this->papers = Paper::where(
             'course_id',
@@ -384,11 +406,20 @@ public function closeModal()
 
     public function loadCalendar()
     {
-        $this->validate([
+        $rules = [
             'department_id' => 'required',
             'course_id'     => 'required',
             'semester'      => 'required',
             'paper_id'      => 'required',
+        ];
+
+        if (count($this->availableBatches) > 0) {
+            $rules['selected_filter_batches'] = 'required|array|min:1';
+        }
+
+        $this->validate($rules, [
+            'selected_filter_batches.required' => 'Please select at least one batch to load the timetable.',
+            'selected_filter_batches.min' => 'Please select at least one batch to load the timetable.',
         ]);
 
         $this->showCalendar = true;
@@ -440,7 +471,9 @@ public function save()
             'is_tutorial'   => $this->is_tutorial,
             'is_practical'  => $this->is_practical,
             'is_coordinator'=> $this->is_coordinator,
-            'batches'       => count($this->selectedBatches) > 0 ? implode(',', $this->selectedBatches) : null,
+            'batches'       => $this->selectedTimetableId 
+                               ? PaperTimetable::findOrFail($this->selectedTimetableId)->batches 
+                               : (count($this->selected_filter_batches) > 0 ? implode(',', $this->selected_filter_batches) : null),
         ];
 
         if ($this->selectedTimetableId) {

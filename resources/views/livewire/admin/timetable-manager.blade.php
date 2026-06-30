@@ -142,6 +142,7 @@
                 <tr>
 
                     <th class="px-4 py-3 text-left font-semibold">Paper</th>
+                    <th class="px-4 py-3 text-left font-semibold">Batches</th>
                     <th class="px-4 py-3 text-left font-semibold">Department</th>
                     <th class="px-4 py-3 text-left font-semibold">Course</th>
                     <th class="px-4 py-3 text-left font-semibold">Semester</th>
@@ -163,6 +164,10 @@
 
                         <td class="px-4 py-3 font-medium text-gray-900">
                             {{ $timetable->paper?->name ?? 'N/A' }}
+                        </td>
+
+                        <td class="px-4 py-3 text-gray-600">
+                            {{ $timetable->batches  ?? 'N/A' }}
                         </td>
 
                         <td class="px-4 py-3 text-gray-600">
@@ -252,7 +257,7 @@
     <!-- Filters -->
     <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
 
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
 
             <!-- Department -->
             <div>
@@ -264,7 +269,7 @@
                         Department
                     </span>
 
-                    <span wire:loading wire:target="department_id,course_id,semester,paper_id" class="inline-flex items-center gap-1 text-xs text-blue-600">
+                    <span wire:loading wire:target="department_id,course_id,semester,paper_id,selected_filter_batches" class="inline-flex items-center gap-1 text-xs text-blue-600">
                         <svg class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
@@ -365,7 +370,7 @@
                         Paper
                     </span>
 
-                    <span wire:loading wire:target="department_id,course_id,semester,paper_id" class="inline-flex items-center gap-1 text-xs text-blue-600">
+                    <span wire:loading wire:target="department_id,course_id,semester,paper_id,selected_filter_batches" class="inline-flex items-center gap-1 text-xs text-blue-600">
                         <svg class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
@@ -376,7 +381,7 @@
                 </label>
 
                 <select
-                    wire:model="paper_id"
+                    wire:model.live="paper_id"
                     class="w-full rounded-xl border border-gray-300 px-4 py-3">
 
                     <option value="">
@@ -395,8 +400,33 @@
 
             </div>
 
+            <!-- Batch Checkboxes -->
+            @if(count($availableBatches) > 0)
+                <div class="col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-3">
+                    <label class="mb-2 block text-sm font-semibold text-gray-700">
+                        Select Batches <span class="text-red-500">*</span>
+                    </label>
+                    <div class="flex flex-wrap gap-4 border border-gray-300 rounded-xl px-4 py-3 bg-gray-50/50">
+                        @foreach($availableBatches as $b)
+                            <label class="inline-flex items-center gap-2 text-sm font-medium cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    value="{{ $b }}"
+                                    wire:change="updateSelectedFilterBatches"
+                                    wire:model="selected_filter_batches"
+                                    class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span>Batch {{ $b }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('selected_filter_batches')
+                        <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+            @endif
+
             <!-- Button -->
-            <div class="flex items-end">
+            <div class="flex items-end {{ count($availableBatches) > 0 ? 'xl:col-span-2' : '' }}">
 
                 <button
                     wire:click="loadCalendar"
@@ -510,93 +540,69 @@
                             @endphp
 
                             <td
-                                @if(isset($occupiedSlots[$slotKey]))
-
-                                    @if($calendarMode === 'edit')
-
-                                        wire:click="editSlot({{ $occupiedSlots[$slotKey]['id'] }})"
-                                        class="cursor-pointer border-r border-b p-2 bg-green-50 transition hover:bg-green-100"
-
-                                    @else
-
-                                        class="border-r border-b p-2 bg-green-50"
-
-                                    @endif
-
+                                @if($calendarMode !== 'view')
+                                    wire:click="openSlotModal('{{ $day }}', '{{ $slot }}')"
+                                    class="cursor-pointer border-r border-b p-2 hover:bg-blue-50 transition align-top"
                                 @else
-
-                                    @if($calendarMode !== 'view')
-
-                                        wire:click="
-                                            openSlotModal(
-                                                '{{ $day }}',
-                                                '{{ $slot }}'
-                                            )
-                                        "
-                                        class="cursor-pointer border-r border-b p-2 hover:bg-blue-50 transition"
-
-                                    @else
-
-                                        class="border-r border-b p-2"
-
-                                    @endif
-
+                                    class="border-r border-b p-2 align-top"
                                 @endif
                             >
-
                                 @if(isset($occupiedSlots[$slotKey]))
+                                    <div class="flex flex-col gap-2">
+                                        @foreach($occupiedSlots[$slotKey] as $occupiedSlot)
+                                            <div
+                                                @if($calendarMode === 'edit')
+                                                    wire:click.stop="editSlot({{ $occupiedSlot['id'] }})"
+                                                    class="cursor-pointer flex h-24 flex-col items-center justify-center rounded-xl border-2 border-green-400 bg-green-100 px-2 text-center text-green-700 hover:bg-green-200 transition"
+                                                @else
+                                                    class="flex h-24 flex-col items-center justify-center rounded-xl border-2 border-green-400 bg-green-100 px-2 text-center text-green-700"
+                                                @endif
+                                            >
+                                                <span class="text-sm font-semibold">
+                                                    Occupied
+                                                 </span>
 
-                                    @php
-                                        $occupiedSlot = $occupiedSlots[$slotKey];
-                                    @endphp
+                                                 <span class="text-[11px] font-medium text-ellipsis overflow-hidden max-w-full whitespace-nowrap" title="Paper: {{ $occupiedSlot['paper_name'] ?? 'N/A' }}">
+                                                     P: {{ $occupiedSlot['paper_name'] ?? 'N/A' }}
+                                                 </span>
 
-                                     <div
-                                         class="flex h-24 flex-col items-center justify-center rounded-xl border-2 border-green-400 bg-green-100 px-2 text-center text-green-700">
+                                                 <span class="text-[10px] text-ellipsis overflow-hidden max-w-full whitespace-nowrap" title="Room: {{ $occupiedSlot['room_label'] ?: 'N/A' }}">
+                                                     R: {{ $occupiedSlot['room_label'] ?: 'N/A' }}
+                                                 </span>
 
-                                         <span class="text-sm font-semibold">
-                                             Occupied
-                                         </span>
-
-                                         <span class="text-xs font-medium">
-                                             Paper: {{ $occupiedSlot['paper_name'] ?? 'N/A' }}
-                                         </span>
-
-                                         <span class="text-xs">
-                                             Room: {{ $occupiedSlot['room_label'] ?: 'N/A' }}
-                                         </span>
-
-                                         @if(!empty($occupiedSlot['batches']))
-                                             <span class="mt-1 rounded bg-green-200 px-1.5 py-0.5 text-[10px] font-bold text-green-800">
-                                                 Batches: {{ $occupiedSlot['batches'] }}
-                                             </span>
-                                         @endif
-
-                                     </div>
-
-                                @else
-
-                                    <div
-                                        class="flex h-24 items-center justify-center rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-500">
-
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            class="h-7 w-7 text-blue-500"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor">
-
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M12 4v16m8-8H4" />
-
-                                        </svg>
-
+                                                 @if(!empty($occupiedSlot['batches']))
+                                                     <span class="mt-1 rounded bg-green-200 px-1.5 py-0.5 text-[9px] font-bold text-green-800">
+                                                         Batches: {{ $occupiedSlot['batches'] }}
+                                                     </span>
+                                                 @endif
+                                            </div>
+                                        @endforeach
                                     </div>
+                                @else
+                                    @if($calendarMode !== 'view')
+                                        <div
+                                            class="flex h-24 items-center justify-center rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-500">
 
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                class="h-7 w-7 text-blue-500"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor">
+
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M12 4v16m8-8H4" />
+
+                                            </svg>
+
+                                        </div>
+                                    @else
+                                        <div class="h-24"></div>
+                                    @endif
                                 @endif
-
                             </td>
 
                         @endforeach
@@ -709,25 +715,22 @@
 
                 <select
                     wire:model="room_id"
+                    id="roomSelect"
                     class="w-full rounded-xl border border-gray-300 px-4 py-3">
 
-                    <option value="">
-                        Select Room
-                    </option>
+                    <option value="">Select Room</option>
 
                     @forelse($rooms as $room)
-
-                        <option value="{{ $room->id }}">
+                        <option
+                            value="{{ $room->id }}"
+                            data-remarks="{{ $room->remarks }}"
+                        >
                             {{ $room->building_name }} - {{ $room->floor_no }} - {{ $room->room_number }}
                         </option>
-
                     @empty
-
-                        <option value="" disabled>
-                            No available rooms for this slot
-                        </option>
-
+                        <option value="" disabled>No available rooms for this slot</option>
                     @endforelse
+
                 </select>
 
                 @if(collect($rooms)->isEmpty())
@@ -836,23 +839,7 @@
 
             </div>
 
-            @if(count($availableBatches) > 0)
-                <div class="border-t border-gray-100 pt-4">
-                    <label class="mb-2 block text-sm font-semibold text-gray-700">Select Batches (Practical / Tutorial)</label>
-                    <div class="flex flex-wrap gap-4">
-                        @foreach($availableBatches as $b)
-                            <label class="inline-flex items-center gap-2 text-sm font-medium">
-                                <input
-                                    type="checkbox"
-                                    value="{{ $b }}"
-                                    wire:model="selectedBatches"
-                                    class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span>Batch {{ $b }}</span>
-                            </label>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
+
 
         <div
             class="mt-6 flex justify-end gap-2">
