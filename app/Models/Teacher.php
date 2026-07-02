@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use Illuminate\Database\Eloquent\Builder;
 class Teacher extends Authenticatable
 {
     use Notifiable;
@@ -20,7 +20,12 @@ class Teacher extends Authenticatable
         'password',
         'remember_token',
     ];
-
+    protected static function booted()
+    {
+        static::addGlobalScope('active', function (Builder $builder) {
+            $builder->where('status', 1);
+        });
+    }
      public function details(){
         return $this->hasMany(FacultyDetail::class,'faculty_user_id');
     }

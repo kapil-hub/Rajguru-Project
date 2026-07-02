@@ -20,7 +20,7 @@ class AttendanceController extends Controller
         {
             $teacher = auth('teacher')->user();
 
-            $papers = Paper::all();
+            $papers = Paper::where('status','Active')->get();
             $courses = Courses::all();     
             $semesters = ['I','II','III','IV','V','VI','VII','VIII']; 
             $sections = ['A', 'B', 'C'];             
