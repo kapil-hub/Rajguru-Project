@@ -132,6 +132,7 @@ class AdminFacultyController extends Controller
             'department_id' => $request->department_id,
             'mobile'        => $request->mobile,
             'email'         => $request->email,
+            'status'        => $request->status ? 1 : 0,
         ]);
 
         if($request->filled('password')){

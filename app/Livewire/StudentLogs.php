@@ -34,7 +34,7 @@ class StudentLogs extends Component
 
     public function mount()
     {
-        $this->students = Student::with('academic')->get();
+        $this->students = Student::with('academic')->whereHas('academic')->get();
    
     }
     public function sortBy($field)
