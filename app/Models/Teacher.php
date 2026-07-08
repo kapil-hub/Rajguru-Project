@@ -26,6 +26,18 @@ class Teacher extends Authenticatable
             $builder->where('status', 1);
         });
     }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        if (auth('admin')->check()) {
+            return $this->newQueryWithoutScope('active')
+                ->where($field ?? $this->getRouteKeyName(), $value)
+                ->first();
+        }
+
+        return parent::resolveRouteBinding($value, $field);
+    }
+
      public function details(){
         return $this->hasMany(FacultyDetail::class,'faculty_user_id');
     }
