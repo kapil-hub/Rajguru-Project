@@ -5,7 +5,7 @@ namespace App\Livewire\Teacher;
 use Livewire\Component;
 use App\Models\Student;
 use App\Models\Paper;
-use App\Models\TeacherClassAssignment;
+use App\Models\PaperTimetable;
 use App\Models\StudentPracticalMark;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,9 +24,9 @@ class PracticalMarks extends Component
         // Get assigned practical paper IDs
 
         
-        $paperIds = TeacherClassAssignment::where('is_practical', 1)
+        $paperIds = PaperTimetable::where('is_practical', true)
             ->where('teacher_id', Auth::id())
-            ->pluck('paper_master_id')
+            ->pluck('paper_id')
             ->toArray();
 
         $this->papers = Paper::whereIn('id', $paperIds)->get();

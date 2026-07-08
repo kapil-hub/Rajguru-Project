@@ -8,6 +8,8 @@ use App\Models\Paper;
 use App\Models\Room;
 use App\Models\PaperTimetable;
 use App\Models\TimetableSlot;
+use App\Models\Student;
+use App\Models\TimetableHeldPool;
 
 class MyTimetable extends Component
 {
@@ -66,6 +68,18 @@ class MyTimetable extends Component
         }
 
         $slots = $query->get();
+        $todayMarkerPrefix = now()->toDateString() . ':';
+
+        $markedTodaySlotIds = TimetableHeldPool::where('teacher_id', $teacherId)
+            ->where('month', now()->month)
+            ->where('year', now()->year)
+            ->get(['marked_slots'])
+            ->flatMap(fn ($pool) => $pool->marked_slots ?? [])
+            ->filter(fn ($marker) => str_starts_with($marker, $todayMarkerPrefix))
+            ->map(fn ($marker) => (int) substr($marker, strlen($todayMarkerPrefix)))
+            ->unique()
+            ->values()
+            ->all();
 
         // Group slots for easy grid rendering: Day | TimeSlot
         $timetableGrid = [];
@@ -79,7 +93,151 @@ class MyTimetable extends Component
             'courses' => $courses,
             'semesters' => $semesters,
             'papers' => $papers,
-            'timetableGrid' => $timetableGrid
+            'timetableGrid' => $timetableGrid,
+            'markedTodaySlotIds' => $markedTodaySlotIds,
         ]);
+    }
+
+    public function markHeld($slotId)
+    {
+        $slot = PaperTimetable::findOrFail($slotId);
+        $teacherId = auth('teacher')->id();
+
+        if ((int) $slot->teacher_id !== (int) $teacherId) {
+            abort(403);
+        }
+
+        // Verify the slot is for today
+        if (strtolower($slot->day_name) !== strtolower(now()->format('l'))) {
+            session()->flash('error', 'You can only mark today\'s classes as held.');
+            return;
+        }
+
+        // Fetch students matching this slot
+        $paper_id = $slot->paper_id;
+        $course_id = $slot->course_id;
+        $month = now()->month;
+        $year = now()->year;
+        $todaySlotMarker = now()->toDateString() . ':' . $slot->id;
+
+        $alreadyMarked = TimetableHeldPool::where('teacher_id', $teacherId)
+            ->where('course_id', $course_id)
+            ->where('semester_id', $slot->semester)
+            ->where('paper_master_id', $paper_id)
+            ->where('month', $month)
+            ->where('year', $year)
+            ->get(['marked_slots'])
+            ->contains(function ($pool) use ($todaySlotMarker) {
+                return in_array($todaySlotMarker, $pool->marked_slots ?? [], true);
+            });
+
+        if ($alreadyMarked) {
+            session()->flash('error', 'This slot is already marked as held for today.');
+            return;
+        }
+
+        $studentsQuery = Student::with('academic')->where(function ($q) use ($paper_id, $course_id) {
+            // Case 1: DSC / DSE → course required
+            $q->whereHas('papers', function ($p) use ($paper_id) {
+                    $p->where('paper_master_id', $paper_id)
+                        ->whereHas('paper', function ($pm) {
+                            $pm->whereIn('paper_type', ['DSC', 'DSE']);
+                        })
+                        ->where("is_backlog", 0);
+                })
+                ->whereHas('academic', function ($a) use ($course_id) {
+                    $a->where('course_id', $course_id);
+                });
+
+            // Case 2: Other paper types → ignore course
+            $q->orWhereHas('papers', function ($p) use ($paper_id) {
+                $p->where('paper_master_id', $paper_id)
+                ->whereHas('paper', function ($pm) {
+                    $pm->whereNotIn('paper_type', ['DSC', 'DSE']);
+                });
+            });
+        });
+
+        // If batch-wise slot, apply batch filter on student_papers
+        if (!empty($slot->batches)) {
+            $batches = array_map('trim', explode(',', $slot->batches));
+            $studentsQuery->whereHas('papers', function ($p) use ($paper_id, $batches) {
+                $p->where('paper_master_id', $paper_id)
+                  ->whereIn('batch', $batches);
+            });
+        }
+
+        $students = $studentsQuery->get();
+
+        if ($students->isEmpty()) {
+            session()->flash('error', 'No students found registered for this slot.');
+            return;
+        }
+
+        // Group students by section
+        $groupedStudents = $students->groupBy(function ($student) {
+            $section = strtoupper(trim((string) ($student->academic->section ?? '')));
+
+            return $section !== '' ? $section : 'A';
+        });
+
+        foreach ($groupedStudents as $section => $sectionStudents) {
+            $studentIds = $sectionStudents->pluck('id')->toArray();
+
+            $poolAttributes = [
+                'teacher_id' => $teacherId,
+                'course_id' => $course_id,
+                'semester_id' => $slot->semester,
+                'paper_master_id' => $paper_id,
+                'month' => $month,
+                'year' => $year,
+            ];
+
+            $pool = TimetableHeldPool::where($poolAttributes)
+                ->where(function ($query) use ($section) {
+                    $query->where('section', $section);
+
+                    if ($section === 'A') {
+                        $query->orWhereNull('section')
+                            ->orWhere('section', '');
+                    }
+                })
+                ->first();
+
+            if (!$pool) {
+                $pool = new TimetableHeldPool($poolAttributes);
+            }
+
+            $pool->section = $section;
+
+            // Update held counts based on slot type
+            if ($slot->is_lecture) {
+                $pool->lecture_held = ($pool->lecture_held ?? 0) + 1;
+            }
+            if ($slot->is_tutorial) {
+                $pool->tute_held = ($pool->tute_held ?? 0) + 1;
+            }
+            if ($slot->is_practical) {
+                $pool->practical_held = ($pool->practical_held ?? 0) + 1;
+            }
+
+            // Merge student IDs
+            $existingStudentIds = is_array($pool->student_ids) 
+                ? $pool->student_ids 
+                : (json_decode($pool->student_ids ?? '[]', true) ?? []);
+            
+            $mergedStudentIds = array_values(array_unique(array_merge($existingStudentIds, $studentIds)));
+            $pool->student_ids = $mergedStudentIds;
+
+            $existingMarkedSlots = is_array($pool->marked_slots)
+                ? $pool->marked_slots
+                : (json_decode($pool->marked_slots ?? '[]', true) ?? []);
+
+            $pool->marked_slots = array_values(array_unique(array_merge($existingMarkedSlots, [$todaySlotMarker])));
+
+            $pool->save();
+        }
+
+        session()->flash('success', 'Class marked as held and added/updated in pool.');
     }
 }

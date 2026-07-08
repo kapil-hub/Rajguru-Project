@@ -7,131 +7,11 @@ use App\Models\Teacher;
 use App\Models\Courses;
 use App\Models\Semester;
 use App\Models\Paper;
-use App\Models\TeacherClassAssignment;
 use DB;
 
 class AdminController extends Controller
 {
     
-
-
-public function edit($id)
-{
-    $assignment = TeacherClassAssignment::findOrFail($id);
-    return response()->json($assignment);
-}
-
-
-
-public function update(Request $request, $id)
-{
-    $assignment = TeacherClassAssignment::findOrFail($id);
-
-    $assignment->update([
-        'teacher_id' => $request->teacher_id,
-        'course_id' => $request->course_id,
-        'semester_id' => $request->semester_id,
-        'section' => $request->section,
-        'paper_master_id' => $request->paper_master_id,
-        'academic_session'=> $request->academic_session,
-        'is_lecture' => $request->has('is_lecture'),
-        'is_tute' => $request->has('is_tute'),
-        'is_practical' => $request->has('is_practical'),
-        'is_coordinator' => $request->has('is_coordinator'),
-    ]);
-
-    return back()->with('success','Updated successfully');
-}
-
-
-   public function teacherAssignments(Request $request)
-{
-    $teachers = Teacher::all();
-    $courses = Courses::all();
-    $semesters = Semester::all();
-    $papers = Paper::all();
-    $sections = ['A','B','C'];
-
-    $query = TeacherClassAssignment::with([
-        'teacher','course','semester','paperMaster'
-    ]);
-
-    // Filter: teacher name
-    if($request->teacher){
-        $query->whereHas('teacher', function($q) use ($request){
-            $q->where('name','like','%'.$request->teacher.'%');
-        });
-    }
-
-    // Filter: course
-    if($request->course){
-        $query->where('course_id',$request->course);
-    }
-
-    // Filter: semester
-    if($request->semester){
-        $query->where('semester_id',$request->semester);
-    }
-
-    // Filter: status
-    if($request->status !== null){
-        $query->where('is_active',$request->status);
-    }
-
-    // If teacher login
-    if(auth('teacher')->check()){
-        $query->where('teacher_id',auth('teacher')->id());
-    }
-
-    $assignments = $query->latest()->paginate(10);
-
-    return view('pages.admin.teacher_assignments.index',
-        compact('teachers','courses','semesters','papers','sections','assignments')
-    );
-}
-
-
-public function storeTeacherAssignment(Request $request)
-{
-    $request->validate([
-        'teacher_id' => 'required',
-        'course_id' => 'required',
-        'semester_id' => 'required',
-        'section' => 'required',
-        'paper_master_id' => 'required',
-        'academic_session' => 'required',
-    ]);
-
-    TeacherClassAssignment::create([
-        'teacher_id' => auth('admin')->check()
-            ? $request->teacher_id
-            : auth('teacher')->id(),
-
-        'course_id' => $request->course_id,
-        'semester_id' => $request->semester_id,
-        'section' => $request->section,
-        'paper_master_id' => $request->paper_master_id,
-        'academic_session'=> $request->academic_session,
-
-        'is_lecture' => $request->has('is_lecture'),
-        'is_tute' => $request->has('is_tute'),
-        'is_practical' => $request->has('is_practical'),
-        'is_coordinator' => $request->has('is_coordinator'),
-    ]);
-
-    return back()->with('success','Teacher assigned successfully');
-}
-
-
-
-public function toggleStatus($id)
-{
-    $assignment = TeacherClassAssignment::findOrFail($id);
-    $assignment->is_active = !$assignment->is_active;
-    $assignment->save();
-
-    return back()->with('success', 'Assignment status updated');
-}
 
 
 
@@ -145,32 +25,38 @@ public function toggleStatus($id)
     $teacherId = $request->teacher_id;  
     $status    = $request->status; 
     
-    $records = DB::table('teacher_class_assignments as tca')
+    $sectionMatches = 'sa.section COLLATE utf8mb4_unicode_ci = thp.section COLLATE utf8mb4_unicode_ci';
+
+    $records = DB::table('timetable_held_pools as thp')
         ->select(
-            'tca.id',
-            'tca.teacher_id',
-            'tca.course_id',
-            'tca.semester_id',
-            'tca.section',
-            'tca.paper_master_id',
-            DB::raw("
+            'thp.id',
+            'thp.teacher_id',
+            'thp.course_id',
+            'thp.semester_id',
+            'thp.section',
+            'thp.paper_master_id'
+        )
+        ->selectRaw(
+            "
                 EXISTS (
                     SELECT 1
                     FROM student_attendances sa
-                   
-                      WHERE sa.course_id = tca.course_id
-                      AND sa.semester_id = tca.semester_id
-                      AND sa.section = tca.section
-                      AND sa.paper_master_id = tca.paper_master_id
-                      AND sa.month = $month
-                      AND sa.year = $year
+                    WHERE sa.course_id = thp.course_id
+                      AND sa.semester_id = thp.semester_id
+                      AND {$sectionMatches}
+                      AND sa.paper_master_id = thp.paper_master_id
+                      AND sa.month = ?
+                      AND sa.year = ?
                 ) as is_marked
-            ")
-        );
+            ",
+            [$month, $year]
+        )
+        ->where('thp.month', $month)
+        ->where('thp.year', $year);
 
     // 🔹 FILTER BY TEACHER
     if ($teacherId) {
-        $records->where('tca.teacher_id', $teacherId);
+        $records->where('thp.teacher_id', $teacherId);
     }
 
     // 🔹 FILTER BY STATUS
@@ -178,52 +64,54 @@ public function toggleStatus($id)
         $records->whereRaw("
             EXISTS (
                 SELECT 1 FROM student_attendances sa
-                
-                 WHERE sa.course_id = tca.course_id
-                  AND sa.semester_id = tca.semester_id
-                  AND sa.section = tca.section
-                  AND sa.paper_master_id = tca.paper_master_id
-                  AND sa.month = $month
-                  AND sa.year = $year
+                 WHERE sa.course_id = thp.course_id
+                   AND sa.semester_id = thp.semester_id
+                   AND {$sectionMatches}
+                   AND sa.paper_master_id = thp.paper_master_id
+                   AND sa.month = ?
+                   AND sa.year = ?
             )
-        ");
+        ", [$month, $year]);
     }
 
     if ($status === 'not_marked') {
         $records->whereRaw("
             NOT EXISTS (
                 SELECT 1 FROM student_attendances sa
-              
-                 WHERE  sa.course_id = tca.course_id
-                  AND sa.semester_id = tca.semester_id
-                  AND sa.section = tca.section
-                  AND sa.paper_master_id = tca.paper_master_id
-                  AND sa.month = $month
-                  AND sa.year = $year
+                 WHERE sa.course_id = thp.course_id
+                   AND sa.semester_id = thp.semester_id
+                   AND {$sectionMatches}
+                   AND sa.paper_master_id = thp.paper_master_id
+                   AND sa.month = ?
+                   AND sa.year = ?
             )
-        ");
+        ", [$month, $year]);
     }
 
     $records = $records
-        ->orderBy('tca.teacher_id')
+        ->orderBy('thp.teacher_id')
         ->paginate(10)
         ->withQueryString();
 
     // Teachers for dropdown
     $teachers = \App\Models\Teacher::orderBy('name')->get();
 
-    // COUNTS (same as before)
-    $totalClasses = DB::table('teacher_class_assignments')->count();
+    // COUNTS
+    $totalClasses = DB::table('timetable_held_pools')
+        ->where('month', $month)
+        ->where('year', $year)
+        ->count();
 
-    $markedCount = DB::table('teacher_class_assignments as tca')
+    $markedCount = DB::table('timetable_held_pools as thp')
+        ->where('thp.month', $month)
+        ->where('thp.year', $year)
         ->whereExists(function ($q) use ($month, $year) {
             $q->select(DB::raw(1))
               ->from('student_attendances as sa')
-         
-              ->whereColumn('sa.course_id', 'tca.course_id')
-              ->whereColumn('sa.semester_id', 'tca.semester_id')
-              ->whereColumn('sa.section', 'tca.section')
-              ->whereColumn('sa.paper_master_id', 'tca.paper_master_id')
+              ->whereColumn('sa.course_id', 'thp.course_id')
+              ->whereColumn('sa.semester_id', 'thp.semester_id')
+              ->whereRaw('sa.section COLLATE utf8mb4_unicode_ci = thp.section COLLATE utf8mb4_unicode_ci')
+              ->whereColumn('sa.paper_master_id', 'thp.paper_master_id')
               ->where('sa.month', $month)
               ->where('sa.year', $year);
         })

@@ -1,4 +1,35 @@
-<div class="space-y-6">
+<div class="space-y-6"
+     x-data="{
+        confirmMarkHeldOpen: false,
+        pendingSlotId: null,
+        openMarkHeldConfirm(slotId) {
+            this.pendingSlotId = slotId;
+            this.confirmMarkHeldOpen = true;
+        },
+        closeMarkHeldConfirm() {
+            this.confirmMarkHeldOpen = false;
+            this.pendingSlotId = null;
+        },
+        confirmMarkHeld() {
+            if (!this.pendingSlotId) {
+                return;
+            }
+
+            $wire.markHeld(this.pendingSlotId);
+            this.closeMarkHeldConfirm();
+        }
+     }">
+    @if(session()->has('success'))
+        <div class="rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-semibold text-green-800 shadow-sm">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if(session()->has('error'))
+        <div class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-800 shadow-sm">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <!-- Header -->
     <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <div class="flex items-center justify-between">
@@ -152,6 +183,29 @@
                                                             @endif
                                                         </div>
                                                     </div>
+                                                    @if(strtolower($occupiedSlot->day_name) === strtolower(now()->format('l')))
+                                                        @php
+                                                            $isMarkedToday = in_array($occupiedSlot->id, $markedTodaySlotIds ?? [], true);
+                                                        @endphp
+                                                        <div class="mt-2.5 pt-2 border-t border-blue-100">
+                                                            @if($isMarkedToday)
+                                                                <button type="button"
+                                                                        disabled
+                                                                        class="w-full cursor-not-allowed rounded-lg bg-gray-200 px-3 py-1.5 text-center text-xs font-bold text-gray-500">
+                                                                    Marked Today
+                                                                </button>
+                                                                <p class="mt-1 text-center text-[11px] font-medium text-green-700">
+                                                                    This slot is already marked for today.
+                                                                </p>
+                                                            @else
+                                                                <button type="button"
+                                                                        @click="openMarkHeldConfirm({{ $occupiedSlot->id }})"
+                                                                        class="w-full py-1.5 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold text-center transition shadow-sm">
+                                                                    Mark Held
+                                                                </button>
+                                                            @endif
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             @endforeach
                                         </div>
@@ -168,4 +222,49 @@
             </table>
         </div>
     </div>
+
+    <div x-cloak
+         x-show="confirmMarkHeldOpen"
+         x-transition.opacity
+         class="fixed inset-0 z-99999 flex items-center justify-center bg-gray-900/50 px-4 py-6"
+         @keydown.escape.window="closeMarkHeldConfirm()">
+        <div class="absolute inset-0" @click="closeMarkHeldConfirm()"></div>
+
+        <div x-show="confirmMarkHeldOpen"
+             x-transition
+             class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div class="flex items-start gap-4">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-11.25a.75.75 0 0 0-1.5 0V10c0 .414.336.75.75.75h2.25a.75.75 0 0 0 0-1.5h-1.5v-2.5Z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900">Mark class as held?</h3>
+                    <p class="mt-2 text-sm text-gray-600">
+                        This will add today&apos;s slot to your held classes pool for attendance tracking.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button type="button"
+                        @click="closeMarkHeldConfirm()"
+                        class="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button type="button"
+                        @click="confirmMarkHeld()"
+                        class="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
+                    Yes, Mark Held
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
 </div>

@@ -128,7 +128,7 @@
                                     {{ $record->student->name }}
                                 </td>
                                 <td class="px-4 py-3">
-                                    {{ $record->student->academic->course->program_code ?? 'N/A' . ' / ' . $record->student->academic->current_semester }}
+                                    {{ $record->student->academic->course->program_code ?? 'N/A' }} / {{ \App\Models\Semester::find($record->student->academic->current_semester)->name ?? $record->student->academic->current_semester ?? '-' }}
                                 </td>
 
                                 <td class="px-4 py-3">

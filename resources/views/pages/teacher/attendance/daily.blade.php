@@ -24,18 +24,18 @@
         </div>
 
         <table class="w-full border mt-4">
-            <thead class="bg-gray-100">
+             <thead class="bg-gray-100">
                 <tr>
                     <th class="p-2">Student</th>
-                     @if($assignment->is_lecture)
+                     @if($assignment->lecture_held > 0)
                         <th class="px-6 py-3 text-center">Lecture</th>
                     @endif
 
-                    @if($assignment->is_tute)
+                    @if($assignment->tute_held > 0)
                         <th class="px-6 py-3 text-center">Tute</th>
                     @endif
 
-                    @if($assignment->is_practical)
+                    @if($assignment->practical_held > 0)
                         <th class="px-6 py-3 text-center">Practical</th>
                     @endif
                 </tr>
@@ -44,19 +44,19 @@
                 @foreach($students as $s)
                 <tr>
                     <td class="p-2">{{ $s->name }}</td>
-                    @if($assignment->is_lecture)
+                    @if($assignment->lecture_held > 0)
                         <td class="text-center">
                             <input type="checkbox" name="attendance[{{ $s->id }}][lecture]">
                         </td>
                     @endif
 
-                    @if($assignment->is_tute)
+                    @if($assignment->tute_held > 0)
                         <td class="text-center">
                             <input type="checkbox" name="attendance[{{ $s->id }}][tute]">
                         </td>
                      @endif
 
-                    @if($assignment->is_practical)
+                    @if($assignment->practical_held > 0)
                         <td class="text-center">
                             <input type="checkbox" name="attendance[{{ $s->id }}][practical]">
                         </td>
