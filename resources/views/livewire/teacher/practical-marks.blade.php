@@ -119,7 +119,7 @@
                                 <td class="px-4 py-3">
                                     {{ $student->academic->course->program_code ?? 'N/A' }}
                                     /
-                                    {{ $student->academic->current_semester ?? '-' }}
+                                    {{ \App\Models\Semester::find($student->academic->current_semester)->name ?? $student->academic->current_semester ?? '-' }}
                                 </td>
 
                                 <td class="px-4 py-3">

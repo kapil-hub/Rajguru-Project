@@ -105,20 +105,20 @@ class AttendanceController extends Controller
     public function pendingList() {
         $teacherId = auth('teacher')->id();
 
-        $assignments = \App\Models\TeacherClassAssignment::with([
+        $assignments = \App\Models\TimetableHeldPool::with([
                 'course',
                 'semester',
                 'paperMaster'
             ])
             ->where('teacher_id', $teacherId)
-            ->where('is_active', 1)
+            ->select('course_id', 'semester_id', 'section', 'paper_master_id')
+            ->groupBy('course_id', 'semester_id', 'section', 'paper_master_id')
             ->get();
+
         $isLocked = [1,2,3,4];
         // Group attendance settings by semester for easy access
-        $attendanceSettings = AttendanceSetting::where('status', 1)
-            ->get()
-            ->keyBy(fn ($s) => $s->academic_session . '_' . $s->semester_type);
-            // echo "<pre>"; print_r($attendanceSettings->toArray());die;
+        $attendanceSettings = AttendanceSetting::where('status', 1)->get();
+
         return view('pages.teacher.attendance.pending', compact(
             'assignments',
             'attendanceSettings',
@@ -128,35 +128,17 @@ class AttendanceController extends Controller
 
     public function fillAttendance($assignmentId, $month, $year)
     {
-        $assignment = \App\Models\TeacherClassAssignment::findOrFail($assignmentId);
+        $assignment = \App\Models\TimetableHeldPool::findOrFail($assignmentId);
 
-        $students = Student::with('academic')->where(function ($q) use ($assignment) {
+        $studentIds = is_array($assignment->student_ids) 
+            ? $assignment->student_ids 
+            : (json_decode($assignment->student_ids ?? '[]', true) ?? []);
 
-            // Case 1: DSC / DSE → course required
-            $q->whereHas('papers', function ($p) use ($assignment) {
-                    $p->where('paper_master_id', $assignment->paper_master_id)
-                        ->whereHas('paper', function ($pm) {
-                            $pm->whereIn('paper_type', ['DSC', 'DSE']);
-                        })
-                        ->where("is_backlog",0);
-                })
-                ->whereHas('academic', function ($a) use ($assignment) {
-                    $a->where('course_id', $assignment->course_id);
-                });
-
-            // Case 2: Other paper types → ignore course
-            $q->orWhereHas('papers', function ($p) use ($assignment) {
-                $p->where('paper_master_id', $assignment->paper_master_id)
-                ->whereHas('paper', function ($pm) {
-                    $pm->whereNotIn('paper_type', ['DSC', 'DSE']);
-                });
-            });
-
-        })
-        ->orderBy('name')
-        ->get();
+        $students = Student::with('academic')
+            ->whereIn('id', $studentIds)
+            ->orderBy('name')
+            ->get();
       
-        
         $oldAttendences = StudentAttendance::where(
                 [
                     'paper_master_id' => $assignment->paper_master_id,
@@ -166,7 +148,6 @@ class AttendanceController extends Controller
                     'year'=>$year
                 ]
             )->get()->keyBy('student_id');
-
 
         return view(
             'pages.teacher.attendance.fill',
@@ -306,7 +287,7 @@ public function import(Request $request)
             'paper_master_id' => 'required',
             'course_id'       => 'required',
             'semester_id'     => 'required',
-            'section'         => 'required',
+            // 'section'         => 'required',
             'month'           => 'required',
             'year'            => 'required',
         ]);
@@ -318,7 +299,7 @@ public function import(Request $request)
                     'paper_master_id' => $request->paper_master_id,
                     'course_id'       => $request->course_id,
                     'semester_id'     => $request->semester_id,
-                    'section'         => $request->section,
+                    'section'         => $request->section ?? 'A',
                     'month'           => $request->month,
                     'year'            => $request->year,
                 ]

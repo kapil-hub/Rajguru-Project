@@ -4,7 +4,7 @@ namespace App\Livewire\Teacher;
 
 use Livewire\Component;
 use App\Models\StudentPracticalMark;
-use App\Models\TeacherClassAssignment;
+use App\Models\PaperTimetable;
 use App\Models\Paper;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -41,7 +41,7 @@ class ViewPracticalMarks extends Component
             ->orderBy('student_users.name', 'asc')
             ->select('student_practical_marks.*') // important to avoid column conflicts
             ->get();
-        $this->assignment = TeacherClassAssignment::where("teacher_id", Auth::id())->where('paper_master_id', $id)->first();
+        $this->assignment = PaperTimetable::where("teacher_id", Auth::id())->where('paper_id', $id)->first();
         $this->showStudents = true;
     }
 

@@ -27,12 +27,14 @@ class IaController extends Controller
     public function pendingList() {
         $teacherId = auth('teacher')->id();
 
-        $assignments = \App\Models\TeacherClassAssignment::with([
+        $assignments = \App\Models\TimetableHeldPool::with([
                 'course',
                 'semester',
                 'paperMaster'
             ])
             ->where('teacher_id', $teacherId)
+            ->selectRaw('MIN(id) as id, course_id, semester_id, paper_master_id, section')
+            ->groupBy('course_id', 'semester_id', 'paper_master_id', 'section')
             ->get();
 
         // Group attendance settings by semester for easy access
@@ -100,7 +102,7 @@ public function loadStudents(Request $request)
 
     public function fillAttendance($assignmentId)
     {
-        $assignment = \App\Models\TeacherClassAssignment::findOrFail($assignmentId);
+        $assignment = \App\Models\TimetableHeldPool::findOrFail($assignmentId);
 
         $students = Student::with('academic')->where(function ($q) use ($assignment) {
 

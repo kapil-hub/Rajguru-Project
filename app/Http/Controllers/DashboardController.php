@@ -9,7 +9,7 @@ use App\Models\StudentAttendance;
 use App\Models\StudentDailyAttendance;
 use App\Models\StudentPaper;
 use App\Models\Teacher;
-use App\Models\TeacherClassAssignment;
+use App\Models\PaperTimetable;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
@@ -146,7 +146,7 @@ class DashboardController extends Controller
             $teacher = Teacher::with('details')->where('id', auth('teacher')->user()->id)->first();
             $teacherSubjects = $teacher->details->count();
 
-            $assignedClasses = TeacherClassAssignment::where('teacher_id', auth('teacher')->user()->id)->get()->count();
+            $assignedClasses = PaperTimetable::where('teacher_id', auth('teacher')->user()->id)->count();
 
             return view('pages.dashboards.teacher', compact('teacherSubjects', 'assignedClasses'));
         }

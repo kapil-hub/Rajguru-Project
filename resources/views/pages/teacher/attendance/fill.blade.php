@@ -31,39 +31,32 @@
                 <input type= "hidden" name="student_obj" value="{{ $students }}">
                 <div class="flex flex-wrap gap-4 items-end">
 
-                    @if($assignment->is_lecture)
+                    @if($assignment->lecture_held > 0)
                     <div>
                         <label class="block text-sm text-gray-600 mb-1">Lecture</label>
                         <input type="number" name ="lecture_days" id="lecture_days"
-                            class="w-40 px-3 py-2 border rounded-lg"
-                            min="0" max="31" required>
+                            class="w-40 px-3 py-2 border rounded-lg bg-gray-50"
+                            value="{{ $assignment->lecture_held }}" readonly>
                     </div>
                     @endif
 
-                    @if($assignment->is_tute)
+                    @if($assignment->tute_held > 0)
                     <div>
                         <label class="block text-sm text-gray-600 mb-1">Tutorial</label>
                         <input type="number" name = "tute_days" id="tute_days"
-                            class="w-40 px-3 py-2 border rounded-lg"
-                            min="0" max="31" required>
+                            class="w-40 px-3 py-2 border rounded-lg bg-gray-50"
+                            value="{{ $assignment->tute_held }}" readonly>
                     </div>
                     @endif
 
-                    @if($assignment->is_practical)
+                    @if($assignment->practical_held > 0)
                     <div>
                         <label class="block text-sm text-gray-600 mb-1">Practical</label>
                         <input type="number" name="practical_days" id="practical_days"
-                            class="w-40 px-3 py-2 border rounded-lg"
-                            min="0" max="31" required>
+                            class="w-40 px-3 py-2 border rounded-lg bg-gray-50"
+                            value="{{ $assignment->practical_held }}" readonly>
                     </div>
                     @endif
-
-                    <button type="button"
-                            onclick="addAttendanceFields()"
-                            id="showStudentsBtn"
-                            class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                        Show Students
-                    </button>
                     <label
                         class="ml-4 flex items-center gap-2 border border-gray-300 rounded-md px-3 py-2 cursor-pointer"
                     >
@@ -183,8 +176,8 @@
         <input type="hidden" name="month" value="{{ $month }}">
         <input type="hidden" name="year" value="{{ $year }}">
 
-        {{-- ATTENDANCE TABLE (HIDDEN INITIALLY) --}}
-        <div id="attendanceTable" class="hidden bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
+        {{-- ATTENDANCE TABLE --}}
+        <div id="attendanceTable" class="bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
 
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-100">
@@ -193,15 +186,15 @@
                         <th class="px-4 py-3">College Roll Number</th>
                         <th class="px-6 py-3 text-left">Student Name</th>
 
-                        @if($assignment->is_lecture)
+                        @if($assignment->lecture_held > 0)
                             <th class="px-6 py-3 text-center">Lecture<br><span class="text-xs">Classes Held / Classes Attended</span></th>
                         @endif
 
-                        @if($assignment->is_tute)
+                        @if($assignment->tute_held > 0)
                             <th class="px-6 py-3 text-center">Tutorial<br><span class="text-xs">Classes Held / Classes Attended</span></th>
                         @endif
 
-                        @if($assignment->is_practical)
+                        @if($assignment->practical_held > 0)
                             <th class="px-6 py-3 text-center">Practical<br><span class="text-xs">Classes Held / Classes Attended</span></th>
                         @endif
                     </tr>
@@ -215,12 +208,13 @@
                         <td class="px-6 py-2 font-medium">{{ $s->name }}</td>
 
                         {{-- LECTURE --}}
-                        @if($assignment->is_lecture)
+                        @if($assignment->lecture_held > 0)
                         <td class="px-6 py-2 text-center space-x-2">
                             <input type="number"
                                    name="attendance[{{ $s->id }}][lecture][working]"
-                                   class="lecture-working w-16 text-center border rounded-lg"
-                                   min="0" max="31">
+                                   value="{{ $assignment->lecture_held }}"
+                                   class="lecture-working w-16 text-center border rounded-lg bg-gray-50"
+                                   readonly>
                             <input type="number"
                                    name="attendance[{{ $s->id }}][lecture][present]"
                                     value="{{ $oldAttendences[$s->id]['lecture_present_days'] ?? '' }}"
@@ -230,12 +224,13 @@
                         @endif
 
                         {{-- TUTE --}}
-                        @if($assignment->is_tute)
+                        @if($assignment->tute_held > 0)
                         <td class="px-6 py-2 text-center space-x-2">
                             <input type="number"
                                    name="attendance[{{ $s->id }}][tute][working]"
-                                   class="tute-working w-16 text-center border rounded-lg"
-                                   min="0" max="31">
+                                   value="{{ $assignment->tute_held }}"
+                                   class="tute-working w-16 text-center border rounded-lg bg-gray-50"
+                                   readonly>
                             <input type="number"
                                    name="attendance[{{ $s->id }}][tute][present]"
                                    value="{{ $oldAttendences[$s->id]['tute_present_days'] ?? '' }}"
@@ -245,12 +240,13 @@
                         @endif
 
                         {{-- PRACTICAL --}}
-                        @if($assignment->is_practical)
+                        @if($assignment->practical_held > 0)
                         <td class="px-6 py-2 text-center space-x-2">
                             <input type="number"
                                    name="attendance[{{ $s->id }}][practical][working]"
-                                   class="practical-working w-16 text-center border rounded-lg"
-                                   min="0" max="31">
+                                   value="{{ $assignment->practical_held }}"
+                                   class="practical-working w-16 text-center border rounded-lg bg-gray-50"
+                                   readonly>
                             <input type="number"
                                    name="attendance[{{ $s->id }}][practical][present]"
                                    value="{{ $oldAttendences[$s->id]['practical_present_days'] ?? '' }}"
@@ -265,7 +261,7 @@
         </div>
 
         {{-- SAVE BUTTON --}}
-        <div id="saveBtn" class="hidden flex justify-end mt-6">
+        <div id="saveBtn" class="flex justify-end mt-6">
             <button class="px-8 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                 Save Attendance
             </button>

@@ -8,15 +8,18 @@
         @foreach($assignments as $a)
 
             @php
-                if (($a->semester_type) % 2 == 0) {
-                    $postFix = 'even';
-                } else {
-                    $postFix = 'odd';
-                }
-                $key = $a->academic_session . '_' . $postFix;
-                // echo $key;die;
-                $setting = $attendanceSettings[$key] ?? null;
-                // echo "<pre>";print_r($setting);die;
+                $semesterNum = (int)$a->semester_id;
+                $postFix = ($semesterNum % 2 == 0) ? 'even' : 'odd';
+                $setting = $attendanceSettings->firstWhere('semester_type', $postFix);
+                
+                // Get all months for this class group in the pool table
+                $poolMonths = \App\Models\TimetableHeldPool::where([
+                    'teacher_id' => auth('teacher')->id(),
+                    'course_id' => $a->course_id,
+                    'semester_id' => $a->semester_id,
+                    'section' => $a->section,
+                    'paper_master_id' => $a->paper_master_id,
+                ])->orderBy('year', 'asc')->orderBy('month', 'asc')->get();
             @endphp
 
             <div class="bg-white shadow rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600">
@@ -35,47 +38,34 @@
                     <div class="mt-4 text-sm text-red-600 font-semibold">
                         ⚠ Attendance configuration not defined by admin.
                     </div>
+                @elseif($poolMonths->isEmpty())
+                    <div class="mt-4 text-sm text-gray-500 font-semibold">
+                         No classes marked held yet for this subject.
+                    </div>
                 @else
-                    @php
-                        $startMonth = (int) $setting->start_month;
-                        $endMonth = (int) $setting->end_month;
-                    @endphp
+                    <div class="mt-3">
+                        <h4 class="text-sm font-medium text-gray-700 mb-1">
+                            Available Months:
+                        </h4>
 
-                    @if($startMonth < 1 || $endMonth < 1 || $startMonth > 12 || $endMonth > 12)
-                        <div class="mt-4 text-sm text-red-600 font-semibold">
-                            ⚠ Invalid month configuration by admin.
+                        <div class="flex flex-wrap gap-2">
+                            @foreach($poolMonths as $mRecord)
+                                @php $preFix = $setting->attendance_type . '.' ?? ' '; @endphp
+                                <a href="{{ route('teacher.' . $preFix . 'attendance.fill', [
+                                    'assignment' => $mRecord->id,
+                                    'month' => $mRecord->month,
+                                    'year' => $mRecord->year
+                                ]) }}"
+                                    class="bg-blue-500 text-white text-sm px-3 py-1 rounded shadow hover:bg-blue-600 transition {{ in_array($mRecord->month, $isLocked) ? 'pointer-events-none opacity-50' : '' }}">
+                                    {{ \Carbon\Carbon::createFromDate(
+                                    $mRecord->year,
+                                    $mRecord->month,
+                                    1
+                                )->format('M Y') }}
+                                </a>
+                            @endforeach
                         </div>
-
-                    @elseif($startMonth > $endMonth)
-                        <div class="mt-4 text-sm text-red-600 font-semibold">
-                            ⚠ Academic session month range is invalid.
-                        </div>
-
-                    @else
-                        <div class="mt-3">
-                            <h4 class="text-sm font-medium text-gray-700 mb-1">
-                                Pending Months:
-                            </h4>
-
-                            <div class="flex flex-wrap gap-2">
-                                @for($m = $startMonth; $m <= $endMonth; $m++)
-                                    @php $preFix = $setting->attendance_type . '.' ?? ' '; @endphp
-                                    <a href="{{ route('teacher.' . $preFix . 'attendance.fill', [
-                                        'assignment' => $a->id,
-                                        'month' => $m,
-                                        'year' => now()->year
-                                    ]) }}"
-                                        class="bg-blue-500 text-white text-sm px-3 py-1 rounded shadow hover:bg-blue-600 transition {{ in_array($m, $isLocked) ? 'pointer-events-none opacity-50' : '' }}">
-                                        {{ \Carbon\Carbon::createFromDate(
-                                        now()->year,
-                                        $m,
-                                        1
-                                    )->format('M Y') }}
-                                    </a>
-                                @endfor
-                            </div>
-                        </div>
-                    @endif
+                    </div>
                 @endif
 
             </div>

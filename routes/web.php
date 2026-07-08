@@ -202,11 +202,6 @@ Route::middleware('auth:admin')->group(function() {
 
 });
 Route::middleware('auth:admin')->group(function(){
-    Route::get('teacher-assignments', [AdminController::class,'teacherAssignments'])->name('admin.teacher.assignments');
-    Route::post('teacher-assignments', [AdminController::class,'storeTeacherAssignment'])->name('admin.teacher.assignments.store');
-    Route::get('teacher-assignments/{id}', [AdminController::class, 'edit']);
-    Route::post('teacher-assignments/{id}', [AdminController::class, 'update']);
-    Route::patch('/admin/teacher-assignments/{id}/status',[AdminController::class, 'toggleStatus'])->name('admin.teacher.assignments.status');
     Route::get(
         '/admin/roles',
         function(){
@@ -233,6 +228,10 @@ Route::middleware('auth:student')->prefix('students')->group(function(){
     Route::get('/ia-marks', function(){
         return view("pages.ia-marks-show");
     })->name('students.ia-marks');
+
+    Route::get('/my-timetable', function () {
+        return view('pages.students.my-timetable');
+    })->name('students.timetable.index');
 });
 
 
@@ -355,7 +354,6 @@ Route::middleware('auth:admin')
 
     });
     
-
 
 
 

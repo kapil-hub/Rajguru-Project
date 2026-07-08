@@ -15,14 +15,7 @@ class MenuHelper
             //     ],
             //     'permission' => true ,
             // ],
-            [
-                'icon' => 'pages',
-                'name' =>  auth('admin')->check() ? 'Assign Teacher' : (auth('teacher')->check() ? 'Assign Classes' : ' ' ),
-                'path' => '/teacher-assignments',
-                'permission' =>  auth('admin')->check()  ? true : False, 
-                'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
-                
-            ],
+
             [
                 'icon' => 'calendar',
                 'name' => 'Attendance Monitoring',
@@ -178,6 +171,13 @@ class MenuHelper
                 'path' => '/students/ia-marks/',
                 'permission' => auth('student')->check(),
                 'class' => request()->routeIs('students.ia-marks') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+            [
+                'icon' => 'calendar',
+                'name' => 'My Timetable',
+                'path' => '/students/my-timetable',
+                'permission' => auth('student')->check(),
+                'class' => request()->routeIs('students.timetable.index') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
                 'icon' => 'pages',

@@ -136,8 +136,7 @@
 
                     </td>
                     <td>
-                        {{ $assignment->semester_id ?? 'N/A' }}
-
+                        {{ \App\Models\Semester::find($assignment->semester)->name ?? $assignment->semester ?? 'N/A' }}
                     </td>
                     <td>{{ $record->student->academic->roll_number ?? '-' }}</td>
                     <td>{{ $record->student->academic->college_roll_number ?? '-' }}</td>
