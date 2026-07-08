@@ -173,6 +173,13 @@ class MenuHelper
                 'class' => request()->routeIs('students.ia-marks') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
+                'icon' => 'calendar',
+                'name' => 'My Timetable',
+                'path' => '/students/my-timetable',
+                'permission' => auth('student')->check(),
+                'class' => request()->routeIs('students.timetable.index') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+            [
                 'icon' => 'pages',
                 'name' => 'My Attendence Portfolio',
                 'path' => '/students/my-attendance/',

@@ -228,6 +228,10 @@ Route::middleware('auth:student')->prefix('students')->group(function(){
     Route::get('/ia-marks', function(){
         return view("pages.ia-marks-show");
     })->name('students.ia-marks');
+
+    Route::get('/my-timetable', function () {
+        return view('pages.students.my-timetable');
+    })->name('students.timetable.index');
 });
 
 
@@ -350,7 +354,6 @@ Route::middleware('auth:admin')
 
     });
     
-
 
 
 
