@@ -16,7 +16,9 @@ class AdminFacultyController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Teacher::with(['details.course', 'details.paperMaster', 'department'])->orderBy('name');
+        $query = Teacher::withoutGlobalScope('active')
+            ->with(['details.course', 'details.paperMaster', 'department'])
+            ->orderBy('name');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -96,7 +98,7 @@ class AdminFacultyController extends Controller
         if(is_null($id)){
             $id = auth('teacher')->user()->id;
         }
-        $faculty = Teacher::with('details')->findOrFail($id);
+        $faculty = Teacher::withoutGlobalScope('active')->with('details')->findOrFail($id);
         $departments = Departments::all();
         $courses = Courses::all();
         $papers = Paper::all();
@@ -122,7 +124,7 @@ class AdminFacultyController extends Controller
             'password'     => 'nullable|string|min:6|confirmed',
             'details'      => 'required|array',
             'details.*.course_id' => 'required|exists:courses,id',
-            'courses.*.paper_master_id' => 'required|exists:paper_master,id',
+            'details.*.paper_master_id' => 'required|exists:paper_master,id',
         ]);
 
         $faculty->update([
@@ -158,7 +160,7 @@ class AdminFacultyController extends Controller
     // Delete faculty
     public function destroy(Teacher $faculty)
     {
-        Teacher::where('id', $faculty->id)->delete();
+        $faculty->delete();
         return redirect()->route('admin.faculty.index')
                          ->with('success', 'Faculty deleted successfully');
     }
