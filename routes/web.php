@@ -24,18 +24,6 @@ use App\Http\Controllers\OutstandingActionController;
 
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('login');
-Route::get('/login-admin-test', function() {
-    $user = App\Models\User::first();
-    if (!$user) {
-        $user = App\Models\User::create([
-            'name' => 'Admin Test',
-            'email' => 'admin@test.com',
-            'password' => bcrypt('password'),
-        ]);
-    }
-    auth('admin')->login($user);
-    return redirect()->route('papers.index');
-});
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/forgot-password', [AuthController::class, 'showForgot']);
@@ -69,6 +57,7 @@ Route::middleware('auth:admin,teacher,student')->group(function () {
 
 Route::middleware(['auth:admin,teacher'])->group(function () {
     Route::get('/outstanding-actions', [OutstandingActionController::class, 'index'])->name('outstanding-actions.index');
+    Route::get('/outstanding-actions/late-held/create', [OutstandingActionController::class, 'createLateHeldRequest'])->name('outstanding-actions.late-held.create');
     Route::post('/outstanding-actions/late-held', [OutstandingActionController::class, 'storeLateHeldRequest'])->name('outstanding-actions.late-held.store');
     Route::post('/outstanding-actions/{lateHeldRequest}/approve', [OutstandingActionController::class, 'approve'])->name('outstanding-actions.approve');
     Route::post('/outstanding-actions/{lateHeldRequest}/reject', [OutstandingActionController::class, 'reject'])->name('outstanding-actions.reject');
@@ -365,7 +354,6 @@ Route::middleware('auth:admin')
 
     });
     
-
 
 
 

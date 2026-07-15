@@ -225,47 +225,33 @@
                 'xl:ml-[90px]': !$store.sidebar.isExpanded && !$store.sidebar.isHovered,
                 'ml-0': $store.sidebar.isMobileOpen
             }">
-            <div class="max-w-7xl mx-auto px-4 mt-4 space-y-3">
-
-                {{-- SUCCESS --}}
-                @if (session('success'))
-                    <div
-                        class="flex items-center justify-between bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded-lg">
-                        <span>{{ session('success') }}</span>
-                        <button onclick="this.parentElement.remove()" class="font-bold text-green-800 hover:text-green-900">
-                            &times;
-                        </button>
-                    </div>
-                @endif
-
-                {{-- ERROR --}}
-                @if (session('error'))
-                    <div
-                        class="flex items-center justify-between bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded-lg">
-                        <span>{{ session('error') }}</span>
-                        <button onclick="this.parentElement.remove()" class="font-bold text-red-800 hover:text-red-900">
-                            &times;
-                        </button>
-                    </div>
-                @endif
-
-                {{-- VALIDATION ERRORS --}}
-                @if ($errors->any())
-                    <div class="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded-lg">
-                        <strong class="block mb-1">Please fix the following errors:</strong>
-                        <ul class="list-disc list-inside">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-            </div>
             <!-- app header start -->
             @include('layouts.app-header')
             <!-- app header end -->
             <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+                <div class="mx-auto max-w-7xl space-y-3 px-4">
+                    {{-- SUCCESS --}}
+                    @if (session('success'))
+                        <div
+                            class="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-800">
+                            <span>{{ session('success') }}</span>
+                            <button onclick="this.parentElement.remove()" class="font-bold text-green-800 hover:text-green-900">
+                                &times;
+                            </button>
+                        </div>
+                    @endif
+
+                    {{-- ERROR --}}
+                    @if (session('error'))
+                        <div
+                            class="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-800">
+                            <span>{{ session('error') }}</span>
+                            <button onclick="this.parentElement.remove()" class="font-bold text-red-800 hover:text-red-900">
+                                &times;
+                            </button>
+                        </div>
+                    @endif
+                </div>
                 @yield('content')
             </div>
         </div>
