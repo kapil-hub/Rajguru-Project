@@ -86,8 +86,8 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-200 bg-clip-text text-transparent" x-text="config.college_name || 'Academic Portal'"></h1>
-                    <p class="text-indigo-300 text-sm font-medium mt-0.5 tracking-wide">Public Timetable & Schedule Directory</p>
+                    <img src="/images/logo/logo.png" width="150" height="100">
+                    <p class="text-indigo-300 text-sm font-medium mt-0.5 tracking-wide">Timetable & Schedule</p>
                 </div>
             </div>
 
@@ -196,7 +196,7 @@
                                 <select x-model="activeFilters.room" @change="onFilterChange()" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-indigo-500 focus:bg-white transition duration-200 appearance-none">
                                     <option value="">Select Room</option>
                                     <template x-for="r in filterOptions.rooms" :key="r.id">
-                                        <option :value="r.id" x-text="formatRoomOption(r)"></option>
+                                        <option :value="r.id" x-text="r.room_number"></option>
                                     </template>
                                 </select>
                                 <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400">
