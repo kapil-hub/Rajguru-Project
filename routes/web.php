@@ -47,7 +47,7 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::get('/reset-password', [AuthController::class, 'showResetPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
-Route::get('/public-timetable', function () {
+Route::get('/pbtimetable', function () {
     return view('pages.public.timetable');
 })->name('public.timetable');
 
