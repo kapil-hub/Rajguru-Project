@@ -24,6 +24,13 @@ class MenuHelper
                 'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
+                'icon' => 'task',
+                'name' => 'Outstanding Actions' . (self::outstandingActionCount() ? ' (' . self::outstandingActionCount() . ')' : ''),
+                'path' => '/outstanding-actions',
+                'permission' => auth('admin')->check() || auth('teacher')->check(),
+                'class' => request()->routeIs('outstanding-actions.index') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+            [
                 'icon' => 'calendar',
                 'name' => 'Departments',
                 'path' => '/admin/departments',
@@ -299,6 +306,26 @@ class MenuHelper
                 'items' => self::getOthersItems()
             ]
         ];
+    }
+
+    public static function outstandingActionCount(): int
+    {
+        if (auth('admin')->check()) {
+            return 0;
+        }
+
+        $teacher = auth('teacher')->user();
+
+        if ($teacher && $teacher->hasRole('TIC')) {
+            return \App\Models\LateHeldRequest::where('status', 'pending')
+                ->where(function ($query) use ($teacher) {
+                    $query->where('department_id', $teacher->department_id)
+                        ->orWhereHas('teacher', fn ($teacherQuery) => $teacherQuery->where('department_id', $teacher->department_id));
+                })
+                ->count();
+        }
+
+        return 0;
     }
 
     public static function isActive($path)

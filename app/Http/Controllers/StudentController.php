@@ -475,6 +475,63 @@ class StudentController extends Controller
         return redirect()->back()->with('success', 'Student updated successfully');
     }
 
+    public function exit(Student $student)
+    {
+        $this->authorize('update', $student);
+
+        if (!$student->academic) {
+            return redirect()
+                ->route('students.index', ['view' => 'past'])
+                ->with('success', 'Student is already outside the current students list.');
+        }
+
+        DB::transaction(function () use ($student) {
+            $academic = $student->academic()->first();
+            $archivedAt = now();
+
+            DB::table('student_academic_history')->updateOrInsert(
+                ['original_student_academic_id' => $academic->id],
+                [
+                    'student_user_id' => $student->id,
+                    'roll_number' => $academic->roll_number,
+                    'college_roll_number' => $academic->college_roll_number,
+                    'department_id' => $academic->department_id,
+                    'course_id' => $academic->course_id,
+                    'current_semester' => $academic->current_semester,
+                    'section' => $academic->section,
+                    'current_academic_year' => $academic->current_academic_year,
+                    'archived_at' => $archivedAt,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+
+            foreach ($student->papers()->get() as $paper) {
+                DB::table('student_papers_history')->updateOrInsert(
+                    ['original_student_paper_id' => $paper->id],
+                    [
+                        'student_user_id' => $student->id,
+                        'paper_master_id' => $paper->paper_master_id,
+                        'semester' => $paper->semester,
+                        'academic_year' => $paper->academic_year,
+                        'is_backlog' => (bool) $paper->is_backlog,
+                        'archived_at' => $archivedAt,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]
+                );
+            }
+
+            $student->papers()->delete();
+            $student->academic()->delete();
+            $student->update(['status' => 0]);
+        });
+
+        return redirect()
+            ->route('students.index', ['view' => 'past'])
+            ->with('success', 'Student exited successfully. Current records moved to history.');
+    }
+
     /* =======================
        TEMPLATE DOWNLOAD
     ========================*/
