@@ -224,6 +224,11 @@
             {{ session('success') }}
         </div>
     @endif
+    @if(session('error'))
+        <div class="flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
+            {{ session('error') }}
+        </div>
+    @endif
 
     {{-- ══════════════════════════════════════════════
          TABLE
@@ -314,6 +319,7 @@
                         <td class="px-5 py-4">
                             @php
                                 $statusVal = strtolower($student->status ?? '');
+                                $statusLabel = !$student->academic ? 'Exited' : ucfirst((string) ($student->status ?? 'Unknown'));
                                 $statusClass = match($statusVal) {
                                     'active', '1' => 'bg-green-100 text-green-700',
                                     'inactive', '0' => 'bg-red-100 text-red-700',
@@ -324,7 +330,7 @@
                                 <span class="w-1.5 h-1.5 rounded-full
                                     {{ in_array($statusVal, ['active','1']) ? 'bg-green-500' : (in_array($statusVal, ['inactive','0']) ? 'bg-red-500' : 'bg-gray-400') }}">
                                 </span>
-                                {{ ucfirst($student->status ?? 'Unknown') }}
+                                {{ $statusLabel }}
                             </span>
                         </td>
 
@@ -349,6 +355,16 @@
                                     </svg>
                                     Edit
                                 </a>
+                                @if($student->academic)
+                                    <form method="POST" action="{{ route('students.exit', $student) }}" onsubmit="return confirm('Exit this student from the current students list? Their current academic and paper records will be moved to history.');">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit"
+                                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 font-medium text-xs transition">
+                                            Exit
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         </td>
                     </tr>

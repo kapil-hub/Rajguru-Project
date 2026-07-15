@@ -5,10 +5,21 @@
     @if(auth('admin')->check())
         <div class="flex justify-between items-center">
             <h2 class="text-2xl font-bold">Student Profile</h2>
-            <a href="{{ route('students.edit',$student) }}"
-            class="px-4 py-2 bg-indigo-600 text-white rounded-lg">
-                Edit
-            </a>
+            <div class="flex gap-2">
+                <a href="{{ route('students.edit',$student) }}"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-lg">
+                    Edit
+                </a>
+                @if($student->academic)
+                    <form method="POST" action="{{ route('students.exit', $student) }}" onsubmit="return confirm('Exit this student from the current students list? Their current academic and paper records will be moved to history.');">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg">
+                            Exit Student
+                        </button>
+                    </form>
+                @endif
+            </div>
         </div>
     @endif
 
@@ -21,11 +32,12 @@
             <div><strong>Mobile:</strong> {{ $student->mobile }}</div>
             <div><strong>Email:</strong> {{ $student->email }}</div>
             <div><strong>Admission Year:</strong> {{ $student->admission_academic_year }}</div>
-            <div><strong>Status:</strong> {{ ucfirst($student->status) }}</div>
+            <div><strong>Status:</strong> {{ $student->academic ? ucfirst((string) $student->status) : 'Exited' }}</div>
         </div>
     </div>
 
     <!-- ACADEMIC DETAILS -->
+    @if($student->academic)
     <div class="bg-white rounded-xl shadow p-6">
         <h3 class="font-semibold text-lg mb-4">Academic Details</h3>
         <div class="grid md:grid-cols-3 gap-4 text-sm">
@@ -38,6 +50,12 @@
             <div><strong>Academic Year:</strong> {{ optional($student->academic)->current_academic_year }}</div>
         </div>
     </div>
+    @else
+        <div class="bg-amber-50 rounded-xl shadow p-6 border border-amber-200">
+            <h3 class="font-semibold text-lg mb-2 text-amber-800">Exited Student</h3>
+            <p class="text-sm text-amber-700">This student has no current academic record. Details are available in Academic History.</p>
+        </div>
+    @endif
 
     <!-- PARENTS DETAILS -->
     <div class="bg-white rounded-xl shadow p-6">
@@ -51,6 +69,7 @@
     </div>
 
     <!-- PAPERS -->
+    @if($student->papers->isNotEmpty())
     <div class="bg-white rounded-xl shadow p-6">
     <h3 class="font-semibold text-lg mb-4">Current Semester Papers</h3>
 
@@ -105,6 +124,7 @@
         </tbody>
     </table>
 </div>
+    @endif
 
     @if(auth('admin')->check() && !empty($academicHistory))
         <!-- ACADEMIC HISTORY (ADMIN ONLY) -->
