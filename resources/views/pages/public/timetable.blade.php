@@ -76,7 +76,7 @@
 <body class="h-full text-slate-800 antialiased" x-data="publicTimetable()" x-cloak>
 
     <!-- Header Section (no-print) -->
-    <header class="no-print relative overflow-hidden bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 py-8 px-6 text-white shadow-lg">
+    <header class="no-print relative overflow-hidden bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900  px-6 text-white shadow-lg">
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-500/20 via-transparent to-transparent"></div>
         <div class="relative max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-4">
@@ -86,7 +86,7 @@
                     </svg>
                 </div>
                 <div>
-                    <img src="/images/logo/logo.png" width="150" height="100">
+                    <img src="/images/logo/logo.png" width="150" height="70">
                     <p class="text-indigo-300 text-sm font-medium mt-0.5 tracking-wide">Timetable & Schedule</p>
                 </div>
             </div>
