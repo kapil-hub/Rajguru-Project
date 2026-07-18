@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @include('layouts.pwa')
     <!-- <link href="https://cdn.tailwindcss.com" rel="stylesheet"> -->
     <link rel="icon" type="image/png" href="{{ '/images/logo/logo.png' }}">
     <!-- <script src="https://cdn.tailwindcss.com"></script> -->
@@ -14,7 +15,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
-    <title>{{ $title ?? 'Dashboard' }} | TailAdmin - Laravel Tailwind CSS Admin Dashboard Template</title>
+    <title>{{ config('app.name', 'Anuvartan (powered by OLDC)') }} - {{ $title ?? 'Dashboard' }}</title>
     <!-- Scripts -->
     @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
