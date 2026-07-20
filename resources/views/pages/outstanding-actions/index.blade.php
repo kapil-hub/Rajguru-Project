@@ -14,6 +14,10 @@
                        class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
                         New Late Held Request
                     </a>
+                    <a href="{{ route('outstanding-actions.substitute-held.create') }}"
+                       class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+                        New Substitute Lecture
+                    </a>
                 @endif
                 <span class="rounded bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700">
                     Pending TIC Actions: {{ $pendingRequests->count() }}
@@ -35,7 +39,7 @@
                 <table class="min-w-full text-sm">
                     <thead>
                         <tr class="border-b bg-gray-50 text-left text-gray-600">
-                            <th class="px-4 py-3">Teacher</th>
+                            <th class="px-4 py-3">Request</th>
                             <th class="px-4 py-3">Class</th>
                             <th class="px-4 py-3">Held Date</th>
                             <th class="px-4 py-3">Reason</th>
@@ -46,8 +50,13 @@
                         @foreach($pendingRequests as $requestItem)
                             <tr id="request-{{ $requestItem->id }}" class="border-b align-top">
                                 <td class="px-4 py-4">
-                                    <div class="font-semibold text-gray-800">{{ $requestItem->teacher?->name }}</div>
-                                    <div class="text-xs text-gray-500">{{ $requestItem->teacher?->email }}</div>
+                                    <div class="font-semibold text-gray-800">
+                                        {{ $requestItem->request_type === 'substitute_held' ? 'Substitute Lecture' : 'Late Held' }}
+                                    </div>
+                                    <div class="text-xs text-gray-500">Original: {{ $requestItem->teacher?->name }}</div>
+                                    @if($requestItem->substituteTeacher)
+                                        <div class="text-xs text-gray-500">Taken by: {{ $requestItem->substituteTeacher?->name }}</div>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-4">
                                     <div class="font-semibold text-gray-800">
@@ -108,7 +117,13 @@
                         @forelse($myRequests as $requestItem)
                             <tr id="request-{{ $requestItem->id }}" class="border-b align-top">
                                 <td class="px-4 py-4">
-                                    <div class="font-semibold text-gray-800">{{ $requestItem->timetable?->course?->name }} | {{ $requestItem->timetable?->paper?->name }}</div>
+                                    <div class="font-semibold text-gray-800">
+                                        {{ $requestItem->request_type === 'substitute_held' ? 'Substitute Lecture' : 'Late Held' }}
+                                    </div>
+                                    <div class="text-gray-700">{{ $requestItem->timetable?->course?->name }} | {{ $requestItem->timetable?->paper?->name }}</div>
+                                    @if($requestItem->substituteTeacher)
+                                        <div class="text-xs text-gray-500">Original: {{ $requestItem->teacher?->name }} | Taken by: {{ $requestItem->substituteTeacher?->name }}</div>
+                                    @endif
                                     <div class="text-xs text-gray-500">
                                         {{ $requestItem->timetable?->day_name }}
                                         {{ substr((string) $requestItem->timetable?->start_time, 0, 5) }}-{{ substr((string) $requestItem->timetable?->end_time, 0, 5) }}

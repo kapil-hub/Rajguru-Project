@@ -6,10 +6,11 @@ use App\Models\LateHeldRequest;
 use App\Models\PaperTimetable;
 use App\Models\RoleAssignment;
 use App\Models\Student;
+use App\Models\Teacher;
 use App\Models\TimetableHeldPool;
+use App\Jobs\SendLateHeldRequestMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 
 class OutstandingActionController extends Controller
 {
@@ -22,13 +23,16 @@ class OutstandingActionController extends Controller
         $pendingRequests = collect();
 
         if ($teacher) {
-            $myRequests = LateHeldRequest::with(['timetable.paper', 'timetable.course', 'timetable.room'])
-                ->where('teacher_id', $teacher->id)
+            $myRequests = LateHeldRequest::with(['teacher', 'substituteTeacher', 'timetable.paper', 'timetable.course', 'timetable.room', 'timetable.teacher'])
+                ->where(function ($query) use ($teacher) {
+                    $query->where('teacher_id', $teacher->id)
+                        ->orWhere('substitute_teacher_id', $teacher->id);
+                })
                 ->latest()
                 ->get();
 
             if ($teacher->hasRole('TIC')) {
-                $pendingRequests = LateHeldRequest::with(['teacher', 'timetable.paper', 'timetable.course'])
+                $pendingRequests = LateHeldRequest::with(['teacher', 'substituteTeacher', 'timetable.paper', 'timetable.course', 'timetable.room', 'timetable.teacher'])
                     ->where('status', 'pending')
                     ->where(function ($query) use ($teacher) {
                         $query->where('department_id', $teacher->department_id)
@@ -70,11 +74,37 @@ class OutstandingActionController extends Controller
         return view('pages.outstanding-actions.create-late-held', compact('teacherSlots'));
     }
 
+    public function createSubstituteHeldRequest()
+    {
+        $teacher = auth('teacher')->user();
+
+        if (!$teacher) {
+            abort(403);
+        }
+
+        $teacherSlots = PaperTimetable::with(['paper', 'course', 'room', 'teacher'])
+            ->where('teacher_id', '!=', $teacher->id)
+            ->where(function ($query) use ($teacher) {
+                $query->where('department_id', $teacher->department_id)
+                    ->orWhereHas('teacher', fn ($teacherQuery) => $teacherQuery->where('department_id', $teacher->department_id));
+            })
+            ->orderByRaw("FIELD(day_name, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')")
+            ->orderBy('start_time')
+            ->get();
+
+        $teachers = Teacher::whereIn('id', $teacherSlots->pluck('teacher_id')->unique())
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return view('pages.outstanding-actions.create-substitute-held', compact('teacherSlots', 'teachers'));
+    }
+
     public function storeLateHeldRequest(Request $request)
     {
         $teacher = auth('teacher')->user();
 
         $data = $request->validate([
+            'original_teacher_id' => 'required|exists:faculty_users,id',
             'paper_timetable_id' => 'required|exists:paper_timetables,id',
             'held_date' => 'required|date|before_or_equal:today',
             'reason' => 'required|string|min:10|max:1500',
@@ -106,6 +136,7 @@ class OutstandingActionController extends Controller
             'held_date' => $data['held_date'],
             'reason' => $data['reason'] ?? null,
             'status' => 'pending',
+            'request_type' => 'late_held',
         ]);
 
         $this->mailTic($lateRequest);
@@ -113,6 +144,62 @@ class OutstandingActionController extends Controller
         return redirect()
             ->route('outstanding-actions.index')
             ->with('success', 'Late held request submitted to TIC.');
+    }
+
+    public function storeSubstituteHeldRequest(Request $request)
+    {
+        $teacher = auth('teacher')->user();
+
+        if (!$teacher) {
+            abort(403);
+        }
+
+        $data = $request->validate([
+            'original_teacher_id' => 'required|exists:faculty_users,id',
+            'paper_timetable_id' => 'required|exists:paper_timetables,id',
+            'held_date' => 'required|date|before_or_equal:today',
+            'reason' => 'required|string|min:10|max:1500',
+        ]);
+
+        $slot = PaperTimetable::with('teacher')->findOrFail($data['paper_timetable_id']);
+
+        if ((int) $slot->teacher_id === (int) $teacher->id) {
+            return back()->withInput()->with('error', 'Please use Late Held Request for your own timetable slot.');
+        }
+
+        if ((int) $slot->teacher_id !== (int) $data['original_teacher_id']) {
+            return back()->withInput()->with('error', 'Selected timetable slot does not belong to the selected teacher.');
+        }
+
+        if (strtolower($slot->day_name) !== strtolower(\Carbon\Carbon::parse($data['held_date'])->format('l'))) {
+            return back()->withInput()->with('error', 'Selected date does not match the timetable slot day.');
+        }
+
+        $duplicate = LateHeldRequest::where('paper_timetable_id', $slot->id)
+            ->whereDate('held_date', $data['held_date'])
+            ->whereIn('status', ['pending', 'approved'])
+            ->exists();
+
+        if ($duplicate) {
+            return back()->withInput()->with('error', 'A request for this slot and date is already pending or approved.');
+        }
+
+        $lateRequest = LateHeldRequest::create([
+            'teacher_id' => $slot->teacher_id,
+            'substitute_teacher_id' => $teacher->id,
+            'department_id' => $slot->department_id ?: $slot->teacher?->department_id,
+            'paper_timetable_id' => $slot->id,
+            'held_date' => $data['held_date'],
+            'reason' => $data['reason'] ?? null,
+            'status' => 'pending',
+            'request_type' => 'substitute_held',
+        ]);
+
+        $this->mailTic($lateRequest);
+
+        return redirect()
+            ->route('outstanding-actions.index')
+            ->with('success', 'Substitute lecture request submitted to TIC.');
     }
 
     public function approve(Request $request, LateHeldRequest $lateHeldRequest)
@@ -167,13 +254,15 @@ class OutstandingActionController extends Controller
 
         $teacher = auth('teacher')->user();
         $requesterDepartmentId = $lateHeldRequest->teacher?->department_id;
+        $substituteDepartmentId = $lateHeldRequest->substituteTeacher?->department_id;
 
         if (!$teacher || !$teacher->hasRole('TIC')) {
             abort(403);
         }
 
         if ((int) $teacher->department_id !== (int) $lateHeldRequest->department_id
-            && (int) $teacher->department_id !== (int) $requesterDepartmentId) {
+            && (int) $teacher->department_id !== (int) $requesterDepartmentId
+            && (int) $teacher->department_id !== (int) $substituteDepartmentId) {
             abort(403);
         }
     }
@@ -249,7 +338,7 @@ class OutstandingActionController extends Controller
     {
         $ticRoleIds = \App\Models\Role::where('name', 'TIC')->pluck('id');
         $ticIds = RoleAssignment::where('auth_type', 'teacher')->whereIn('role_id', $ticRoleIds)->pluck('auth_id');
-        $departmentId = $lateHeldRequest->teacher?->department_id ?? $lateHeldRequest->department_id;
+        $departmentId = $lateHeldRequest->department_id ?? $lateHeldRequest->teacher?->department_id;
 
         $recipients = \App\Models\Teacher::whereIn('id', $ticIds)
             ->where('department_id', $departmentId)
@@ -257,9 +346,13 @@ class OutstandingActionController extends Controller
             ->filter(fn ($teacher) => filled($teacher->email))
             ->all();
 
+        $requestLabel = $lateHeldRequest->request_type === 'substitute_held'
+            ? 'Substitute lecture request'
+            : 'Late held class request';
+
         $this->sendMail(
             $recipients,
-            'Late held class request pending approval',
+            $requestLabel . ' pending approval',
             $lateHeldRequest,
             'pending_approval'
         );
@@ -267,9 +360,15 @@ class OutstandingActionController extends Controller
 
     private function mailTeacher(LateHeldRequest $lateHeldRequest, string $status): void
     {
+        $recipients = collect([$lateHeldRequest->substituteTeacher ?: $lateHeldRequest->teacher, $lateHeldRequest->teacher])
+            ->filter()
+            ->unique('id')
+            ->values()
+            ->all();
+
         $this->sendMail(
-            [$lateHeldRequest->teacher],
-            'Late held class request ' . ucfirst($status),
+            $recipients,
+            ($lateHeldRequest->request_type === 'substitute_held' ? 'Substitute lecture request ' : 'Late held class request ') . ucfirst($status),
             $lateHeldRequest,
             $status
         );
@@ -277,26 +376,28 @@ class OutstandingActionController extends Controller
 
     private function sendMail(array $recipients, string $subject, LateHeldRequest $lateHeldRequest, string $mailType): void
     {
-        $lateHeldRequest->loadMissing(['teacher', 'timetable.paper', 'timetable.course', 'timetable.room', 'actionBy']);
-        $requestUrl = route('outstanding-actions.index') . '#request-' . $lateHeldRequest->id;
+        $lateHeldRequest->loadMissing(['teacher', 'substituteTeacher', 'timetable.paper', 'timetable.course', 'timetable.room', 'timetable.teacher', 'actionBy']);
+        $senderName = ($lateHeldRequest->substituteTeacher ?: $lateHeldRequest->teacher)?->name ?? 'Teacher';
+        $isLocalMail = app()->environment('local');
 
         foreach (array_filter($recipients) as $recipient) {
-            $email = app()->environment('local') ? 'kapil.kumar@sol-du.ac.in' : $recipient->email;
+            if (!filled($recipient->email)) {
+                continue;
+            }
+
+            $email = $isLocalMail ? 'kapil.kumar@sol-du.ac.in' : $recipient->email;
             $receiverName = $recipient->name ?? 'User';
 
-            try {
-                Mail::send('emails.late-held-request', [
-                    'lateHeldRequest' => $lateHeldRequest,
-                    'mailType' => $mailType,
-                    'receiverName' => $receiverName,
-                    'senderName' => $lateHeldRequest->teacher?->name ?? 'Teacher',
-                    'requestUrl' => $requestUrl,
-                    'isLocalMail' => app()->environment('local'),
-                    'originalEmail' => $recipient->email ?? null,
-                ], fn ($message) => $message->to($email, $receiverName)->subject($subject));
-            } catch (\Throwable $e) {
-                report($e);
-            }
+            SendLateHeldRequestMail::dispatch(
+                $lateHeldRequest->id,
+                $mailType,
+                $email,
+                $receiverName,
+                $subject,
+                $senderName,
+                $isLocalMail,
+                $recipient->email
+            );
         }
     }
 }
