@@ -136,7 +136,7 @@ class StudentController extends Controller
                 'email' => $request->email,
                 'mobile' => $request->mobile,
                 'admission_academic_year' => $request->admission_academic_year,
-                'control_number' => $request->control_numer,
+                'control_number' => $request->control_number,
                 'status' => 1,
                 'password' => Hash::make('Student@123'),
             ]);
@@ -458,16 +458,28 @@ class StudentController extends Controller
 
             /* ================= UPDATE PAPERS ================= */
 
-            $student->papers()->delete();
+            $submittedPapers = collect($request->papers ?? [])
+                ->filter(fn ($paper) => ! empty($paper['paper_id']))
+                ->values();
 
-            foreach ($request->papers ?? [] as $paper) {
+            $submittedPaperIds = $submittedPapers
+                ->pluck('paper_id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
 
-                $student->papers()->create([
-                    'paper_master_id' => $paper['paper_id'],
-                    'semester' => $paper['semester'] ?? $request->current_semester,
-                    'academic_year' => now()->year,
-                    'is_backlog' => $paper['is_backlog'] ?? 0,
-                ]);
+            $student->papers()
+                ->whereNotIn('paper_master_id', $submittedPaperIds)
+                ->delete();
+
+            foreach ($submittedPapers as $paper) {
+                $student->papers()->updateOrCreate(
+                    ['paper_master_id' => $paper['paper_id']],
+                    [
+                        'semester' => $paper['semester'] ?? $request->current_semester,
+                        'academic_year' => now()->year,
+                        'is_backlog' => $paper['is_backlog'] ?? 0,
+                    ]
+                );
             }
 
         });
