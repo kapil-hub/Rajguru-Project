@@ -259,6 +259,7 @@
                     </div>
                     <h3 class="text-lg font-bold text-slate-800">No Timetable Records Displayed</h3>
                     <p class="text-sm text-slate-500 mt-2 max-w-md mx-auto">Please adjust or expand your filter criteria on the left. You can search by Department, Course, Semester, or enter keyword searches directly.</p>
+                    <p class="text-sm text-slate-500 mt-2 max-w-md mx-auto">To search for the time tables of GE, SEC, VAC and AEC papers, choose the relevant department and choose “All” under courses.</p>
                 </div>
 
                 <!-- GRID TIMETABLE VIEW (Desktop & Print) -->
