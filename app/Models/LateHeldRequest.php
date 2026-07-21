@@ -8,9 +8,11 @@ class LateHeldRequest extends Model
 {
     protected $fillable = [
         'teacher_id',
+        'substitute_teacher_id',
         'department_id',
         'paper_timetable_id',
         'held_date',
+        'request_type',
         'status',
         'reason',
         'tic_remark',
@@ -28,6 +30,11 @@ class LateHeldRequest extends Model
     public function teacher()
     {
         return $this->belongsTo(Teacher::class, 'teacher_id');
+    }
+
+    public function substituteTeacher()
+    {
+        return $this->belongsTo(Teacher::class, 'substitute_teacher_id');
     }
 
     public function timetable()

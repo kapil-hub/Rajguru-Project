@@ -59,6 +59,8 @@ Route::middleware(['auth:admin,teacher'])->group(function () {
     Route::get('/outstanding-actions', [OutstandingActionController::class, 'index'])->name('outstanding-actions.index');
     Route::get('/outstanding-actions/late-held/create', [OutstandingActionController::class, 'createLateHeldRequest'])->name('outstanding-actions.late-held.create');
     Route::post('/outstanding-actions/late-held', [OutstandingActionController::class, 'storeLateHeldRequest'])->name('outstanding-actions.late-held.store');
+    Route::get('/outstanding-actions/substitute-held/create', [OutstandingActionController::class, 'createSubstituteHeldRequest'])->name('outstanding-actions.substitute-held.create');
+    Route::post('/outstanding-actions/substitute-held', [OutstandingActionController::class, 'storeSubstituteHeldRequest'])->name('outstanding-actions.substitute-held.store');
     Route::post('/outstanding-actions/{lateHeldRequest}/approve', [OutstandingActionController::class, 'approve'])->name('outstanding-actions.approve');
     Route::post('/outstanding-actions/{lateHeldRequest}/reject', [OutstandingActionController::class, 'reject'])->name('outstanding-actions.reject');
 
@@ -354,7 +356,6 @@ Route::middleware('auth:admin')
 
     });
     
-
 
 
 
