@@ -8,7 +8,7 @@
 @endphp
 
 <aside id="sidebar"
-    class="fixed flex flex-col mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-99999 border-r border-gray-200"
+    class="fixed flex flex-col mt-0 top-0 px-5 left-0 bg-white text-gray-900 dark:bg-gray-900 dark:border-gray-800 dark:text-gray-200 h-screen transition-all duration-300 ease-in-out z-99999 border-r border-gray-200"
     x-data="{
         openSubmenus: {},
         init() {
@@ -60,18 +60,17 @@
     @mouseenter="if (!$store.sidebar.isExpanded) $store.sidebar.setHovered(true)"
     @mouseleave="$store.sidebar.setHovered(false)">
     <!-- Logo Section -->
-    <div class="pt-8 pb-7 flex"
+    <div class="flex items-center justify-center pt-7 pb-6"
         :class="(!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ?
         'xl:justify-center' :
-        'justify-start'">
-        <a href="/dashboard">
+        'justify-center'">
+        <a href="/dashboard" class="flex items-center justify-center">
             <img x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen"
-                class="dark:hidden" src="/images/logo/logo.png" alt="Logo" width="70" height="40" />
+                class="sidebar-logo h-16 w-16 rounded-full object-contain dark:hidden" src="/images/logo/logo.png" alt="Logo" />
             <img x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen"
-                class="hidden dark:block" src="/images/logo/logo.png" alt="Logo" width="70"
-                height="40" />
+                class="sidebar-logo hidden h-16 w-16 rounded-full object-contain dark:block" src="/images/logo/logo.png" alt="Logo" />
             <img x-show="!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen"
-                src="/images/logo/logo.png" alt="Logo" width="32" height="32" />
+                class="sidebar-logo-icon h-11 w-11 rounded-full object-contain" src="/images/logo/logo.png" alt="Logo" />
 
         </a>
     </div>
@@ -84,12 +83,12 @@
 
             <div class="mb-6">
 
-                <p class="text-xs text-gray-400 uppercase mb-3">
+                <p class="text-xs font-semibold text-gray-400 uppercase mb-3 dark:text-gray-500">
                     {{ $group['title'] }}
                 </p>
 
                 @foreach($group['items'] as $item)
-                    @if(!(isset($item['permission']) && $item['permission']))
+                    @if(isset($item['permission']) && !$item['permission'])
                         @continue;
                     @endif
                     @php
@@ -104,10 +103,12 @@
                         @endphp
 
                         <a href="{{ $item['path'] }}"
-                        class="flex items-center gap-3 px-3 py-2 rounded-md mb-1
-                        {{ $active ? 'text-indigo-600 font-medium' : 'hover:bg-gray-100' }}">
+                        class="group flex items-center gap-3 px-3 py-2 rounded-md mb-1 text-sm transition
+                        {{ $active ? 'bg-indigo-50 text-indigo-600 font-medium dark:bg-indigo-500/15 dark:text-indigo-300' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white' }}">
 
-                            {!! MenuHelper::getIconSvg($item['icon']) !!}
+                            <span class="shrink-0 text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-white">
+                                {!! MenuHelper::getIconSvg($item['icon']) !!}
+                            </span>
                             <span>{{ $item['name'] }}</span>
                         </a>
 
@@ -126,11 +127,13 @@
                         <div x-data="{ open: {{ $childActive ? 'true' : 'false' }} }">
 
                             <button @click="open = !open"
-                                class="w-full flex items-center justify-between px-3 py-2 rounded-md
-                                {{ $childActive ? 'text-indigo-600 font-medium' : 'hover:bg-gray-100' }}">
+                                class="group w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition
+                                {{ $childActive ? 'bg-indigo-50 text-indigo-600 font-medium dark:bg-indigo-500/15 dark:text-indigo-300' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white' }}">
 
                                 <div class="flex items-center gap-3">
-                                    {!! MenuHelper::getIconSvg($item['icon']) !!}
+                                    <span class="shrink-0 text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-white">
+                                        {!! MenuHelper::getIconSvg($item['icon']) !!}
+                                    </span>
                                     <span>{{ $item['name'] }}</span>
                                 </div>
 
@@ -150,8 +153,8 @@
                                         @endphp
 
                                         <a href="{{ $sub['path'] }}"
-                                        class="block px-3 py-2 text-sm rounded-md
-                                        {{ $subActive ? 'text-indigo-600 font-medium' : 'hover:bg-gray-100' }}">
+                                        class="block px-3 py-2 text-sm rounded-md transition
+                                        {{ $subActive ? 'bg-indigo-50 text-indigo-600 font-medium dark:bg-indigo-500/15 dark:text-indigo-300' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white' }}">
                                             {{ $sub['name'] }}
                                         </a>
 

@@ -300,10 +300,6 @@ class MenuHelper
             [
                 'title' => 'Menu',
                 'items' => self::getMainNavItems()
-            ],
-            [
-                'title' => 'Others',
-                'items' => self::getOthersItems()
             ]
         ];
     }
