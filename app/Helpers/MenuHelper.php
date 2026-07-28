@@ -240,7 +240,7 @@ class MenuHelper
                 'icon' => 'pages',
                 'name' => 'Registration Management',
                 'path' => '/admin/registration-management',
-                'permission' => auth('admin')->check() || auth()->user()->hasRole("TIC")  ? true : False,
+                'permission' => auth('admin')->check() || (auth('teacher')->check() && auth('teacher')->user()->hasRole('TIC')),
                 'class' => request()->routeIs('admin.registration-management') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [

@@ -99,7 +99,12 @@
                     @if(!$hasSub && isset($item['path']))
 
                         @php
-                            $active = request()->is(trim($item['path'],'/').'*');
+                            $itemPath = trim($item['path'], '/');
+                            $active = $itemPath !== ''
+                                && (
+                                    request()->path() === $itemPath
+                                    || request()->routeIs($item['activeRoutes'] ?? '')
+                                );
                         @endphp
 
                         <a href="{{ $item['path'] }}"

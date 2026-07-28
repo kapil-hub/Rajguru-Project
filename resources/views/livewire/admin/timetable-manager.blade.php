@@ -733,6 +733,10 @@
 
                 </select>
 
+                @error('room_id')
+                    <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p>
+                @enderror
+
                 @if(collect($rooms)->isEmpty())
 
                     <p class="mt-2 text-xs font-medium text-red-600">
@@ -781,6 +785,10 @@
                         @endforeach
                     </select>
                 </div>
+
+                @error('teacher_id')
+                    <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p>
+                @enderror
 
             </div>
             <div class="flex flex-wrap items-center gap-6">
@@ -838,6 +846,10 @@
                 </label>
 
             </div>
+
+            @error('slot_type')
+                <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p>
+            @enderror
 
 
 

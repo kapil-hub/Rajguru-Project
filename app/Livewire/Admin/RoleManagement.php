@@ -24,14 +24,21 @@ class RoleManagement extends Component
 
     public $showModal = false;
 
-    protected $rules = [
+    protected function rules()
+    {
+        return [
+            'name' => 'required|min:2',
+            'slug' => 'required|alpha_dash|unique:roles,slug,' . ($this->editId ?: 'NULL') . ',id',
+            'description' => 'nullable|string|max:1000',
+        ];
+    }
 
-        'name' => 'required|min:2',
-
-        'slug' => 'required',
-
-        'description' => 'nullable'
-
+    protected $messages = [
+        'name.required' => 'Role name is required.',
+        'name.min' => 'Role name must be at least 2 characters.',
+        'slug.required' => 'Slug is required.',
+        'slug.alpha_dash' => 'Slug may only contain letters, numbers, dashes and underscores.',
+        'slug.unique' => 'This slug is already used by another role.',
     ];
 
     public function updatedName()
@@ -57,6 +64,8 @@ class RoleManagement extends Component
 
     public function save()
     {
+        $this->slug = Str::slug((string) $this->slug);
+
         $this->validate();
 
         Role::updateOrCreate(

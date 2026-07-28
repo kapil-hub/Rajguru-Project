@@ -18,6 +18,7 @@ class PracticalMarks extends Component
     public $practicleBreakup = [];
     public $showStudents = false;
     public $paper =[];
+    public bool $hasMarkErrors = false;
 
     public function mount()
     {
@@ -129,12 +130,14 @@ class PracticalMarks extends Component
     // Prevent negative values
     if ($value < 0) {
         $this->marks[$studentId][$field] = 0;
+        $this->hasMarkErrors = true;
         return;
     }
 
     // Enforce max limit
     if (isset($maxLimits[$field]) && $value > $maxLimits[$field]) {
         $this->marks[$studentId][$field] = $maxLimits[$field];
+        $this->hasMarkErrors = true;
 
         session()->flash(
             'error',
@@ -145,6 +148,12 @@ class PracticalMarks extends Component
 
     public function saveMarks()
     {
+        if ($this->hasMarkErrors) {
+            session()->flash('error', 'Please review corrected marks before saving.');
+            $this->hasMarkErrors = false;
+            return;
+        }
+
         foreach ($this->students as $student) {
 
             $ca   = $this->marks[$student->id]['ca'] ?? 0;

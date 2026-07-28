@@ -437,6 +437,12 @@ public function closeModal()
 public function save()
 {
     // dd($this->selectedBatches);
+   if (! $this->is_lecture && ! $this->is_tutorial && ! $this->is_practical && ! $this->is_coordinator) {
+        throw ValidationException::withMessages([
+            'slot_type' => 'Please choose at least one course type.',
+        ]);
+   }
+
    $this->validate([
             'department_id' => 'required',
             'course_id'     => 'required',
@@ -447,6 +453,16 @@ public function save()
             'day_name'      => 'required',
             'start_time'    => 'required',
             'end_time'      => 'required', 
+        ], [
+            'department_id.required' => 'Please select a department.',
+            'course_id.required' => 'Please select a course.',
+            'semester.required' => 'Please select a semester.',
+            'paper_id.required' => 'Please select a paper.',
+            'teacher_id.required' => 'Please select a teacher.',
+            'room_id.required' => 'Please select a room.',
+            'day_name.required' => 'Please choose a timetable slot.',
+            'start_time.required' => 'Start time is required.',
+            'end_time.required' => 'End time is required.',
         ]);
 
         $this->loadAvailableRooms();

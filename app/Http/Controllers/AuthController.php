@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use DB;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -172,13 +173,21 @@ public function sendOtp(Request $request)
         ]
     );
 
-    Mail::send('emails.password-otp', [
-        'otp' => $otp,
-        'name' => $user->name ?? 'User'
-    ], function ($mail) use ($request) {
-        $mail->to($request->email)
-             ->subject('🔐 Password Reset OTP');
-    });
+    try {
+        Mail::send('emails.password-otp', [
+            'otp' => $otp,
+            'name' => $user->name ?? 'User'
+        ], function ($mail) use ($request) {
+            $mail->to($request->email)
+                ->subject('Password Reset OTP');
+        });
+    } catch (Throwable $e) {
+        report($e);
+
+        return back()
+            ->withInput($request->only('email', 'role'))
+            ->withErrors(['email' => 'OTP could not be sent right now. Please check mail settings or try again later.']);
+    }
 
     session([
         'reset_email' => $request->email,
