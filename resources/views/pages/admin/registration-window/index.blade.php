@@ -25,8 +25,8 @@
             <tbody>
                 @foreach($windows as $win)
                     <tr class="border-t">
-                        <td class="p-3">{{ $win->department->name }}</td>
-                        <td class="p-3">{{ $win->course->name }}</td>
+                        <td class="p-3">{{ $win->department?->name ?? 'Department unavailable' }}</td>
+                        <td class="p-3">{{ $win->course?->name ?? 'Course unavailable' }}</td>
                         <td class="p-3">{{ $win->start_date }}</td>
                         <td class="p-3">{{ $win->end_date }}</td>
                         <td class="p-3 text-center">
