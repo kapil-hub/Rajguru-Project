@@ -52,6 +52,10 @@
         <!-- Menu Items --> 
         <ul class="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
             @php
+                $profilePath = auth('teacher')->check()
+                    ? route('teacher.profile.edit')
+                    : (auth('student')->check() ? route('students.show', auth('student')->id()) : route('dashboard'));
+
                 $menuItems = [
                     [
                         'text' => 'Edit profile',
@@ -63,7 +67,7 @@
                                 fill="currentColor"
                             />
                         </svg>',
-                        'path' => 'profile',
+                        'path' => $profilePath,
                     ],
                     [
                         'text' => 'Account settings',
@@ -75,7 +79,7 @@
                             fill="currentColor"
                         />
                         </svg>',
-                        'path' => 'chat'
+                        'path' => route('password.change')
                     ],
                     [
                         'text' => 'Support',
@@ -87,7 +91,7 @@
                             fill="currentColor"
                           />
                         </svg>',
-                        'path' => 'profile'
+                        'path' => route('dashboard')
                     ],
                 ];
             @endphp

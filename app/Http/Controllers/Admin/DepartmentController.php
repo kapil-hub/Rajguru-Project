@@ -21,8 +21,8 @@ class DepartmentController extends Controller
                 'required',
                 function ($attribute, $value, $fail) {
                     $exists = Departments::whereRaw(
-                        "LOWER(name) LIKE ?",
-                        ["%" . strtolower($value) . "%"]
+                        "LOWER(name) = ?",
+                        [strtolower(trim($value))]
                     )->exists();
 
                     if ($exists) {

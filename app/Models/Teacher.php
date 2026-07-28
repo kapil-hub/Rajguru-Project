@@ -51,6 +51,9 @@ class Teacher extends Authenticatable
         if(!$role){
             return false;
         }
-        return  RoleAssignment::where('auth_type','teacher')->where('auth_id',$this->id)->where("role_id",$role->id)->first() ?? false;
+        return RoleAssignment::where('auth_type','teacher')
+            ->where('auth_id',$this->id)
+            ->where("role_id",$role->id)
+            ->exists();
     }
 }

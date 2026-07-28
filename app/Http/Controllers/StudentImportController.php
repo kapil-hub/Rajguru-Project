@@ -137,10 +137,6 @@ class StudentImportController extends Controller
             }
         }
 
-        if (!$validPaperFound) {
-            $errors[] = 'At least one paper is required';
-        }
-
         // =============================
         // FINAL RESULT
         // =============================
