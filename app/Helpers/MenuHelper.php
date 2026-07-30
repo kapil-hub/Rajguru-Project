@@ -307,10 +307,14 @@ class MenuHelper
     public static function outstandingActionCount(): int
     {
         if (auth('admin')->check()) {
-            return 0;
+            return \App\Models\LateHeldRequest::where('status', 'pending')->count();
         }
 
         $teacher = auth('teacher')->user();
+
+        if ($teacher && ($teacher->hasRole('Timetable Controller') || $teacher->hasRole('Timetable Coordinator'))) {
+            return \App\Models\LateHeldRequest::where('status', 'pending')->count();
+        }
 
         if ($teacher && $teacher->hasRole('TIC')) {
             return \App\Models\LateHeldRequest::where('status', 'pending')

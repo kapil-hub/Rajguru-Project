@@ -20,7 +20,7 @@
                     </a>
                 @endif
                 <span class="rounded bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700">
-                    Pending TIC Actions: {{ $pendingRequests->count() }}
+                    Pending Approval Actions: {{ $pendingRequests->count() }}
                 </span>
             </div>
         </div>
@@ -110,7 +110,7 @@
                             <th class="px-4 py-3">Date</th>
                             <th class="px-4 py-3">Reason</th>
                             <th class="px-4 py-3">Status</th>
-                            <th class="px-4 py-3">TIC Remark</th>
+                            <th class="px-4 py-3">Approval Remark</th>
                         </tr>
                     </thead>
                     <tbody>

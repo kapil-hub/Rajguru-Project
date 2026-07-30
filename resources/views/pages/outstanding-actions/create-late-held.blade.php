@@ -55,7 +55,7 @@
             <div>
                 <label class="mb-2 block text-sm font-semibold text-gray-700">Reason for Late Request</label>
                 <textarea name="reason" rows="6" required class="w-full rounded-lg border border-gray-300 px-3 py-3" placeholder="Explain why this class could not be marked held on the same day.">{{ old('reason') }}</textarea>
-                <p class="mt-1 text-xs text-gray-500">Minimum 10 characters. This reason will be visible to TIC.</p>
+                <p class="mt-1 text-xs text-gray-500">Minimum 10 characters. This reason will be visible to approvers.</p>
                 @error('reason') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
@@ -64,7 +64,7 @@
                     Cancel
                 </a>
                 <button type="submit" class="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
-                    Submit to TIC
+                    Submit for Approval
                 </button>
             </div>
         </form>
