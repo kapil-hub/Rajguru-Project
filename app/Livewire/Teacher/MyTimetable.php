@@ -119,11 +119,13 @@ class MyTimetable extends Component
         $month = now()->month;
         $year = now()->year;
         $todaySlotMarker = now()->toDateString() . ':' . $slot->id;
+        $batchIdentifier = $this->batchIdentifier($slot);
 
         $alreadyMarked = TimetableHeldPool::where('teacher_id', $teacherId)
             ->where('course_id', $course_id)
             ->where('semester_id', $slot->semester)
             ->where('paper_master_id', $paper_id)
+            ->where('batch_identifier', $batchIdentifier)
             ->where('month', $month)
             ->where('year', $year)
             ->get(['marked_slots'])
@@ -189,6 +191,7 @@ class MyTimetable extends Component
                 'course_id' => $course_id,
                 'semester_id' => $slot->semester,
                 'paper_master_id' => $paper_id,
+                'batch_identifier' => $batchIdentifier,
                 'month' => $month,
                 'year' => $year,
             ];
@@ -239,5 +242,17 @@ class MyTimetable extends Component
         }
 
         session()->flash('success', 'Class marked as held and added/updated in pool.');
+    }
+
+    private function batchIdentifier(PaperTimetable $slot): string
+    {
+        if (!$slot->is_practical || blank($slot->batches)) {
+            return '';
+        }
+
+        $batches = array_filter(array_map('trim', explode(',', $slot->batches)));
+        sort($batches, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return implode(',', $batches);
     }
 }

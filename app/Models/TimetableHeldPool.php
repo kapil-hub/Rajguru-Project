@@ -14,6 +14,7 @@ class TimetableHeldPool extends Model
         'semester_id',
         'paper_master_id',
         'section',
+        'batch_identifier',
         'month',
         'year',
         'lecture_held',

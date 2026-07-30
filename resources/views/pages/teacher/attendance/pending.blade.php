@@ -18,6 +18,7 @@
                     'course_id' => $a->course_id,
                     'semester_id' => $a->semester_id,
                     'section' => $a->section,
+                    'batch_identifier' => $a->batch_identifier ?? '',
                     'paper_master_id' => $a->paper_master_id,
                 ])->orderBy('year', 'asc')->orderBy('month', 'asc')->get();
             @endphp
@@ -29,7 +30,7 @@
                         {{ $a->course->name }} - {{ $a->semester->name }}
                     </h3>
                     <p class="text-gray-600">
-                        {{ $a->section }} | {{ $a->paperMaster->name }}
+                        {{ $a->section }}@if($a->batch_identifier) | Batch {{ $a->batch_identifier }}@endif | {{ $a->paperMaster->name }}
                     </p>
                 </div>
 

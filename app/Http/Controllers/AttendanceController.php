@@ -111,8 +111,8 @@ class AttendanceController extends Controller
                 'paperMaster'
             ])
             ->where('teacher_id', $teacherId)
-            ->select('course_id', 'semester_id', 'section', 'paper_master_id')
-            ->groupBy('course_id', 'semester_id', 'section', 'paper_master_id')
+            ->select('course_id', 'semester_id', 'section', 'batch_identifier', 'paper_master_id')
+            ->groupBy('course_id', 'semester_id', 'section', 'batch_identifier', 'paper_master_id')
             ->get();
 
         $isLocked = [1,2,3,4];

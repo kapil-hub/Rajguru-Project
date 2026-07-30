@@ -31,13 +31,10 @@ class OutstandingActionController extends Controller
                 ->latest()
                 ->get();
 
-            if ($teacher->hasRole('TIC')) {
+            if ($this->canApproveOutstandingRequests($teacher)) {
                 $pendingRequests = LateHeldRequest::with(['teacher', 'substituteTeacher', 'timetable.paper', 'timetable.course', 'timetable.room', 'timetable.teacher'])
                     ->where('status', 'pending')
-                    ->where(function ($query) use ($teacher) {
-                        $query->where('department_id', $teacher->department_id)
-                            ->orWhereHas('teacher', fn ($teacherQuery) => $teacherQuery->where('department_id', $teacher->department_id));
-                    })
+                    ->when(!$this->canApproveAllOutstandingRequests($teacher), fn ($query) => $this->scopePendingRequestsToTeacherDepartment($query, $teacher))
                     ->latest()
                     ->get();
 
@@ -48,7 +45,10 @@ class OutstandingActionController extends Controller
         }
 
         if ($admin) {
-            $pendingRequests = collect();
+            $pendingRequests = LateHeldRequest::with(['teacher', 'substituteTeacher', 'timetable.paper', 'timetable.course', 'timetable.room', 'timetable.teacher'])
+                ->where('status', 'pending')
+                ->latest()
+                ->get();
         }
 
         return view('pages.outstanding-actions.index', compact(
@@ -252,18 +252,19 @@ class OutstandingActionController extends Controller
     private function authorizeAction(LateHeldRequest $lateHeldRequest): void
     {
         if (auth('admin')->check()) {
-            abort(403);
+            return;
         }
 
         $teacher = auth('teacher')->user();
         $requesterDepartmentId = $lateHeldRequest->teacher?->department_id;
         $substituteDepartmentId = $lateHeldRequest->substituteTeacher?->department_id;
 
-        if (!$teacher || !$teacher->hasRole('TIC')) {
+        if (!$this->canApproveOutstandingRequests($teacher)) {
             abort(403);
         }
 
-        if ((int) $teacher->department_id !== (int) $lateHeldRequest->department_id
+        if (!$this->canApproveAllOutstandingRequests($teacher)
+            && (int) $teacher->department_id !== (int) $lateHeldRequest->department_id
             && (int) $teacher->department_id !== (int) $requesterDepartmentId
             && (int) $teacher->department_id !== (int) $substituteDepartmentId) {
             abort(403);
@@ -275,11 +276,13 @@ class OutstandingActionController extends Controller
         $slot = $lateHeldRequest->timetable;
         $date = $lateHeldRequest->held_date;
         $marker = $date->toDateString() . ':' . $slot->id;
+        $batchIdentifier = $this->batchIdentifier($slot);
 
         $alreadyMarked = TimetableHeldPool::where('teacher_id', $lateHeldRequest->teacher_id)
             ->where('course_id', $slot->course_id)
             ->where('semester_id', $slot->semester)
             ->where('paper_master_id', $slot->paper_id)
+            ->where('batch_identifier', $batchIdentifier)
             ->where('month', $date->month)
             ->where('year', $date->year)
             ->get(['marked_slots'])
@@ -317,6 +320,7 @@ class OutstandingActionController extends Controller
                 'semester_id' => $slot->semester,
                 'paper_master_id' => $slot->paper_id,
                 'section' => $section,
+                'batch_identifier' => $batchIdentifier,
                 'month' => $date->month,
                 'year' => $date->year,
             ]);
@@ -335,6 +339,43 @@ class OutstandingActionController extends Controller
             $pool->marked_slots = array_values(array_unique(array_merge($pool->marked_slots ?? [], [$marker])));
             $pool->save();
         }
+    }
+
+    private function canApproveOutstandingRequests(?Teacher $teacher): bool
+    {
+        return $teacher && (
+            $teacher->hasRole('TIC')
+            || $teacher->hasRole('Timetable Controller')
+            || $teacher->hasRole('Timetable Coordinator')
+        );
+    }
+
+    private function canApproveAllOutstandingRequests(?Teacher $teacher): bool
+    {
+        return $teacher && (
+            $teacher->hasRole('Timetable Controller')
+            || $teacher->hasRole('Timetable Coordinator')
+        );
+    }
+
+    private function scopePendingRequestsToTeacherDepartment($query, Teacher $teacher)
+    {
+        return $query->where(function ($departmentQuery) use ($teacher) {
+            $departmentQuery->where('department_id', $teacher->department_id)
+                ->orWhereHas('teacher', fn ($teacherQuery) => $teacherQuery->where('department_id', $teacher->department_id));
+        });
+    }
+
+    private function batchIdentifier(PaperTimetable $slot): string
+    {
+        if (!$slot->is_practical || blank($slot->batches)) {
+            return '';
+        }
+
+        $batches = array_filter(array_map('trim', explode(',', $slot->batches)));
+        sort($batches, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return implode(',', $batches);
     }
 
     private function mailTic(LateHeldRequest $lateHeldRequest): void
