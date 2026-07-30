@@ -121,6 +121,11 @@ class MyTimetable extends Component
         $todaySlotMarker = now()->toDateString() . ':' . $slot->id;
         $batchIdentifier = $this->batchIdentifier($slot);
 
+        if ($slot->is_practical && $batchIdentifier === '') {
+            session()->flash('error', 'Please assign a batch to this practical slot before marking it held.');
+            return;
+        }
+
         $alreadyMarked = TimetableHeldPool::where('teacher_id', $teacherId)
             ->where('course_id', $course_id)
             ->where('semester_id', $slot->semester)
@@ -160,12 +165,12 @@ class MyTimetable extends Component
             });
         });
 
-        // If batch-wise slot, apply batch filter on student_papers
-        if (!empty($slot->batches)) {
-            $batches = array_map('trim', explode(',', $slot->batches));
+        // Batch-wise slots must only include students registered in this slot's batch.
+        if ($this->hasSlotBatches($slot)) {
+            $batches = $this->slotBatches($slot);
             $studentsQuery->whereHas('papers', function ($p) use ($paper_id, $batches) {
                 $p->where('paper_master_id', $paper_id)
-                  ->whereIn('batch', $batches);
+                  ->whereIn(\DB::raw('UPPER(TRIM(batch))'), $batches);
             });
         }
 
@@ -246,13 +251,30 @@ class MyTimetable extends Component
 
     private function batchIdentifier(PaperTimetable $slot): string
     {
-        if (!$slot->is_practical || blank($slot->batches)) {
+        if (!$this->hasSlotBatches($slot)) {
             return '';
         }
 
-        $batches = array_filter(array_map('trim', explode(',', $slot->batches)));
+        $batches = $this->slotBatches($slot);
         sort($batches, SORT_NATURAL | SORT_FLAG_CASE);
 
         return implode(',', $batches);
+    }
+
+    private function slotBatches(PaperTimetable $slot): array
+    {
+        if (blank($slot->batches)) {
+            return [];
+        }
+
+        return array_values(array_unique(array_filter(array_map(
+            fn ($batch) => strtoupper(trim($batch)),
+            explode(',', $slot->batches)
+        ))));
+    }
+
+    private function hasSlotBatches(PaperTimetable $slot): bool
+    {
+        return !empty($this->slotBatches($slot));
     }
 }
