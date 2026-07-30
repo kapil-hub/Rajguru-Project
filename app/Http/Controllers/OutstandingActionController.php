@@ -103,8 +103,11 @@ class OutstandingActionController extends Controller
     {
         $teacher = auth('teacher')->user();
 
+        if (!$teacher) {
+            abort(403);
+        }
+
         $data = $request->validate([
-            'original_teacher_id' => 'required|exists:faculty_users,id',
             'paper_timetable_id' => 'required|exists:paper_timetables,id',
             'held_date' => 'required|date|before_or_equal:today',
             'reason' => 'required|string|min:10|max:1500',

@@ -201,9 +201,9 @@
     {{-- LIST --}}
     <div class="space-y-3">
         @forelse ($students as $s)
-            <div class="bg-white rounded-xl shadow p-4 student-card">
+            <div class="bg-white rounded-xl shadow p-4 student-card" style="overflow-x:auto;">
 
-                <div class="grid grid-cols-9 gap-2 items-center cursor-pointer"
+                <div class="grid grid-cols-9 gap-2 items-center cursor-pointer customGrid"
                     onclick="Livewire.dispatch('loadBreakup', { id: {{ $s->student_id }} })">
 
                     <div class="col-span-2">
