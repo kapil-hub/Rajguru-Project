@@ -213,6 +213,11 @@ class OutstandingActionController extends Controller
             return back()->with('error', 'This request is already actioned.');
         }
 
+        $slot = $lateHeldRequest->timetable;
+        if ($slot?->is_practical && $this->batchIdentifier($slot) === '') {
+            return back()->with('error', 'Please assign a batch to this practical slot before approving the request.');
+        }
+
         DB::transaction(function () use ($request, $lateHeldRequest) {
             $this->incrementHeldPool($lateHeldRequest);
 
@@ -278,6 +283,10 @@ class OutstandingActionController extends Controller
         $marker = $date->toDateString() . ':' . $slot->id;
         $batchIdentifier = $this->batchIdentifier($slot);
 
+        if ($slot->is_practical && $batchIdentifier === '') {
+            return;
+        }
+
         $alreadyMarked = TimetableHeldPool::where('teacher_id', $lateHeldRequest->teacher_id)
             ->where('course_id', $slot->course_id)
             ->where('semester_id', $slot->semester)
@@ -306,9 +315,12 @@ class OutstandingActionController extends Controller
             });
         });
 
-        if (!empty($slot->batches)) {
-            $batches = array_map('trim', explode(',', $slot->batches));
-            $studentsQuery->whereHas('papers', fn ($p) => $p->where('paper_master_id', $slot->paper_id)->whereIn('batch', $batches));
+        if ($this->hasSlotBatches($slot)) {
+            $batches = $this->slotBatches($slot);
+            $studentsQuery->whereHas('papers', function ($p) use ($slot, $batches) {
+                $p->where('paper_master_id', $slot->paper_id)
+                    ->whereIn(DB::raw('UPPER(TRIM(batch))'), $batches);
+            });
         }
 
         $students = $studentsQuery->get();
@@ -368,14 +380,31 @@ class OutstandingActionController extends Controller
 
     private function batchIdentifier(PaperTimetable $slot): string
     {
-        if (!$slot->is_practical || blank($slot->batches)) {
+        if (!$this->hasSlotBatches($slot)) {
             return '';
         }
 
-        $batches = array_filter(array_map('trim', explode(',', $slot->batches)));
+        $batches = $this->slotBatches($slot);
         sort($batches, SORT_NATURAL | SORT_FLAG_CASE);
 
         return implode(',', $batches);
+    }
+
+    private function slotBatches(PaperTimetable $slot): array
+    {
+        if (blank($slot->batches)) {
+            return [];
+        }
+
+        return array_values(array_unique(array_filter(array_map(
+            fn ($batch) => strtoupper(trim($batch)),
+            explode(',', $slot->batches)
+        ))));
+    }
+
+    private function hasSlotBatches(PaperTimetable $slot): bool
+    {
+        return !empty($this->slotBatches($slot));
     }
 
     private function mailTic(LateHeldRequest $lateHeldRequest): void
