@@ -213,11 +213,6 @@ class OutstandingActionController extends Controller
             return back()->with('error', 'This request is already actioned.');
         }
 
-        $slot = $lateHeldRequest->timetable;
-        if ($slot?->is_practical && $this->batchIdentifier($slot) === '') {
-            return back()->with('error', 'Please assign a batch to this practical slot before approving the request.');
-        }
-
         DB::transaction(function () use ($request, $lateHeldRequest) {
             $this->incrementHeldPool($lateHeldRequest);
 
@@ -282,10 +277,6 @@ class OutstandingActionController extends Controller
         $date = $lateHeldRequest->held_date;
         $marker = $date->toDateString() . ':' . $slot->id;
         $batchIdentifier = $this->batchIdentifier($slot);
-
-        if ($slot->is_practical && $batchIdentifier === '') {
-            return;
-        }
 
         $alreadyMarked = TimetableHeldPool::where('teacher_id', $lateHeldRequest->teacher_id)
             ->where('course_id', $slot->course_id)

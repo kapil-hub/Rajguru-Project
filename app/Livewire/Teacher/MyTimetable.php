@@ -121,11 +121,6 @@ class MyTimetable extends Component
         $todaySlotMarker = now()->toDateString() . ':' . $slot->id;
         $batchIdentifier = $this->batchIdentifier($slot);
 
-        if ($slot->is_practical && $batchIdentifier === '') {
-            session()->flash('error', 'Please assign a batch to this practical slot before marking it held.');
-            return;
-        }
-
         $alreadyMarked = TimetableHeldPool::where('teacher_id', $teacherId)
             ->where('course_id', $course_id)
             ->where('semester_id', $slot->semester)
