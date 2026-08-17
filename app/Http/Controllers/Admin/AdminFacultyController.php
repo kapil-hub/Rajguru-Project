@@ -165,6 +165,22 @@ class AdminFacultyController extends Controller
                          ->with('success', 'Faculty updated successfully');
     }
 
+    public function updateStatus(Request $request, $faculty)
+    {
+        $request->validate([
+            'status' => 'required|boolean',
+        ]);
+
+        $faculty = Teacher::withoutGlobalScope('active')->findOrFail($faculty);
+        $faculty->update([
+            'status' => (int) $request->status,
+        ]);
+
+        return redirect()
+            ->route('admin.faculty.index')
+            ->with('success', $faculty->status ? 'Faculty activated successfully' : 'Faculty deactivated successfully');
+    }
+
     // Delete faculty
     public function destroy(Teacher $faculty)
     {

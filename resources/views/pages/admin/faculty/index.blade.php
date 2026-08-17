@@ -168,6 +168,16 @@
                                        class="inline-flex items-center rounded-lg bg-yellow-50 px-3 py-1.5 text-xs font-semibold text-yellow-700 border border-yellow-200 hover:bg-yellow-100 transition">
                                         ✏️ Edit
                                     </a>
+                                    <form action="{{ route('admin.faculty.status', $f->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="status" value="{{ $f->status ? 0 : 1 }}">
+                                        <button type="submit"
+                                                onclick="return confirm('Are you sure you want to {{ $f->status ? 'deactivate' : 'activate' }} this faculty member?')"
+                                                class="inline-flex items-center rounded-lg {{ $f->status ? 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' }} px-3 py-1.5 text-xs font-semibold border transition">
+                                            {{ $f->status ? 'Deactivate' : 'Activate' }}
+                                        </button>
+                                    </form>
                                     <form action="{{ route('admin.faculty.delete', $f->id) }}" method="POST" class="inline">
                                         @csrf
                                         @method('DELETE')

@@ -10,6 +10,8 @@ use App\Models\Student;
 use Carbon\Carbon;
 use App\Models\AttendanceSetting;
 use App\Models\StudentDailyAttendance;
+use App\Models\PaperTimetable;
+use App\Models\TimetableHeldPool;
 use DB;
 use App\Exports\AttendanceTemplateExport;
 use App\Imports\StudentAttendanceImport;
@@ -51,6 +53,22 @@ class AttendanceController extends Controller
     public function storeAttendance(Request $request)
     {
         foreach ($request->attendance as $studentId => $types) {
+            foreach (['lecture', 'tute', 'practical'] as $type) {
+                if (!isset($types[$type])) {
+                    continue;
+                }
+
+                $workingDays = (int) ($types[$type]['working'] ?? 0);
+                $presentDays = (int) ($types[$type]['present'] ?? 0);
+
+                if ($presentDays > $workingDays) {
+                    return back()
+                        ->withInput()
+                        ->withErrors([
+                            'attendance' => ucfirst($type) . ' classes attended cannot be greater than classes held.',
+                        ]);
+                }
+            }
 
             $data = [
                 'teacher_id'      => auth('teacher')->id(),
@@ -102,33 +120,133 @@ class AttendanceController extends Controller
 
 
 
-    public function pendingList() {
+    public function pendingList(Request $request) {
         $teacherId = auth('teacher')->id();
 
-        $assignments = \App\Models\TimetableHeldPool::with([
-                'course',
-                'semester',
-                'paperMaster'
-            ])
+        $attendanceSettings = AttendanceSetting::where('status', 1)->get();
+        $monthOptions = $this->configuredMonthOptions($attendanceSettings);
+        $allowedMonthKeys = collect($monthOptions)
+            ->reject(fn ($option) => $option['disabled'])
+            ->pluck('value')
+            ->all();
+        $currentMonthKey = now()->format('Y-m');
+        $latestAllowedMonthKey = collect($allowedMonthKeys)->sort()->last();
+        $defaultMonthKey = in_array($currentMonthKey, $allowedMonthKeys, true)
+            ? $currentMonthKey
+            : ($latestAllowedMonthKey ?? $currentMonthKey);
+        $selectedMonthKey = in_array($request->month_year, $allowedMonthKeys, true)
+            ? $request->month_year
+            : $defaultMonthKey;
+        [$selectedYear, $selectedMonth] = array_map('intval', explode('-', $selectedMonthKey));
+
+        $timetableGroups = PaperTimetable::with(['course', 'paper'])
             ->where('teacher_id', $teacherId)
-            ->select('course_id', 'semester_id', 'section', 'batch_identifier', 'paper_master_id')
-            ->groupBy('course_id', 'semester_id', 'section', 'batch_identifier', 'paper_master_id')
-            ->get();
+            ->get()
+            ->groupBy(fn ($slot) => implode('|', [
+                $slot->course_id,
+                $slot->semester,
+                $slot->paper_id,
+                $this->batchIdentifier($slot),
+            ]));
+
+        $assignments = collect();
+
+        foreach ($timetableGroups as $slots) {
+            $firstSlot = $slots->first();
+            $students = $this->studentsForSlot($firstSlot);
+
+            if ($students->isEmpty()) {
+                continue;
+            }
+
+            $groupedStudents = $students->groupBy(function ($student) {
+                $section = strtoupper(trim((string) ($student->academic->section ?? '')));
+
+                return $section !== '' ? $section : 'A';
+            });
+
+            foreach ($groupedStudents as $section => $sectionStudents) {
+                $pool = TimetableHeldPool::firstOrCreate(
+                    [
+                        'teacher_id' => $teacherId,
+                        'course_id' => $firstSlot->course_id,
+                        'semester_id' => $firstSlot->semester,
+                        'paper_master_id' => $firstSlot->paper_id,
+                        'section' => $section,
+                        'batch_identifier' => $this->batchIdentifier($firstSlot),
+                        'month' => $selectedMonth,
+                        'year' => $selectedYear,
+                    ],
+                    [
+                        'lecture_held' => 0,
+                        'tute_held' => 0,
+                        'practical_held' => 0,
+                        'student_ids' => $sectionStudents->pluck('id')->values()->all(),
+                        'marked_slots' => [],
+                    ]
+                );
+
+                $studentIds = $sectionStudents->pluck('id')->values()->all();
+                $existingStudentIds = is_array($pool->student_ids)
+                    ? $pool->student_ids
+                    : (json_decode($pool->student_ids ?? '[]', true) ?? []);
+                $mergedStudentIds = array_values(array_unique(array_merge($existingStudentIds, $studentIds)));
+
+                if ($mergedStudentIds !== $existingStudentIds) {
+                    $pool->student_ids = $mergedStudentIds;
+                    $pool->save();
+                }
+
+                $pool->loadMissing(['course', 'semester', 'paperMaster']);
+                $pool->has_lecture_slot = $slots->contains(fn ($slot) => (bool) $slot->is_lecture);
+                $pool->has_tute_slot = $slots->contains(fn ($slot) => (bool) $slot->is_tutorial);
+                $pool->has_practical_slot = $slots->contains(fn ($slot) => (bool) $slot->is_practical);
+
+                $assignments->push($pool);
+            }
+        }
+
+        $assignments = $assignments
+            ->sortBy([
+                ['course.name', 'asc'],
+                ['semester_id', 'asc'],
+                ['section', 'asc'],
+                ['paperMaster.name', 'asc'],
+            ])
+            ->values();
 
         $isLocked = [1,2,3,4];
-        // Group attendance settings by semester for easy access
-        $attendanceSettings = AttendanceSetting::where('status', 1)->get();
 
         return view('pages.teacher.attendance.pending', compact(
             'assignments',
             'attendanceSettings',
-            'isLocked'
+            'isLocked',
+            'monthOptions',
+            'selectedMonthKey',
+            'selectedMonth',
+            'selectedYear'
         ));
     }
 
     public function fillAttendance($assignmentId, $month, $year)
     {
+        if ($this->isFutureMonth((int) $month, (int) $year)) {
+            return redirect()
+                ->route('teacher.attendance.pending')
+                ->with('error', 'Future month attendance cannot be filled.');
+        }
+
         $assignment = \App\Models\TimetableHeldPool::findOrFail($assignmentId);
+        $slots = PaperTimetable::where('teacher_id', $assignment->teacher_id)
+            ->where('course_id', $assignment->course_id)
+            ->where('semester', $assignment->semester_id)
+            ->where('paper_id', $assignment->paper_master_id)
+            ->get()
+            ->filter(fn ($slot) => $this->batchIdentifier($slot) === (string) ($assignment->batch_identifier ?? ''));
+
+        $assignment->has_lecture_slot = $slots->contains(fn ($slot) => (bool) $slot->is_lecture);
+        $assignment->has_tute_slot = $slots->contains(fn ($slot) => (bool) $slot->is_tutorial);
+        $assignment->has_practical_slot = $slots->contains(fn ($slot) => (bool) $slot->is_practical);
 
         $studentIds = is_array($assignment->student_ids) 
             ? $assignment->student_ids 
@@ -153,6 +271,116 @@ class AttendanceController extends Controller
             'pages.teacher.attendance.fill',
             compact('assignment', 'students', 'month', 'year','oldAttendences')
         );
+    }
+
+    private function configuredMonthOptions($attendanceSettings): array
+    {
+        $options = [];
+        $currentYear = now()->year;
+
+        foreach ($attendanceSettings as $setting) {
+            $sessionStartYear = (int) substr((string) $setting->academic_session, 0, 4);
+            $year = $sessionStartYear > 0 ? $sessionStartYear : $currentYear;
+            $startMonth = (int) $setting->start_month;
+            $endMonth = (int) $setting->end_month;
+            $months = $startMonth <= $endMonth
+                ? range($startMonth, $endMonth)
+                : array_merge(range($startMonth, 12), range(1, $endMonth));
+
+            foreach ($months as $month) {
+                $monthYear = $month >= $startMonth ? $year : $year + 1;
+                $key = sprintf('%04d-%02d', $monthYear, $month);
+                $options[$key] = [
+                    'value' => $key,
+                    'label' => Carbon::createFromDate($monthYear, $month, 1)->format('F Y'),
+                    'disabled' => $this->isFutureMonth($month, $monthYear),
+                ];
+            }
+        }
+
+        if (empty($options)) {
+            $key = now()->format('Y-m');
+            $options[$key] = [
+                'value' => $key,
+                'label' => now()->format('F Y'),
+                'disabled' => false,
+            ];
+        }
+
+        ksort($options);
+
+        return array_values($options);
+    }
+
+    private function isFutureMonth(int $month, int $year): bool
+    {
+        return Carbon::createFromDate($year, $month, 1)->startOfMonth()
+            ->greaterThan(now()->startOfMonth());
+    }
+
+    private function studentsForSlot(PaperTimetable $slot)
+    {
+        $paperId = $slot->paper_id;
+        $courseId = $slot->course_id;
+
+        $studentsQuery = Student::with('academic')->where(function ($q) use ($paperId, $courseId) {
+            $q->whereHas('papers', function ($p) use ($paperId) {
+                    $p->where('paper_master_id', $paperId)
+                        ->whereHas('paper', function ($pm) {
+                            $pm->whereIn('paper_type', ['DSC', 'DSE']);
+                        })
+                        ->where('is_backlog', 0);
+                })
+                ->whereHas('academic', function ($a) use ($courseId) {
+                    $a->where('course_id', $courseId);
+                });
+
+            $q->orWhereHas('papers', function ($p) use ($paperId) {
+                $p->where('paper_master_id', $paperId)
+                    ->whereHas('paper', function ($pm) {
+                        $pm->whereNotIn('paper_type', ['DSC', 'DSE']);
+                    });
+            });
+        });
+
+        if ($this->hasSlotBatches($slot)) {
+            $batches = $this->slotBatches($slot);
+            $studentsQuery->whereHas('papers', function ($p) use ($paperId, $batches) {
+                $p->where('paper_master_id', $paperId)
+                    ->whereIn(DB::raw('UPPER(TRIM(batch))'), $batches);
+            });
+        }
+
+        return $studentsQuery->get();
+    }
+
+    private function batchIdentifier(PaperTimetable $slot): string
+    {
+        if (!$this->hasSlotBatches($slot)) {
+            return '';
+        }
+
+        $batches = $this->slotBatches($slot);
+        sort($batches, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return implode(',', $batches);
+    }
+
+    private function slotBatches(PaperTimetable $slot): array
+    {
+        if (blank($slot->batches)) {
+            return [];
+        }
+
+        return array_values(array_unique(array_filter(array_map(
+            fn ($batch) => strtoupper(trim($batch)),
+            explode(',', $slot->batches)
+        ))));
+    }
+
+    private function hasSlotBatches(PaperTimetable $slot): bool
+    {
+        return !empty($this->slotBatches($slot));
     }
 
 public function history()
