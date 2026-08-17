@@ -218,6 +218,7 @@ Route::middleware('auth:admin')->prefix('admin')->group(function(){
     Route::post('faculty/store', [AdminFacultyController::class,'store'])->name('admin.faculty.store');
     Route::get('faculty/{faculty}/edit', [AdminFacultyController::class,'edit'])->name('admin.faculty.edit');
     Route::put('admin/faculty/{faculty}',[AdminFacultyController::class, 'update'])->name('admin.faculty.update');
+    Route::patch('faculty/{faculty}/status', [AdminFacultyController::class, 'updateStatus'])->name('admin.faculty.status');
     Route::delete('faculty/{faculty}/delete', [AdminFacultyController::class,'destroy'])->name('admin.faculty.delete');
     Route::get('ia-marks',function(){
         return view('pages.admin.ia-marks');
@@ -356,7 +357,6 @@ Route::middleware('auth:admin')
 
     });
     
-
 
 
 

@@ -71,7 +71,7 @@ class StudentAttendanceImport implements ToCollection
                             'attendance' =>
                                 'Student "' . $studentName . '": ' .
                                 ucfirst($type) .
-                                " present days ({$p}) cannot be greater than working days ({$wd})."
+                                " classes attended ({$p}) cannot be greater than classes held ({$wd})."
                         ]);
                     }
                 }

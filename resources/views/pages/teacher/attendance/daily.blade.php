@@ -27,15 +27,15 @@
              <thead class="bg-gray-100">
                 <tr>
                     <th class="p-2">Student</th>
-                     @if($assignment->lecture_held > 0)
+                     @if($assignment->lecture_held > 0 || $assignment->has_lecture_slot)
                         <th class="px-6 py-3 text-center">Lecture</th>
                     @endif
 
-                    @if($assignment->tute_held > 0)
+                    @if($assignment->tute_held > 0 || $assignment->has_tute_slot)
                         <th class="px-6 py-3 text-center">Tute</th>
                     @endif
 
-                    @if($assignment->practical_held > 0)
+                    @if($assignment->practical_held > 0 || $assignment->has_practical_slot)
                         <th class="px-6 py-3 text-center">Practical</th>
                     @endif
                 </tr>
@@ -44,19 +44,19 @@
                 @foreach($students as $s)
                 <tr>
                     <td class="p-2">{{ $s->name }}</td>
-                    @if($assignment->lecture_held > 0)
+                    @if($assignment->lecture_held > 0 || $assignment->has_lecture_slot)
                         <td class="text-center">
                             <input type="checkbox" name="attendance[{{ $s->id }}][lecture]">
                         </td>
                     @endif
 
-                    @if($assignment->tute_held > 0)
+                    @if($assignment->tute_held > 0 || $assignment->has_tute_slot)
                         <td class="text-center">
                             <input type="checkbox" name="attendance[{{ $s->id }}][tute]">
                         </td>
                      @endif
 
-                    @if($assignment->practical_held > 0)
+                    @if($assignment->practical_held > 0 || $assignment->has_practical_slot)
                         <td class="text-center">
                             <input type="checkbox" name="attendance[{{ $s->id }}][practical]">
                         </td>

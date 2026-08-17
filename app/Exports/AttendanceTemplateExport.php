@@ -161,7 +161,7 @@ class AttendanceTemplateExport implements WithEvents
                 $sheet->getStyle("A{$startRow}:B{$lastRow}")->getProtection()->setLocked(true);
                 $sheet->getStyle("{$currentCol}{$startRow}:{$currentCol}{$lastRow}")->getProtection()->setLocked(true);
 
-                // Lock WD, Unlock P
+                // Allow teachers to edit held and attended values.
                 foreach ($columns as $set) {
                     $sheet->getStyle($set['wd'] . "{$startRow}:" . $set['wd'] . "{$lastRow}")
                           ->getProtection()->setLocked(false);

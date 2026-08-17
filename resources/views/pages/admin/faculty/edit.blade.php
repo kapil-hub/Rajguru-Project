@@ -43,6 +43,7 @@
                 {{-- Status --}}
                 <div class="mb-6">
                     <label class="inline-flex items-center">
+                        <input type="hidden" name="status" value="0">
                         <input type="checkbox" name="status" value="1" class="form-checkbox" @if($faculty->status) checked
                         @endif>
                         <span class="ml-2">Active</span>
