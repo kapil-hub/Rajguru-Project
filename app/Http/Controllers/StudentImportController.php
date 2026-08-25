@@ -22,6 +22,29 @@ use Illuminate\Support\Facades\{
 
 class StudentImportController extends Controller
 {
+    private function findMatchingPaper(string $code, string $type, string $name, ?int $courseId, $semester): ?Paper
+    {
+        $query = Paper::where('code', $code)
+            ->where('course_id', $courseId)
+            ->where('semester', $semester)
+            ->where('paper_type', $type);
+
+        $paper = $query->get()->first(
+            fn (Paper $paper) => trim((string) $paper->name) === $name
+        );
+
+        if ($paper || in_array($type, ['DSC', 'DSE'])) {
+            return $paper;
+        }
+
+        return Paper::where('code', $code)
+            ->where('semester', $semester)
+            ->where('paper_type', $type)
+            ->where('course_id', 15)
+            ->get()
+            ->first(fn (Paper $paper) => trim((string) $paper->name) === $name);
+    }
+
     /* ===============================
      * STEP 1: DOWNLOAD TEMPLATE
      * =============================== */
@@ -114,23 +137,13 @@ class StudentImportController extends Controller
 
             $validPaperFound = true;
 
-            $paper = Paper::where([
-                'code' => $code,
-                'course_id' => optional($course)->id,
-                'semester' => $cells[8] ?? null,
-                'name' => $name,
-                'paper_type' => $type,
-            ])->first();
-
-            // fallback for SEC / VAC / GE
-            if (!$paper && !in_array($type, ['DSC', 'DSE'])) {
-                $paper = Paper::where('code', $code)
-                    ->where('semester', $cells[8] ?? null)
-                    ->where('paper_type', $type)
-                    ->where('name', $name)
-                    ->where('course_id', 15)
-                    ->first();
-            }
+            $paper = $this->findMatchingPaper(
+                $code,
+                $type,
+                $name,
+                optional($course)->id,
+                $cells[8] ?? null
+            );
 
             if (!$paper) {
                 $errors[] = "Paper " . ($i + 1) . " not matched";
@@ -177,6 +190,7 @@ class StudentImportController extends Controller
     Cache::put('student_import_processed', 0);
     Cache::put('student_import_progress', 0);
     Cache::put('chunk_processed',0);
+    Cache::put('student_import_file', session('student_import_file'));
     // ?? CHUNK DATA (100 rows per job)
     $chunks = array_chunk($rows, 100);
     Cache::put('total_jobs_chunk',count($chunks));

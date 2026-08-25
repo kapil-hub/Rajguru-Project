@@ -11,7 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\{DB, Cache, Hash};
+use Illuminate\Support\Facades\{DB, Cache, Hash, File};
 
 class ImportStudentsJob implements ShouldQueue
 {
@@ -23,6 +23,27 @@ class ImportStudentsJob implements ShouldQueue
     public function __construct(array $rows)
     {
         $this->rows = $rows;
+    }
+
+    private function findMatchingPaper(string $code, string $type, string $name, ?int $courseId, $semester): ?Paper
+    {
+        $paper = Paper::where('code', $code)
+            ->where('course_id', $courseId)
+            ->where('semester', $semester)
+            ->where('paper_type', $type)
+            ->get()
+            ->first(fn (Paper $paper) => trim((string) $paper->name) === $name);
+
+        if ($paper || in_array($type, ['DSC', 'DSE'])) {
+            return $paper;
+        }
+
+        return Paper::where('code', $code)
+            ->where('semester', $semester)
+            ->where('paper_type', $type)
+            ->where('course_id', 15)
+            ->get()
+            ->first(fn (Paper $paper) => trim((string) $paper->name) === $name);
     }
 
     public function handle()
@@ -72,22 +93,13 @@ class ImportStudentsJob implements ShouldQueue
 
                     if (!$code) continue;
 
-                    $paper = Paper::where([
-                        'code' => $code,
-                        'course_id' => $course->id,
-                        'semester' => $row[8],
-                        'name' => $name,
-                        'paper_type' => $type,
-                    ])->first();
-
-                    if (!$paper && !in_array($type, ['DSC', 'DSE'])) {
-                        $paper = Paper::where('code', $code)
-                            ->where('semester', $row[8])
-                            ->where('paper_type', $type)
-                            ->where('name', $name)
-                            ->where('course_id', 15)
-                            ->first();
-                    }
+                    $paper = $this->findMatchingPaper(
+                        $code,
+                        $type,
+                        $name,
+                        $course->id,
+                        $row[8]
+                    );
 
                     if ($paper) {
                         StudentPaper::create([
@@ -117,6 +129,8 @@ class ImportStudentsJob implements ShouldQueue
 
     if ($jobsDone == $jobsTotal) {
          
+
+        $fileName = Cache::pull('student_import_file');
 
         if ($fileName) {
             $path = public_path('imports/' . $fileName);
