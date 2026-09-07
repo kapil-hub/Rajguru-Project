@@ -29,6 +29,8 @@
                                 ]) }}" method="POST">
                 @csrf
                 <input type= "hidden" name="student_obj" value="{{ $students }}">
+                <input type="hidden" name="template_month" value="{{ $month }}">
+                <input type="hidden" name="template_year" value="{{ $year }}">
                 <div class="flex flex-wrap gap-4 items-end">
 
                     @if($assignment->lecture_held > 0 || $assignment->has_lecture_slot)

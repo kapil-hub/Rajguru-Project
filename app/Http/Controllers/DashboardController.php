@@ -18,7 +18,10 @@ class DashboardController extends Controller
     {
         if (Auth::guard('student')->check()) {
 
-            $studentId = auth('student')->id();
+            $student = auth('student')->user()?->load(['academic', 'papers']);
+            $studentId = $student?->id;
+            $currentSemester = $student?->academic?->current_semester;
+            $currentPaperIds = $student?->papers?->pluck('paper_master_id')->filter()->values() ?? collect();
 
             // Active attendance setting
             $setting = AttendanceSetting::where('status', 1)->first();
@@ -36,9 +39,12 @@ class DashboardController extends Controller
             /* =========================
             MONTHLY ATTENDANCE
             ==========================*/
-            if ($setting && $setting->attendance_type === 'monthly') {
+            if ($student && $currentSemester && $setting && $setting->attendance_type === 'monthly') {
 
-                $records = StudentAttendance::where('student_id', $studentId)->get();
+                $records = StudentAttendance::where('student_id', $studentId)
+                    ->where('semester_id', $currentSemester)
+                    ->when($currentPaperIds->isNotEmpty(), fn ($query) => $query->whereIn('paper_master_id', $currentPaperIds))
+                    ->get();
 
                 foreach ($records as $row) {
 
@@ -69,9 +75,12 @@ class DashboardController extends Controller
             /* =========================
             DAILY ATTENDANCE
             ==========================*/
-            else {
+            elseif ($student && $currentSemester) {
 
-                $records = StudentDailyAttendance::where('student_id', $studentId)->get();
+                $records = StudentDailyAttendance::where('student_id', $studentId)
+                    ->where('semester_id', $currentSemester)
+                    ->when($currentPaperIds->isNotEmpty(), fn ($query) => $query->whereIn('paper_master_id', $currentPaperIds))
+                    ->get();
 
                 foreach ($records as $row) {
 

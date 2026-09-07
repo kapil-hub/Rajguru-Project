@@ -67,6 +67,13 @@ class MenuHelper
             ],
             [
                 'icon' => 'calendar',
+                'name' => 'Notifications',
+                'path' => '/admin/notifications',
+                'permission' => auth('admin')->check(),
+                'class' => request()->routeIs('admin.notifications.*') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+            [
+                'icon' => 'calendar',
                 'name' => 'Registration Window',
                 'path' => '/admin/registration-windows',
                 'permission' => auth('admin')->check(),

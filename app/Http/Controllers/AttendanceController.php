@@ -493,18 +493,27 @@ public function history()
     }
 
 
-    public function downloadTemplate(Request $request)
+    public function downloadTemplate(Request $request, $month, $year)
     {
         $students = json_decode($request->student_obj, true);
+        $request->validate([
+            'template_month' => 'required|integer|between:1,12',
+            'template_year' => 'required|integer|min:2000|max:2100',
+        ]);
+
+        $templateMonth = (int) $request->input('template_month');
+        $templateYear = (int) $request->input('template_year');
 
         return Excel::download(
             new AttendanceTemplateExport(
                 students: $students,
                 lectureWD: isset($request->lecture_days) ? $request->lecture_days : "hidden",
                 tuteWD: isset($request->tute_days) ? $request->tute_days : "hidden",
-                practicalWD: isset($request->practical_days) ? $request->practical_days :"hidden"
+                practicalWD: isset($request->practical_days) ? $request->practical_days :"hidden",
+                month: $templateMonth,
+                year: $templateYear
             ),
-            'attendance_template.xlsx'
+            sprintf('attendance_template_%04d_%02d.xlsx', $templateYear, $templateMonth)
         );
     }
 
