@@ -12,13 +12,17 @@ class AttendanceTemplateExport implements WithEvents
     protected $lectureWD;
     protected $tuteWD;
     protected $practicalWD;
+    protected $month;
+    protected $year;
 
-    public function __construct(array $students, $lectureWD, $tuteWD, $practicalWD)
+    public function __construct(array $students, $lectureWD, $tuteWD, $practicalWD, $month, $year)
     {
         $this->students     = $students;
         $this->lectureWD    = $lectureWD;
         $this->tuteWD       = $tuteWD;
         $this->practicalWD = $practicalWD;
+        $this->month        = $month;
+        $this->year         = $year;
     }
 
     public function registerEvents(): array
@@ -146,6 +150,10 @@ class AttendanceTemplateExport implements WithEvents
                 /* ===============================
                    HIDE STUDENT ID COLUMN
                 =============================== */
+                    $sheet->setCellValue(
+                        $currentCol . '1',
+                        sprintf('ATTENDANCE_TEMPLATE:%04d-%02d', $this->year, $this->month)
+                    );
                 $sheet->getColumnDimension($currentCol)->setVisible(false);
 
                 /* ===============================

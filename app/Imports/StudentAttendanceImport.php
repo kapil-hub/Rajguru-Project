@@ -20,6 +20,28 @@ class StudentAttendanceImport implements ToCollection
     {
         $groupRow = $rows[0] ?? [];
         $typeRow  = $rows[1] ?? [];
+        $studentIdIndex = count($groupRow) - 1;
+
+        $templateMarker = collect([$groupRow, $typeRow])
+            ->flatten()
+            ->first(fn ($value) => is_string($value) && str_starts_with(trim($value), 'ATTENDANCE_TEMPLATE:'));
+
+        preg_match('/^ATTENDANCE_TEMPLATE:(\d{4})-(\d{2})$/', trim((string) $templateMarker), $markerParts);
+        $templateYear = isset($markerParts[1]) ? (int) $markerParts[1] : null;
+        $templateMonth = isset($markerParts[2]) ? (int) $markerParts[2] : null;
+
+        if ($templateMonth === null || $templateYear === null
+            || (int) $templateMonth !== (int) $this->meta['month']
+            || (int) $templateYear !== (int) $this->meta['year']) {
+            $expectedMonth = date('F Y', mktime(0, 0, 0, (int) $this->meta['month'], 1, (int) $this->meta['year']));
+            $uploadedMonth = ($templateMonth !== null && $templateYear !== null)
+                ? date('F Y', mktime(0, 0, 0, $templateMonth, 1, $templateYear))
+                : 'an older or invalid template';
+
+            throw ValidationException::withMessages([
+                'attendance' => "Invalid attendance template. This file is for {$uploadedMonth}; please upload the {$expectedMonth} attendance template.",
+            ]);
+        }
 
         $map = [];
         $currentGroup = null;
@@ -40,8 +62,6 @@ class StudentAttendanceImport implements ToCollection
                 $map[$currentGroup]['p'] = $index;
             }
         }
-
-        $studentIdIndex = count($groupRow) - 1;
 
         foreach ($rows->skip(2) as $rowNumber => $row) {
 

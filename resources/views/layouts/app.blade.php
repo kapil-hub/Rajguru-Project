@@ -256,6 +256,16 @@
                             </button>
                         </div>
                     @endif
+
+                    {{-- VALIDATION ERRORS --}}
+                    @if ($errors->any())
+                        <div
+                            class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-800">
+                            @foreach ($errors->all() as $error)
+                                <div>{{ $error }}</div>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
                 @yield('content')
             </div>

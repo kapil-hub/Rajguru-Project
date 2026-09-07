@@ -133,6 +133,11 @@ Route::middleware('auth:teacher')->prefix('teacher')->group(function () {
 
 
 Route::middleware('auth:admin')->group(function() {
+    Route::get('/admin/notifications', [NotificationController::class, 'index'])->name('admin.notifications.index');
+    Route::get('/admin/notifications/create', [NotificationController::class, 'create'])->name('admin.notifications.create');
+    Route::post('/admin/notifications', [NotificationController::class, 'store'])->name('admin.notifications.store');
+    Route::delete('/admin/notifications/{notification}', [NotificationController::class, 'destroy'])->name('admin.notifications.destroy');
+
     Route::get('/papers', [PaperController::class,'index'])->name('papers.index');
     Route::get('/papers/create', [PaperController::class,'create'])->name('papers.create');
     Route::post('/papers', [PaperController::class,'store'])->name('papers.store');
@@ -273,7 +278,7 @@ Route::middleware('auth:admin,student')->group(function() {
         Route::get('/notification', [NotificationController::class, 'view'])
             ->name('notification.view');
 
-        Route::get('/notification/download', [NotificationController::class, 'download'])
+        Route::get('/notification/{notification}/download', [NotificationController::class, 'download'])
             ->name('notification.download');
 
 
@@ -357,7 +362,6 @@ Route::middleware('auth:admin')
 
     });
     
-
 
 
 

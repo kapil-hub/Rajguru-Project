@@ -13,50 +13,64 @@ use App\Models\AttendanceSetting;
 
 class StudentAttendanceController extends Controller
 {
-     public function index()
-{
-    $studentId = auth('student')->id();
+    public function index()
+    {
+        $student = auth('student')->user()?->load(['academic', 'papers']);
 
-    $attendanceSettings = AttendanceSetting::where('status', 1)->latest()->first();
+        if (!$student || !$student->academic) {
+            $attendance = collect();
 
-    if ($attendanceSettings->attendance_type === 'daily') {
+            return view('pages.students.attendance.index', compact('attendance'));
+        }
 
-        $attendance = \App\Models\StudentDailyAttendance::with('paper')
-            ->where('student_id', $studentId)
-            ->get()
-            ->groupBy('paper_master_id')
-            ->map(function ($records) {
+        $studentId = $student->id;
+        $currentSemester = $student->academic->current_semester;
+        $currentPaperIds = $student->papers->pluck('paper_master_id')->filter()->values();
 
-                return collect([
-                    (object)[
-                        'paper' => $records->first()->paper,
-                        'month' => now()->month,
-                        'year'  => now()->year,
+        $attendanceSettings = AttendanceSetting::where('status', 1)->latest()->first();
 
-                        'lecture_working_days'   => $records->where('lecture', 1)->count(),
-                        'lecture_present_days'   => $records->where('lecture', 1)->where('lecture_present', 1)->count(),
+        if ($attendanceSettings && $attendanceSettings->attendance_type === 'daily') {
 
-                        'tute_working_days'      => $records->where('tute', 1)->count(),
-                        'tute_present_days'      => $records->where('tute', 1)->where('tute_present', 1)->count(),
+            $attendance = \App\Models\StudentDailyAttendance::with('paper')
+                ->where('student_id', $studentId)
+                ->where('semester_id', $currentSemester)
+                ->when($currentPaperIds->isNotEmpty(), fn ($query) => $query->whereIn('paper_master_id', $currentPaperIds))
+                ->get()
+                ->groupBy('paper_master_id')
+                ->map(function ($records) {
 
-                        'practical_working_days' => $records->where('practical', 1)->count(),
-                        'practical_present_days' => $records->where('practical', 1)->where('practical_present', 1)->count(),
-                    ]
-                ]);
-            });
+                    return collect([
+                        (object)[
+                            'paper' => $records->first()->paper,
+                            'month' => now()->month,
+                            'year'  => now()->year,
 
-    } else {
+                            'lecture_working_days'   => $records->where('lecture', 1)->count(),
+                            'lecture_present_days'   => $records->where('lecture', 1)->where('lecture_present', 1)->count(),
 
-        $attendance = StudentAttendance::with('paper')
-            ->where('student_id', $studentId)
-            ->orderBy('year', 'desc')
-            ->orderBy('month', 'desc')
-            ->get()
-            ->groupBy('paper_master_id');
+                            'tute_working_days'      => $records->where('tute', 1)->count(),
+                            'tute_present_days'      => $records->where('tute', 1)->where('tute_present', 1)->count(),
+
+                            'practical_working_days' => $records->where('practical', 1)->count(),
+                            'practical_present_days' => $records->where('practical', 1)->where('practical_present', 1)->count(),
+                        ]
+                    ]);
+                });
+
+        } else {
+
+            $attendance = StudentAttendance::with('paper')
+                ->where('student_id', $studentId)
+                ->where('semester_id', $currentSemester)
+                ->when($currentPaperIds->isNotEmpty(), fn ($query) => $query->whereIn('paper_master_id', $currentPaperIds))
+                ->orderBy('year', 'desc')
+                ->orderBy('month', 'desc')
+                ->get()
+                ->groupBy('paper_master_id');
+        }
+
+        return view('pages.students.attendance.index', compact('attendance'));
     }
-
-    return view('pages.students.attendance.index', compact('attendance'));
-}
 
 
     public function show($paperId, $month, $year)
