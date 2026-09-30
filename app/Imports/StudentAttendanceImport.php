@@ -98,6 +98,34 @@ class StudentAttendanceImport implements ToCollection
 
             // ---------------- SAVE DATA ----------------
 
+            $updateData = [
+                'teacher_id' => $this->meta['teacher_id'],
+            ];
+
+            if (!empty($map['lecture']['wd'])) {
+                $updateData['lecture_working_days'] = $row[$map['lecture']['wd']] ?? null;
+            }
+
+            if (!empty($map['lecture']['p'])) {
+                $updateData['lecture_present_days'] = $row[$map['lecture']['p']] ?? null;
+            }
+
+            if (!empty($map['tutorial']['wd'])) {
+                $updateData['tute_working_days'] = $row[$map['tutorial']['wd']] ?? null;
+            }
+
+            if (!empty($map['tutorial']['p'])) {
+                $updateData['tute_present_days'] = $row[$map['tutorial']['p']] ?? null;
+            }
+
+            if (!empty($map['practical']['wd'])) {
+                $updateData['practical_working_days'] = $row[$map['practical']['wd']] ?? null;
+            }
+
+            if (!empty($map['practical']['p'])) {
+                $updateData['practical_present_days'] = $row[$map['practical']['p']] ?? null;
+            }
+
             StudentAttendance::updateOrCreate(
                 [
                     'student_id'      => $studentId,
@@ -108,27 +136,7 @@ class StudentAttendanceImport implements ToCollection
                     'month'           => $this->meta['month'],
                     'year'            => $this->meta['year'],
                 ],
-                [
-                    'teacher_id' => $this->meta['teacher_id'],
-
-                    'lecture_working_days'   => $map['lecture']['wd'] ?? null
-                        ? $row[$map['lecture']['wd']] ?? null : null,
-
-                    'lecture_present_days'   => $map['lecture']['p'] ?? null
-                        ? $row[$map['lecture']['p']] ?? null : null,
-
-                    'tute_working_days'      => $map['tutorial']['wd'] ?? null
-                        ? $row[$map['tutorial']['wd']] ?? null : null,
-
-                    'tute_present_days'      => $map['tutorial']['p'] ?? null
-                        ? $row[$map['tutorial']['p']] ?? null : null,
-
-                    'practical_working_days' => $map['practical']['wd'] ?? null
-                        ? $row[$map['practical']['wd']] ?? null : null,
-
-                    'practical_present_days' => $map['practical']['p'] ?? null
-                        ? $row[$map['practical']['p']] ?? null : null,
-                ]
+                $updateData
             );
         }
     }
