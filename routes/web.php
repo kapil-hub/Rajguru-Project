@@ -145,6 +145,9 @@ Route::middleware('auth:admin')->group(function() {
     Route::delete('/admin/notifications/{notification}', [NotificationController::class, 'destroy'])->name('admin.notifications.destroy');
 
     Route::get('/papers', [PaperController::class,'index'])->name('papers.index');
+    Route::post('/papers/export', [PaperController::class, 'startExport'])->name('papers.export.start');
+    Route::get('/papers/export/{token}/status', [PaperController::class, 'exportStatus'])->name('papers.export.status');
+    Route::get('/papers/export/{token}/download', [PaperController::class, 'downloadExport'])->name('papers.export.download');
     Route::get('/papers/create', [PaperController::class,'create'])->name('papers.create');
     Route::post('/papers', [PaperController::class,'store'])->name('papers.store');
     Route::get('/papers/template', [PaperController::class,'downloadTemplate'])->name('papers.template');

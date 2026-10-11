@@ -8,6 +8,8 @@ use App\Models\Courses;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\PapersImport;
+use App\Jobs\ExportPapersJob;
+use Illuminate\Support\Str;
 
 
 class PaperController extends Controller
@@ -17,33 +19,126 @@ class PaperController extends Controller
 
     public function index(Request $request)
     {
-        $search = $request->query('search');
-        $semesterFilter = $request->query('semester_filter');
-
-        $papers = Paper::with(['department', 'course'])
-            ->when($search, function ($query) use ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('code', 'like', "%{$search}%")
-                      ->orWhereHas('department', function ($sub) use ($search) {
-                          $sub->where('name', 'like', "%{$search}%");
-                      })
-                      ->orWhereHas('course', function ($sub) use ($search) {
-                          $sub->where('name', 'like', "%{$search}%");
-                      });
-                });
-            })
-            ->when($semesterFilter === 'even', function ($query) {
-                $query->whereRaw('MOD(CAST(semester AS UNSIGNED), 2) = 0');
-            })
-            ->when($semesterFilter === 'odd', function ($query) {
-                $query->whereRaw('MOD(CAST(semester AS UNSIGNED), 2) != 0');
-            })
+        $filters = $this->validatedFilters($request);
+        $papers = $this->filteredPapers($filters)
+            ->with(['department', 'course'])
+            ->withCount('students')
             ->orderBy('id', 'desc')
             ->paginate(10)
             ->withQueryString();
 
-        return view('pages.papers.index', compact('papers', 'search', 'semesterFilter'));
+        return view('pages.papers.index', [
+            'papers' => $papers,
+            'filters' => $filters,
+            'matchedPapers' => $this->filteredPapers($filters)->count(),
+            'departments' => Departments::orderBy('name')->get(['id', 'name']),
+            'courses' => Courses::orderBy('name')->get(['id', 'name', 'dept_id']),
+            'paperTypes' => self::PAPER_TYPES,
+            'statuses' => ['Active', 'Inactive'],
+            'semesters' => range(1, 8),
+        ]);
+    }
+
+    public function startExport(Request $request)
+    {
+        $filters = $this->validatedFilters($request);
+        $total = $this->filteredPapers($filters)->count();
+
+        abort_if($total === 0, 422, 'No papers match the selected filters.');
+
+        $token = (string) Str::uuid();
+        $key = $this->exportCacheKey($token);
+
+        cache()->put($key, [
+            'user_id' => auth('admin')->id(),
+            'status' => 'queued',
+            'progress' => 0,
+            'processed' => 0,
+            'total' => $total,
+            'file' => "papers_{$token}.xlsx",
+        ], now()->addHour());
+
+        ExportPapersJob::dispatch($filters, $token, $total);
+
+        return response()->json([
+            'status_url' => route('papers.export.status', $token),
+        ]);
+    }
+
+    public function exportStatus(string $token)
+    {
+        $export = $this->ownedExport($token);
+
+        return response()->json([
+            'status' => $export['status'],
+            'progress' => $export['progress'],
+            'processed' => $export['processed'],
+            'total' => $export['total'],
+            'download_url' => $export['status'] === 'completed'
+                ? route('papers.export.download', $token)
+                : null,
+        ]);
+    }
+
+    public function downloadExport(string $token)
+    {
+        $export = $this->ownedExport($token);
+        abort_unless($export['status'] === 'completed', 404);
+
+        $path = 'exports/'.$export['file'];
+        abort_unless(\Illuminate\Support\Facades\Storage::disk('local')->exists($path), 404);
+
+        return response()
+            ->download(\Illuminate\Support\Facades\Storage::disk('local')->path($path), 'papers-export.xlsx')
+            ->deleteFileAfterSend(true);
+    }
+
+    private function validatedFilters(Request $request): array
+    {
+        return $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'department_id' => ['nullable', 'integer', 'exists:departments,id'],
+            'course_id' => ['nullable', 'integer', 'exists:courses,id'],
+            'semester' => ['nullable', 'integer', 'between:1,8'],
+            'semester_filter' => ['nullable', 'in:odd,even'],
+            'paper_type' => ['nullable', 'in:SEC,DSC,GE,VAC,DSE,AEC'],
+            'status' => ['nullable', 'in:Active,Inactive'],
+        ]);
+    }
+
+    private function filteredPapers(array $filters)
+    {
+        return Paper::query()
+            ->when($filters['search'] ?? null, function ($query, $search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%")
+                        ->orWhereHas('department', fn ($department) => $department->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('course', fn ($course) => $course->where('name', 'like', "%{$search}%"));
+                });
+            })
+            ->when($filters['department_id'] ?? null, fn ($query, $value) => $query->where('dept_id', $value))
+            ->when($filters['course_id'] ?? null, fn ($query, $value) => $query->where('course_id', $value))
+            ->when($filters['semester'] ?? null, fn ($query, $value) => $query->where('semester', $value))
+            ->when(($filters['semester_filter'] ?? null) === 'even', fn ($query) => $query->whereRaw('MOD(CAST(semester AS UNSIGNED), 2) = 0'))
+            ->when(($filters['semester_filter'] ?? null) === 'odd', fn ($query) => $query->whereRaw('MOD(CAST(semester AS UNSIGNED), 2) != 0'))
+            ->when($filters['paper_type'] ?? null, fn ($query, $value) => $query->where('paper_type', $value))
+            ->when($filters['status'] ?? null, fn ($query, $value) => $query->where('status', $value));
+    }
+
+    private function ownedExport(string $token): array
+    {
+        abort_unless(Str::isUuid($token), 404);
+
+        $export = cache()->get($this->exportCacheKey($token));
+        abort_unless($export && $export['user_id'] === auth('admin')->id(), 404);
+
+        return $export;
+    }
+
+    private function exportCacheKey(string $token): string
+    {
+        return 'papers_export_'.$token;
     }
 
     public function create()
