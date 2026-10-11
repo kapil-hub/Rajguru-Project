@@ -46,38 +46,106 @@
             </form>
         </div>
 
-        <!-- SEARCH -->
-        <div class="bg-white shadow rounded-xl p-4 mb-4">
-            <form method="GET" action="{{ route('papers.index') }}" class="flex flex-col md:flex-row gap-3">
-
-                <div class="relative flex-1">
-                    <input type="text" name="search" value="{{ $search ?? '' }}"
-                        placeholder="Search by paper name, code, department or course..." class="w-full pl-10 pr-4 py-2 border rounded-lg
-                                      focus:ring-2 focus:ring-indigo-500">
-                    <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
+        <section class="mb-5 rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+            <form method="GET" action="{{ route('papers.index') }}" id="paperFilters" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+                <div class="xl:col-span-2">
+                    <label for="paperSearch" class="mb-1 block text-xs font-semibold text-gray-600">Search papers</label>
+                    <input id="paperSearch" type="search" name="search" value="{{ $filters['search'] ?? '' }}"
+                        placeholder="Name, code, department, course" class="w-full rounded-lg border-gray-300 px-3 py-2 text-sm focus:border-indigo-600 focus:ring-indigo-600">
                 </div>
 
-                <div class="w-full md:w-48">
-                    <select name="semester_filter" onchange="this.form.submit()" class="w-full border rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm text-gray-700">
-                        <option value="">All Semesters</option>
-                        <option value="odd" {{ ($semesterFilter ?? '') === 'odd' ? 'selected' : '' }}>Odd Semesters</option>
-                        <option value="even" {{ ($semesterFilter ?? '') === 'even' ? 'selected' : '' }}>Even Semesters</option>
+                <div>
+                    <label for="departmentFilter" class="mb-1 block text-xs font-semibold text-gray-600">Department</label>
+                    <select id="departmentFilter" name="department_id" class="w-full rounded-lg border-gray-300 px-3 py-2 text-sm focus:border-indigo-600 focus:ring-indigo-600">
+                        <option value="">All departments</option>
+                        @foreach($departments as $department)
+                            <option value="{{ $department->id }}" @selected(($filters['department_id'] ?? '') == $department->id)>{{ $department->name }}</option>
+                        @endforeach
                     </select>
                 </div>
 
-                <div class="flex gap-2">
-                    <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition">
-                        Search
-                    </button>
+                <div>
+                    <label for="courseFilter" class="mb-1 block text-xs font-semibold text-gray-600">Course</label>
+                    <select id="courseFilter" name="course_id" class="w-full rounded-lg border-gray-300 px-3 py-2 text-sm focus:border-indigo-600 focus:ring-indigo-600">
+                        <option value="">All courses</option>
+                        @foreach($courses as $course)
+                            <option value="{{ $course->id }}" data-department="{{ $course->dept_id }}" @selected(($filters['course_id'] ?? '') == $course->id)>{{ $course->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
-                    @if(!empty($search) || !empty($semesterFilter))
-                        <a href="{{ route('papers.index') }}" class="px-5 py-2 bg-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-300 transition text-center flex items-center justify-center">
-                            Reset
-                        </a>
-                    @endif
+                <div>
+                    <label for="semesterFilter" class="mb-1 block text-xs font-semibold text-gray-600">Semester</label>
+                    <select id="semesterFilter" name="semester" class="w-full rounded-lg border-gray-300 px-3 py-2 text-sm focus:border-indigo-600 focus:ring-indigo-600">
+                        <option value="">Any semester</option>
+                        @foreach($semesters as $semester)
+                            <option value="{{ $semester }}" @selected(($filters['semester'] ?? '') == $semester)>Semester {{ $semester }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label for="semesterParityFilter" class="mb-1 block text-xs font-semibold text-gray-600">Semester group</label>
+                    <select id="semesterParityFilter" name="semester_filter" class="w-full rounded-lg border-gray-300 px-3 py-2 text-sm focus:border-indigo-600 focus:ring-indigo-600">
+                        <option value="">All</option>
+                        <option value="odd" @selected(($filters['semester_filter'] ?? '') === 'odd')>Odd semesters</option>
+                        <option value="even" @selected(($filters['semester_filter'] ?? '') === 'even')>Even semesters</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="paperTypeFilter" class="mb-1 block text-xs font-semibold text-gray-600">Paper type</label>
+                    <select id="paperTypeFilter" name="paper_type" class="w-full rounded-lg border-gray-300 px-3 py-2 text-sm focus:border-indigo-600 focus:ring-indigo-600">
+                        <option value="">All types</option>
+                        @foreach($paperTypes as $type)
+                            <option value="{{ $type }}" @selected(($filters['paper_type'] ?? '') === $type)>{{ $type }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label for="paperStatusFilter" class="mb-1 block text-xs font-semibold text-gray-600">Status</label>
+                    <select id="paperStatusFilter" name="status" class="w-full rounded-lg border-gray-300 px-3 py-2 text-sm focus:border-indigo-600 focus:ring-indigo-600">
+                        <option value="">All statuses</option>
+                        @foreach($statuses as $status)
+                            <option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>{{ $status }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="flex items-end gap-2 sm:col-span-2 lg:col-span-4 xl:col-span-7">
+                    <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Apply filters</button>
+                    <a href="{{ route('papers.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Reset</a>
                 </div>
             </form>
-        </div>
+        </section>
+
+        <section class="mb-5 rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+            <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                <div>
+                    <h3 class="font-semibold text-gray-900">Export paper details</h3>
+                    <p class="mt-1 text-sm text-gray-500">Export all fields for the {{ number_format($matchedPapers) }} papers matching your filters.</p>
+                </div>
+                <button id="startPaperExport" type="button" @disabled($matchedPapers === 0) class="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-gray-300">
+                    <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v3h16v-3"/></svg>
+                    Export {{ number_format($matchedPapers) }} papers
+                </button>
+            </div>
+
+            <div id="paperExportProgress" class="mt-5 hidden border-t border-gray-100 pt-4" aria-live="polite">
+                <div class="flex items-center justify-between gap-3">
+                    <p id="paperExportTitle" class="text-sm font-semibold text-gray-800">Preparing export</p>
+                    <span id="paperExportPercent" class="text-sm font-semibold text-emerald-800">0%</span>
+                </div>
+                <div class="mt-2 h-2 overflow-hidden rounded-full bg-gray-100" role="progressbar" aria-label="Paper export progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <div id="paperExportBar" class="h-full w-0 rounded-full bg-emerald-600 transition-all duration-300"></div>
+                </div>
+                <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+                    <p id="paperExportMessage" class="text-sm text-gray-500">Waiting for the export worker...</p>
+                    <a id="paperExportDownload" href="#" class="hidden rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">Download spreadsheet</a>
+                </div>
+            </div>
+        </section>
 
         <!-- SUMMARY -->
         <div class="text-sm text-gray-600 mb-2">
@@ -130,7 +198,7 @@
                                             <td class="px-4 py-3">{{ $paper->number_of_lectures }}</td>
                                             <td class="px-4 py-3 font-medium">{{ $paper->number_of_tutorials }}</td>
                                             <td class="px-4 py-3">{{ $paper->number_of_practicals }}</td>
-                                            <td class="px-4 py-3 text-center font-medium">{{ $paper->students()->count() }}</td>
+                                            <td class="px-4 py-3 text-center font-medium">{{ $paper->students_count }}</td>
                                             <td class="px-4 py-3 text-center space-x-1 whitespace-nowrap">
                                                 <a href="/teacher/marksBreakup/{{ $paper->id }}"
                                                     class="inline-flex items-center px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-xs font-semibold transition">Breakup</a>
@@ -142,7 +210,7 @@
                                         </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-4 py-6 text-center text-gray-500">
+                                <td colspan="12" class="px-4 py-6 text-center text-gray-500">
                                     No papers found
                                 </td>
                             </tr>
@@ -160,4 +228,108 @@
         </div>
 
     </div>
+
+    <script>
+        (() => {
+            const filters = document.getElementById('paperFilters');
+            const department = document.getElementById('departmentFilter');
+            const course = document.getElementById('courseFilter');
+            const semester = document.getElementById('semesterFilter');
+            const semesterGroup = document.getElementById('semesterParityFilter');
+            const startButton = document.getElementById('startPaperExport');
+            const progressPanel = document.getElementById('paperExportProgress');
+            const progressTitle = document.getElementById('paperExportTitle');
+            const progressMessage = document.getElementById('paperExportMessage');
+            const progressPercent = document.getElementById('paperExportPercent');
+            const progressBar = document.getElementById('paperExportBar');
+            const progressTrack = progressPanel.querySelector('[role="progressbar"]');
+            const downloadLink = document.getElementById('paperExportDownload');
+            let pollTimer;
+
+            function filterCourses() {
+                for (const option of course.options) {
+                    if (!option.value) continue;
+                    option.hidden = Boolean(department.value && option.dataset.department !== department.value);
+                    if (option.hidden && option.selected) course.value = '';
+                }
+            }
+
+            department.addEventListener('change', filterCourses);
+            semester.addEventListener('change', () => {
+                if (semester.value) semesterGroup.value = '';
+            });
+            semesterGroup.addEventListener('change', () => {
+                if (semesterGroup.value) semester.value = '';
+            });
+            filterCourses();
+
+            async function poll(statusUrl) {
+                try {
+                    const response = await fetch(statusUrl, { headers: { 'Accept': 'application/json' } });
+                    if (!response.ok) throw new Error('Could not retrieve export progress.');
+                    const data = await response.json();
+                    const progress = Number(data.progress || 0);
+
+                    progressBar.style.width = `${progress}%`;
+                    progressPercent.textContent = `${progress}%`;
+                    progressTrack.setAttribute('aria-valuenow', progress);
+
+                    if (data.status === 'completed') {
+                        progressTitle.textContent = 'Export ready';
+                        progressMessage.textContent = `${Number(data.total).toLocaleString()} papers exported.`;
+                        downloadLink.href = data.download_url;
+                        downloadLink.classList.remove('hidden');
+                        startButton.disabled = false;
+                        return;
+                    }
+
+                    if (data.status === 'failed') {
+                        progressTitle.textContent = 'Export failed';
+                        progressMessage.textContent = 'Please try again. If the problem continues, contact the system administrator.';
+                        startButton.disabled = false;
+                        return;
+                    }
+
+                    progressTitle.textContent = data.status === 'queued' ? 'Export queued' : 'Building spreadsheet';
+                    progressMessage.textContent = `${Number(data.processed).toLocaleString()} of ${Number(data.total).toLocaleString()} papers processed.`;
+                    pollTimer = window.setTimeout(() => poll(statusUrl), 1000);
+                } catch (error) {
+                    progressTitle.textContent = 'Could not check export progress';
+                    progressMessage.textContent = error.message;
+                    startButton.disabled = false;
+                }
+            }
+
+            startButton.addEventListener('click', async () => {
+                startButton.disabled = true;
+                downloadLink.classList.add('hidden');
+                progressPanel.classList.remove('hidden');
+                progressTitle.textContent = 'Starting export';
+                progressMessage.textContent = 'Sending the selected filters...';
+                progressPercent.textContent = '0%';
+                progressBar.style.width = '0%';
+                progressTrack.setAttribute('aria-valuenow', 0);
+
+                try {
+                    const response = await fetch(@json(route('papers.export.start')), {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        },
+                        body: new FormData(filters),
+                    });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.message || 'Could not start the export.');
+                    poll(data.status_url);
+                } catch (error) {
+                    progressTitle.textContent = 'Export could not be started';
+                    progressMessage.textContent = error.message;
+                    startButton.disabled = false;
+                }
+            });
+
+            window.addEventListener('beforeunload', () => window.clearTimeout(pollTimer));
+        })();
+    </script>
 @endsection
