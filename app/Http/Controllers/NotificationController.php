@@ -92,15 +92,17 @@ class NotificationController extends Controller
             'course_ids.*' => 'integer|exists:courses,id',
             'paper_ids' => 'nullable|array',
             'paper_ids.*' => 'integer|exists:paper_master,id',
+            'semester_ids' => 'nullable|array',
+            'semester_ids.*' => 'integer|between:1,8',
             'is_active' => 'nullable|boolean',
         ]);
 
         $targetAll = $request->boolean('target_all_active_students');
 
-        if (!$targetAll && !$request->filled('department_ids') && !$request->filled('course_ids') && !$request->filled('paper_ids')) {
+        if (!$targetAll && !$request->filled('department_ids') && !$request->filled('course_ids') && !$request->filled('paper_ids') && !$request->filled('semester_ids')) {
             return back()
                 ->withInput()
-                ->withErrors(['target' => 'Choose all active students or select at least one department, course, or paper.']);
+            ->withErrors(['target' => 'Choose all active students or select at least one department, course, paper, or semester.']);
         }
 
         $path = $request->file('file')->store('notifications', 'public');
@@ -113,6 +115,7 @@ class NotificationController extends Controller
             'department_ids' => $targetAll ? [] : array_map('intval', $validated['department_ids'] ?? []),
             'course_ids' => $targetAll ? [] : array_map('intval', $validated['course_ids'] ?? []),
             'paper_ids' => $targetAll ? [] : array_map('intval', $validated['paper_ids'] ?? []),
+            'semester_ids' => $targetAll ? [] : array_map('intval', $validated['semester_ids'] ?? []),
             'is_active' => $request->boolean('is_active', true),
             'created_by' => auth('admin')->id(),
         ]);

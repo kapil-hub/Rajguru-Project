@@ -164,6 +164,13 @@ class MenuHelper
                 'permission' => auth('admin')->check() ? true : False,
                 'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
             ],
+            [
+                'icon' => 'pages',
+                'name' => 'Student Data Export',
+                'path' => '/admin/students/export',
+                'permission' => auth('admin')->check(),
+                'class' => request()->routeIs('admin.students.export.*') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
 
             [
                 'icon' => 'pages',
