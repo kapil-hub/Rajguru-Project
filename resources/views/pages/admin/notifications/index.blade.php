@@ -5,7 +5,7 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Notification Management</h1>
-            <p class="text-sm text-gray-500">Upload notices and target active students by department, course, paper, or everyone.</p>
+            <p class="text-sm text-gray-500">Upload notices and target active students by department, course, paper, semester, or everyone.</p>
         </div>
         <a href="{{ route('admin.notifications.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow text-sm">
             + Add Notification
@@ -36,7 +36,8 @@
                             @else
                                 Departments: {{ count($notification->department_ids ?? []) }},
                                 Courses: {{ count($notification->course_ids ?? []) }},
-                                Papers: {{ count($notification->paper_ids ?? []) }}
+                                Papers: {{ count($notification->paper_ids ?? []) }},
+                                Semesters: {{ count($notification->semester_ids ?? []) }}
                             @endif
                         </td>
                         <td class="p-3 text-center">

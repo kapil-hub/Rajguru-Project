@@ -16,6 +16,7 @@ use App\Http\Controllers\IaController;
 use App\Http\Controllers\Registration\RegistrationController;
 use App\Http\Controllers\Admin\RegistrationWindowController;
 use App\Http\Controllers\Admin\AdminAttendanceController;
+use App\Http\Controllers\Admin\StudentDataExportController;
 use App\Livewire\Teacher\PracticalMarks;
 use App\Http\Controllers\NotificationController;
 use App\Livewire\Student\IaMarks;
@@ -133,6 +134,11 @@ Route::middleware('auth:teacher')->prefix('teacher')->group(function () {
 
 
 Route::middleware('auth:admin')->group(function() {
+    Route::get('/admin/students/export', [StudentDataExportController::class, 'index'])->name('admin.students.export.index');
+    Route::post('/admin/students/export', [StudentDataExportController::class, 'start'])->name('admin.students.export.start');
+    Route::get('/admin/students/export/{token}/status', [StudentDataExportController::class, 'status'])->name('admin.students.export.status');
+    Route::get('/admin/students/export/{token}/download', [StudentDataExportController::class, 'download'])->name('admin.students.export.download');
+
     Route::get('/admin/notifications', [NotificationController::class, 'index'])->name('admin.notifications.index');
     Route::get('/admin/notifications/create', [NotificationController::class, 'create'])->name('admin.notifications.create');
     Route::post('/admin/notifications', [NotificationController::class, 'store'])->name('admin.notifications.store');

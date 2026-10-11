@@ -13,6 +13,7 @@ class Notification extends Model
         'department_ids' => 'array',
         'course_ids' => 'array',
         'paper_ids' => 'array',
+        'semester_ids' => 'array',
         'target_all_active_students' => 'boolean',
         'is_active' => 'boolean',
     ];
@@ -30,9 +31,11 @@ class Notification extends Model
 
         $academic = $student->academic;
         $studentPaperIds = $student->papers->pluck('paper_master_id')->map(fn ($id) => (int) $id);
+        $semesterIds = array_map('intval', $this->semester_ids ?? []);
 
         return ($academic && in_array((int) $academic->department_id, $this->department_ids ?? [], true))
             || ($academic && in_array((int) $academic->course_id, $this->course_ids ?? [], true))
-            || $studentPaperIds->intersect($this->paper_ids ?? [])->isNotEmpty();
+            || $studentPaperIds->intersect($this->paper_ids ?? [])->isNotEmpty()
+            || ($academic && in_array((int) $academic->current_semester, $semesterIds, true));
     }
 }
