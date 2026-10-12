@@ -421,10 +421,9 @@
     <section class="brand-panel" aria-label="College identity">
         <div class="brand-lockup">
             <img src="/images/logo/logo.png" alt="Shaheed Rajguru College logo">
-            <span>अनुवर्तन<br>Shaheed Rajguru College</span>
+            <span>अनुवर्तन<br>Shaheed Rajguru College Applied Sciences for Women</span>
         </div>
         <div class="brand-copy">
-            <p class="eyebrow">Applied Sciences for Women</p>
             <h1>A place to learn, lead and make a difference.</h1>
             <p>Access your college portal for learning, teaching and administration.</p>
         </div>
