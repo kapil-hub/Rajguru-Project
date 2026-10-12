@@ -297,6 +297,23 @@ npm run lint
 npm run format
 ```
 
+### Production Queue Worker
+
+Database-backed imports and exports need a persistent queue worker. `QUEUE_CONNECTION=database` only stores jobs; the worker must be kept running by a process manager. The included Supervisor configuration assumes the application is deployed at `/var/www/html/app` with PHP at `/usr/bin/php` and runs as `www-data`; adjust those values if the server differs.
+
+Install the worker configuration on the server:
+
+```bash
+sudo apt-get update && sudo apt-get install -y supervisor
+sudo systemctl enable --now supervisor
+sudo cp deploy/supervisor/rajguru-queue.conf /etc/supervisor/conf.d/rajguru-queue.conf
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl status rajguru-queue:*
+```
+
+The database queue `retry_after` defaults to 660 seconds, which is longer than the 600-second export job timeout. After deploying job code, restart workers with `php artisan queue:restart`; Supervisor will start the worker again. Check `storage/logs/queue-worker.log` and `php artisan queue:failed` if jobs remain queued or fail.
+
 ### Artisan Commands
 
 ```bash
