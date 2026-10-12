@@ -84,7 +84,17 @@
                         Registration Rules
                     </h2>
 
-                    @if($nextSemester == 3)
+                    @if($nextSemester == 2)
+
+                        <ul class="space-y-2 text-sm text-yellow-700">
+                            <li>• Choose 3 DSC subjects</li>
+                            <li>• 1 GE subject from another department</li>
+                            <li>• 1 SEC subject from any department</li>
+                            <li>• 1 VAC subject from any department</li>
+                            <li>• 1 AEC subject, including EVS or other available options</li>
+                        </ul>
+
+                    @elseif($ruleSemester == 3)
 
                         <ul class="space-y-2 text-sm text-yellow-700">
 
@@ -96,7 +106,7 @@
 
                         </ul>
 
-                    @elseif($nextSemester == 5)
+                    @elseif($ruleSemester == 5)
 
                         <ul class="space-y-2 text-sm text-yellow-700">
 
@@ -107,16 +117,14 @@
 
                         </ul>
 
-                    @elseif($nextSemester == 7)
+                    @elseif($ruleSemester == 7)
 
                         <ul class="space-y-2 text-sm text-yellow-700">
 
-                            <li>• 1 DSC compulsory</li>
-                            <li>• Total DSE + GE must be exactly 3</li>
-                            <li>• Allowed:</li>
+                            <li>• Choose exactly 3 papers:</li>
                             <li class="ml-4">- 3 DSE</li>
-                            <li class="ml-4">- 2 DSE + 1 GE</li>
-                            <li class="ml-4">- 1 DSE + 2 GE</li>
+                            <li class="ml-4">- 2 DSE + 1 GE from another department</li>
+                            <li class="ml-4">- 1 DSE + 2 GE from another department</li>
 
                         </ul>
 
@@ -125,7 +133,7 @@
                 </div>
 
                 <!-- DSC -->
-                @if($corePapers->count())
+                @if($ruleSemester != 7 && $corePapers->count())
 
                     <div class="bg-green-50 border border-green-200 rounded-3xl p-6 mb-6">
 
@@ -240,7 +248,7 @@
                     <div class="space-y-6">
 
                         <!-- DSE -->
-                        @if($dsePapers->count())
+                        @if($nextSemester != 2 && $dsePapers->count())
 
                             <div class="bg-indigo-50 border border-indigo-200 rounded-3xl p-6">
 
@@ -250,7 +258,7 @@
                                         DSE Subjects
                                     </h2>
 
-                                    @if($nextSemester == 7)
+                                    @if($ruleSemester == 7)
 
                                         <span class="text-sm text-indigo-500">
 
@@ -264,7 +272,7 @@
 
                                 </div>
 
-                                @if($nextSemester == 7)
+                                @if($ruleSemester == 7)
 
                                     <!-- MULTIPLE -->
 
@@ -339,7 +347,7 @@
                                         GE Subjects
                                     </h2>
 
-                                    @if($nextSemester == 7)
+                                    @if($ruleSemester == 7)
 
                                         <span class="text-sm text-orange-500">
 
@@ -353,7 +361,7 @@
 
                                 </div>
 
-                                @if($nextSemester == 7)
+                                @if($ruleSemester == 7)
 
                                     <!-- MULTIPLE -->
 
@@ -738,7 +746,7 @@
 
                     @endpush
                     <!-- SEC -->
-                    @if($secPapers->count())
+                    @if($ruleSemester != 7 && $secPapers->count())
 
                         <div class="bg-blue-50 border border-blue-200 rounded-3xl p-6">
 
@@ -777,7 +785,7 @@
                     @endif
 
                     <!-- VAC -->
-                    @if($vacPapers->count())
+                    @if($ruleSemester != 7 && $vacPapers->count())
 
                         <div class="bg-pink-50 border border-pink-200 rounded-3xl p-6">
 
@@ -816,7 +824,7 @@
                     @endif
 
                     <!-- AEC -->
-                    @if($aecPapers->count())
+                    @if($ruleSemester != 7 && $aecPapers->count())
 
                         <div class="bg-purple-50 border border-purple-200 rounded-3xl p-6">
 

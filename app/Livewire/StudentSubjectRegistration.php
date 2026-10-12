@@ -56,7 +56,6 @@ class StudentSubjectRegistration extends Component
                         continue;
                     }
 
-                    // DSC auto ignore
                     if ($paperType === 'DSC') {
                         continue;
                     }
@@ -75,15 +74,36 @@ class StudentSubjectRegistration extends Component
         }
     }
 
+    protected function ruleSemester(): ?int
+    {
+        return match ((int) $this->nextSemester) {
+            2, 3, 4 => 3,
+            5, 6 => 5,
+            7, 8 => 7,
+            default => null,
+        };
+    }
+
    public function rules()
 {
+    $ruleSemester = $this->ruleSemester();
+
+    if ((int) $this->nextSemester === 2) {
+        return [
+            'selectedPapers.GE' => 'required',
+            'selectedPapers.SEC' => 'required',
+            'selectedPapers.VAC' => 'required',
+            'selectedPapers.AEC' => 'required',
+        ];
+    }
+
     /*
     |--------------------------------------------------------------------------
     | SEMESTER 3
     |--------------------------------------------------------------------------
     */
 
-    if ($this->nextSemester == 3) {
+    if ($ruleSemester == 3) {
 
         return [
 
@@ -105,7 +125,7 @@ class StudentSubjectRegistration extends Component
     |--------------------------------------------------------------------------
     */
 
-    if ($this->nextSemester == 5) {
+    if ($ruleSemester == 5) {
 
         return [
 
@@ -124,13 +144,15 @@ class StudentSubjectRegistration extends Component
     |--------------------------------------------------------------------------
     */
 
-    if ($this->nextSemester == 7) {
+    if ($ruleSemester == 7) {
 
         return [
 
             'selectedPapers.DSE' => 'required|array|min:1|max:3',
+            'selectedPapers.DSE.*' => 'required|integer|distinct',
 
             'selectedPapers.GE' => 'nullable|array|max:2',
+            'selectedPapers.GE.*' => 'required|integer|distinct',
 
         ];
     }
@@ -145,7 +167,7 @@ public function validateSemesterRules()
     |--------------------------------------------------------------------------
     */
 
-    if ($this->nextSemester == 7) {
+    if ($this->ruleSemester() == 7) {
 
         $dseCount = count(array_filter($this->selectedPapers['DSE'] ?? []));
         $geCount  = count(array_filter($this->selectedPapers['GE'] ?? []));
@@ -213,21 +235,86 @@ public function validateSemesterRules()
 
         /*
         |--------------------------------------------------------------------------
-        | ONLY FOR 3rd / 5th / 7th
+        | ONLY FOR 2nd THROUGH 8th
         |--------------------------------------------------------------------------
         */
 
-        if (!in_array($this->nextSemester, [3, 5, 7])) {
+        if (!in_array((int) $this->nextSemester, [2, 3, 4, 5, 6, 7, 8], true)) {
 
             session()->flash(
                 'error',
-                'Registration allowed only for 3rd, 5th and 7th semester.'
+                'Registration allowed only for 2nd through 8th semester.'
             );
 
             return;
         }
 
+        if ((int) $this->nextSemester === 2) {
+            $dscCount = Paper::where('dept_id', $academic->department_id)
+                ->where('course_id', $academic->course_id)
+                ->where('semester', $this->nextSemester)
+                ->where('paper_type', 'DSC')
+                ->where('status', 'Active')
+                ->count();
+
+            if ($dscCount !== 3) {
+                session()->flash('error', 'Exactly three active DSC subjects must be available for your department and course.');
+                return;
+            }
+
+            foreach (['GE' => 'GE', 'SEC' => 'SEC', 'VAC' => 'VAC', 'AEC' => 'AEC'] as $selection => $paperType) {
+                $paperQuery = Paper::where('id', $this->selectedPapers[$selection])
+                    ->where('semester', $this->nextSemester)
+                    ->where('paper_type', $paperType)
+                    ->where('status', 'Active');
+
+                if ($selection === 'GE') {
+                    $paperQuery->where('dept_id', '!=', $academic->department_id);
+                }
+
+                if (!$paperQuery->exists()) {
+                    $this->addError(
+                        "selectedPapers.$selection",
+                        $selection === 'GE'
+                            ? 'Select an active GE subject from another department.'
+                            : "Select an active $paperType subject."
+                    );
+                    return;
+                }
+            }
+        }
+
         $this->validate();
+
+        if ($this->ruleSemester() === 7) {
+            $dseIds = array_filter($this->selectedPapers['DSE'] ?? []);
+            $geIds = array_filter($this->selectedPapers['GE'] ?? []);
+
+            $validDseCount = Paper::whereIn('id', $dseIds)
+                ->where('dept_id', $academic->department_id)
+                ->where('course_id', $academic->course_id)
+                ->where('semester', $this->nextSemester)
+                ->where('paper_type', 'DSE')
+                ->where('status', 'Active')
+                ->count();
+
+            $validGeCount = Paper::whereIn('id', $geIds)
+                ->where('dept_id', '!=', $academic->department_id)
+                ->where('semester', $this->nextSemester)
+                ->where('paper_type', 'GE')
+                ->where('status', 'Active')
+                ->count();
+
+            if ($validDseCount !== count($dseIds)) {
+                $this->addError('selectedPapers.DSE', 'Select valid DSE subjects for your department and course.');
+                return;
+            }
+
+            if ($validGeCount !== count($geIds)) {
+                $this->addError('selectedPapers.GE', 'Select GE subjects from another department.');
+                return;
+            }
+        }
 
         if (!$this->validateSemesterRules()) {
             return;
@@ -256,25 +343,27 @@ public function validateSemesterRules()
             |--------------------------------------------------------------------------
             */
 
-            $dscPapers = Paper::where(
-                'dept_id',
-                $academic->department_id
-            )
-                ->where('course_id', $academic->course_id)
-                ->where('semester', $this->nextSemester)
-                ->where('paper_type', 'DSC')
-                ->where('status', 'Active')
-                ->get();
+            if ($this->ruleSemester() !== 7) {
+                $dscPapers = Paper::where(
+                    'dept_id',
+                    $academic->department_id
+                )
+                    ->where('course_id', $academic->course_id)
+                    ->where('semester', $this->nextSemester)
+                    ->where('paper_type', 'DSC')
+                    ->where('status', 'Active')
+                    ->get();
 
-            foreach ($dscPapers as $paper) {
+                foreach ($dscPapers as $paper) {
 
-                StudentSubjectRegistrationForm::create([
-                    'student_user_id' => $student->id,
-                    'paper_master_id' => $paper->id,
-                    'semester' => $this->nextSemester,
-                    'academic_year' => $this->academic_year,
-                    'is_approved' => 0,
-                ]);
+                    StudentSubjectRegistrationForm::create([
+                        'student_user_id' => $student->id,
+                        'paper_master_id' => $paper->id,
+                        'semester' => $this->nextSemester,
+                        'academic_year' => $this->academic_year,
+                        'is_approved' => 0,
+                    ]);
+                }
             }
 
             /*
@@ -284,6 +373,10 @@ public function validateSemesterRules()
             */
 
             foreach ($this->selectedPapers as $type => $value) {
+
+                if ($this->ruleSemester() === 7 && !in_array($type, ['DSE', 'GE'], true)) {
+                    continue;
+                }
 
                 if (is_array($value)) {
 
@@ -523,6 +616,7 @@ public function validateSemesterRules()
                 'aecPapers' => $aecPapers,
                 'registered' => $registered,
                 'academic' => $academic,
+                'ruleSemester' => $this->ruleSemester(),
             ]
         );
     }
