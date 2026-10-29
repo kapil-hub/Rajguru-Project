@@ -5,6 +5,8 @@ namespace App\Livewire;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use App\Models\Paper;
 use App\Models\StudentAcademic;
 use App\Models\StudentSubjectRegistrationForm;
@@ -82,6 +84,22 @@ class StudentSubjectRegistration extends Component
             7, 8 => 7,
             default => null,
         };
+    }
+
+    private function papersWithinCapacity(Builder $query, int $studentId): EloquentCollection
+    {
+        return $query
+            ->withCount([
+                'registrations as active_registrations_count' => function ($query) use ($studentId) {
+                    $query->where('is_approved', '!=', 2)
+                        ->where(function ($query) use ($studentId) {
+                            $query->where('student_user_id', '!=', $studentId)
+                                    ->orWhere('semester', '!=', $this->nextSemester);
+                        });
+                },
+            ])
+            ->get()
+            ->filter(fn ($paper) => is_null($paper->capping) || $paper->active_registrations_count < $paper->capping);
     }
 
    public function rules()
@@ -326,16 +344,61 @@ public function validateSemesterRules()
         |--------------------------------------------------------------------------
         */
 
-        StudentSubjectRegistrationForm::where(
-            'student_user_id',
-            $student->id
-        )
-        ->where('semester', $this->nextSemester)
-        ->delete();
-
         DB::beginTransaction();
 
         try {
+            $selectedPaperIds = collect($this->selectedPapers)
+                ->flatMap(fn ($value) => is_array($value) ? $value : [$value])
+                ->filter(fn ($paperId) => $paperId !== null && $paperId !== '')
+                ->map(fn ($paperId) => (int) $paperId);
+
+            $dscPapers = collect();
+
+            if ($this->ruleSemester() !== 7) {
+                $dscPapers = Paper::where('dept_id', $academic->department_id)
+                    ->where('course_id', $academic->course_id)
+                    ->where('semester', $this->nextSemester)
+                    ->where('paper_type', 'DSC')
+                    ->where('status', 'Active')
+                    ->get();
+
+                $selectedPaperIds = $selectedPaperIds->merge($dscPapers->pluck('id'));
+            }
+
+            $selectedPaperIds = $selectedPaperIds->unique()->values();
+            $lockedPapers = Paper::whereIn('id', $selectedPaperIds)
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($lockedPapers as $paper) {
+                if (is_null($paper->capping)) {
+                    continue;
+                }
+
+                $registrationCount = $paper->registrations()
+                    ->where('is_approved', '!=', 2)
+                    ->where(function ($query) use ($student) {
+                        $query->where('student_user_id', '!=', $student->id)
+                            ->orWhere('semester', '!=', $this->nextSemester);
+                    })
+                    ->count();
+
+                if ($registrationCount >= $paper->capping) {
+                    DB::rollBack();
+
+                    session()->flash(
+                        'error',
+                        "{$paper->name} has reached its registration limit. Please select another subject."
+                    );
+
+                    return;
+                }
+            }
+
+            StudentSubjectRegistrationForm::where('student_user_id', $student->id)
+                ->where('semester', $this->nextSemester)
+                ->delete();
 
             /*
             |--------------------------------------------------------------------------
@@ -344,16 +407,6 @@ public function validateSemesterRules()
             */
 
             if ($this->ruleSemester() !== 7) {
-                $dscPapers = Paper::where(
-                    'dept_id',
-                    $academic->department_id
-                )
-                    ->where('course_id', $academic->course_id)
-                    ->where('semester', $this->nextSemester)
-                    ->where('paper_type', 'DSC')
-                    ->where('status', 'Active')
-                    ->get();
-
                 foreach ($dscPapers as $paper) {
 
                     StudentSubjectRegistrationForm::create([
@@ -459,23 +512,14 @@ public function validateSemesterRules()
             |--------------------------------------------------------------------------
             */
 
-            $corePapers = Paper::where(
-                'dept_id',
-                $academic->department_id
-            )
-                ->where('course_id', $academic->course_id)
-                ->where('semester', $this->nextSemester)
-                ->where('paper_type', 'DSC')
-                ->where('status', 'Active')
-                ->get()
-                ->filter(function ($paper) {
-
-                    if (is_null($paper->capping)) {
-                        return true;
-                    }
-
-                     return $paper->registrations()->count() < $paper->capping;
-                });
+            $corePapers = $this->papersWithinCapacity(
+                Paper::where('dept_id', $academic->department_id)
+                    ->where('course_id', $academic->course_id)
+                    ->where('semester', $this->nextSemester)
+                    ->where('paper_type', 'DSC')
+                    ->where('status', 'Active'),
+                $student->id
+            );
 
             /*
             |--------------------------------------------------------------------------
@@ -483,23 +527,14 @@ public function validateSemesterRules()
             |--------------------------------------------------------------------------
             */
 
-            $dsePapers = Paper::where(
-                'dept_id',
-                $academic->department_id
-            )
-                ->where('course_id', $academic->course_id)
-                ->where('semester', $this->nextSemester)
-                ->where('paper_type', 'DSE')
-                ->where('status', 'Active')
-                ->get()
-                ->filter(function ($paper) {
-
-                    if (is_null($paper->capping)) {
-                        return true;
-                    }
-
-                     return $paper->registrations()->count() < $paper->capping;
-                });
+            $dsePapers = $this->papersWithinCapacity(
+                Paper::where('dept_id', $academic->department_id)
+                    ->where('course_id', $academic->course_id)
+                    ->where('semester', $this->nextSemester)
+                    ->where('paper_type', 'DSE')
+                    ->where('status', 'Active'),
+                $student->id
+            );
             
             /*
             |--------------------------------------------------------------------------
@@ -507,23 +542,13 @@ public function validateSemesterRules()
             |--------------------------------------------------------------------------
             */
 
-            $gePapers = Paper::where(
-                'dept_id',
-                '!=',
-                $academic->department_id
-            )
-                ->where('semester', $this->nextSemester)
-                ->where('paper_type', 'GE')
-                ->where('status', 'Active')
-                ->get()
-                ->filter(function ($paper) {
-
-                    if (is_null($paper->capping)) {
-                        return true;
-                    }
-
-                     return $paper->registrations()->count() < $paper->capping;
-                });
+            $gePapers = $this->papersWithinCapacity(
+                Paper::where('dept_id', '!=', $academic->department_id)
+                    ->where('semester', $this->nextSemester)
+                    ->where('paper_type', 'GE')
+                    ->where('status', 'Active'),
+                $student->id
+            );
 
             /*
             |--------------------------------------------------------------------------
@@ -531,21 +556,12 @@ public function validateSemesterRules()
             |--------------------------------------------------------------------------
             */
 
-            $secPapers = Paper::where(
-                'semester',
-                $this->nextSemester
-            )
-                ->where('paper_type', 'SEC')
-                ->where('status', 'Active')
-                ->get()
-                ->filter(function ($paper) {
-
-                    if (is_null($paper->capping)) {
-                        return true;
-                    }
-
-                    return $paper->registrations()->count() < $paper->capping;
-                });
+            $secPapers = $this->papersWithinCapacity(
+                Paper::where('semester', $this->nextSemester)
+                    ->where('paper_type', 'SEC')
+                    ->where('status', 'Active'),
+                $student->id
+            );
 
             /*
             |--------------------------------------------------------------------------
@@ -553,21 +569,12 @@ public function validateSemesterRules()
             |--------------------------------------------------------------------------
             */
 
-            $vacPapers = Paper::where(
-                'semester',
-                $this->nextSemester
-            )
-                ->where('paper_type', 'VAC')
-                ->where('status', 'Active')
-                ->get()
-                ->filter(function ($paper) {
-
-                    if (is_null($paper->capping)) {
-                        return true;
-                    }
-
-                    return $paper->registrations()->count() < $paper->capping;
-                });
+            $vacPapers = $this->papersWithinCapacity(
+                Paper::where('semester', $this->nextSemester)
+                    ->where('paper_type', 'VAC')
+                    ->where('status', 'Active'),
+                $student->id
+            );
 
             /*
             |--------------------------------------------------------------------------
@@ -575,35 +582,18 @@ public function validateSemesterRules()
             |--------------------------------------------------------------------------
             */
 
-            $aecPapers = Paper::where(
-                'semester',
-                $this->nextSemester
-            )
-                ->where('paper_type', 'AEC')
-                ->where('status', 'Active')
-                ->get()
-                ->filter(function ($paper) {
-
-                    if (is_null($paper->capping)) {
-                        return true;
-                    }
-
-                     return $paper->registrations()->count() < $paper->capping;
-                });
+            $aecPapers = $this->papersWithinCapacity(
+                Paper::where('semester', $this->nextSemester)
+                    ->where('paper_type', 'AEC')
+                    ->where('status', 'Active'),
+                $student->id
+            );
         }
 
         $registered = StudentSubjectRegistrationForm::with('paper')
             ->where('student_user_id', $student->id)
             ->latest()
-            ->get()
-                ->filter(function ($paper) {
-
-                    if (is_null($paper->capping)) {
-                        return true;
-                    }
-
-                    return $paper->registrations()->count() < $paper->capping;
-                });
+            ->get();
 
         return view(
             'livewire.student-subject-registration',
