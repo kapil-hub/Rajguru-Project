@@ -12,6 +12,7 @@ use App\Models\AttendanceSetting;
 use App\Models\StudentDailyAttendance;
 use App\Models\IaMark;
 use App\Models\StudentLog;
+use App\Models\PaperTimetable;
 use Auth;
 use DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -36,6 +37,28 @@ class IaController extends Controller
             ->selectRaw('MIN(id) as id, course_id, semester_id, paper_master_id, section')
             ->groupBy('course_id', 'semester_id', 'paper_master_id', 'section')
             ->get();
+
+        $coordinatorAssignments = PaperTimetable::query()
+            ->where('teacher_id', $teacherId)
+            ->where('is_coordinator', true)
+            ->get(['course_id', 'semester', 'paper_id'])
+            ->mapWithKeys(fn ($assignment) => [
+                implode(':', [
+                    $assignment->course_id,
+                    $assignment->semester,
+                    $assignment->paper_id,
+                ]) => true,
+            ]);
+
+        $assignments->each(function ($assignment) use ($coordinatorAssignments) {
+            $key = implode(':', [
+                $assignment->course_id,
+                $assignment->semester_id,
+                $assignment->paper_master_id,
+            ]);
+
+            $assignment->setAttribute('is_coordinator', $coordinatorAssignments->has($key));
+        });
 
         // Group attendance settings by semester for easy access
         $attendanceSettings = AttendanceSetting::where('status', 1)
@@ -72,7 +95,22 @@ public function loadStudents(Request $request)
 
     public function storeAttendance(Request $request)
     {
-        
+        $assignment = $request->validate([
+            'course_id' => 'required|integer',
+            'semester_id' => 'required|integer',
+            'paper_master_id' => 'required|integer',
+        ]);
+
+        abort_unless(
+            $this->isCoordinatorForAssignment(
+                (int) Auth::guard('teacher')->id(),
+                (int) $assignment['course_id'],
+                (int) $assignment['semester_id'],
+                (int) $assignment['paper_master_id']
+            ),
+            403
+        );
+
         foreach ($request->totalIaMarks as $studentId => $total) {
 
         IaMark::updateOrCreate(
@@ -103,6 +141,16 @@ public function loadStudents(Request $request)
     public function fillAttendance($assignmentId)
     {
         $assignment = \App\Models\TimetableHeldPool::findOrFail($assignmentId);
+
+        abort_unless(
+            $this->isCoordinatorForAssignment(
+                (int) Auth::guard('teacher')->id(),
+                (int) $assignment->course_id,
+                (int) $assignment->semester_id,
+                (int) $assignment->paper_master_id
+            ),
+            403
+        );
 
         $students = Student::with('academic')->where(function ($q) use ($assignment) {
 
@@ -202,6 +250,21 @@ public function loadStudents(Request $request)
                 'pages.teacher.iaAttendance.fill',
                 compact('assignment', 'students', 'oldAttendences','oldData')
             );
+    }
+
+    private function isCoordinatorForAssignment(
+        int $teacherId,
+        int $courseId,
+        int $semesterId,
+        int $paperMasterId
+    ): bool {
+        return PaperTimetable::query()
+            ->where('teacher_id', $teacherId)
+            ->where('course_id', $courseId)
+            ->where('semester', $semesterId)
+            ->where('paper_id', $paperMasterId)
+            ->where('is_coordinator', true)
+            ->exists();
     }
 
 public function history()
