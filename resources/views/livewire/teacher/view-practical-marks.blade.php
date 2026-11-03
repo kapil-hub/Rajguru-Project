@@ -121,21 +121,29 @@
                         @foreach($students as $index => $record)
 
                             <tr class="hover:bg-gray-50 transition">
+                                @php
+                                    $student = $record->student;
+                                    $academic = $student?->academic;
+                                    $semester = $academic?->current_semester;
+                                    $semesterName = $semester
+                                        ? \App\Models\Semester::find($semester)?->name
+                                        : null;
+                                @endphp
 
                                 <td class="px-4 py-3">{{ $index + 1 }}</td>
 
                                 <td class="px-4 py-3">
-                                    {{ $record->student->name }}
+                                    {{ $student?->name ?? '-' }}
                                 </td>
                                 <td class="px-4 py-3">
-                                    {{ $record->student->academic->course->program_code ?? 'N/A' }} / {{ \App\Models\Semester::find($record->student->academic->current_semester)->name ?? $record->student->academic->current_semester ?? '-' }}
+                                    {{ $academic?->course?->program_code ?? 'N/A' }} / {{ $semesterName ?? $semester ?? '-' }}
                                 </td>
 
                                 <td class="px-4 py-3">
-                                    {{ $record->student->academic->roll_number ?? '-' }}
+                                    {{ $academic?->roll_number ?? '-' }}
                                 </td>
                                 <td class="px-4 py-3">
-                                    {{ $record->student->academic->college_roll_number ?? '-' }}
+                                    {{ $academic?->college_roll_number ?? '-' }}
                                 </td>
                                 @if($this->isOnlyTotal())
                                     <td class="px-4 py-3 text-center font-bold text-indigo-600">
