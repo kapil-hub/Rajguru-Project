@@ -155,52 +155,52 @@
 
 
                                         {{-- Marks Filling TABLE (HIDDEN INITIALLY) --}}
-                                        <div id="attendanceTable" class=" bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600 overflow-x-auto">
+                                        <div id="attendanceTable" class="bg-white rounded-2xl shadow-md p-6 mb-6 border-l-8 border-indigo-600 overflow-auto" style="max-height: 70vh;">
 
                                             <table class="min-w-full divide-y divide-gray-200">
-                                                <thead class="bg-gray-100">
+                                                <thead>
                                                     <tr>
-                                                    <th class="px-4 py-3">#</th>
-                                                    <th class="px-8 py-3 text-left">Student Name</th>
-                                                    <th class="px-8 py-3 text-left">Exam Roll Number</th>
-                                                     <th class="px-8 py-3 text-left">College Roll Number</th>
-                                                    <th class="px-16 py-3 text-center">Lecture Attendence<br><span class="text-xs">Total Lecture / Total Attended</span></th>
-                                                    <th class="px-4 py-3 text-center">%</span></th>
+                                                    <th class="sticky top-0 left-0 z-30 bg-gray-100 px-4 py-3" style="width: 3.5rem; min-width: 3.5rem;">#</th>
+                                                    <th class="sticky top-0 z-30 bg-gray-100 px-8 py-3 text-left" style="left: 3.5rem; width: 14rem; min-width: 14rem;">Student Name</th>
+                                                    <th class="sticky top-0 z-30 bg-gray-100 px-8 py-3 text-left" style="left: 17.5rem; width: 12rem; min-width: 12rem;">Exam Roll Number</th>
+                                                    <th class="sticky top-0 z-30 bg-gray-100 px-8 py-3 text-left" style="left: 29.5rem; width: 14rem; min-width: 14rem;">College Roll Number</th>
+                                                    <th class="sticky top-0 z-20 bg-gray-100 px-16 py-3 text-center">Lecture Attendence<br><span class="text-xs">Total Lecture / Total Attended</span></th>
+                                                    <th class="sticky top-0 z-20 bg-gray-100 px-4 py-3 text-center">%</span></th>
 
-                                                    <th class="px-16 py-3 text-center">Tutorial Attendence <br><span class="text-xs">Total Tutes / Total Attended</span></th>
-                                                    <th class="px-4 py-3 text-center">%</span></th>
+                                                    <th class="sticky top-0 z-20 bg-gray-100 px-16 py-3 text-center">Tutorial Attendence <br><span class="text-xs">Total Tutes / Total Attended</span></th>
+                                                    <th class="sticky top-0 z-20 bg-gray-100 px-4 py-3 text-center">%</span></th>
                                                     {{-- <th class="px-6 py-3 text-center">IA (Attendance) <br><span class="text-xs">TM / OM</span></th> --}}
                                                     @if($assignment->paperMaster->number_of_tutorials == 1)
-                                                        <th class="px-4 py-3 text-center">Tutorial Activities <br> {{$tuteB["activities"]}}</th>
-                                                        <th class="px-4 py-3 text-center">Tutorial Attendance <br> {{$tuteB["attendance"]}}</th>
+                                                        <th class="sticky top-0 z-20 bg-gray-100 px-4 py-3 text-center">Tutorial Activities <br> {{$tuteB["activities"]}}</th>
+                                                        <th class="sticky top-0 z-20 bg-gray-100 px-4 py-3 text-center">Tutorial Attendance <br> {{$tuteB["attendance"]}}</th>
                                                     @endif
                                                     @if(
         (($assignment->paperMaster->paper_type == 'SEC' || $assignment->paperMaster->paper_type == 'VAC' || $assignment->paperMaster->paper_type == 'AEC') && ($assignment->paperMaster->number_of_lectures == 1 && $assignment->paperMaster->number_of_tutorials == 0 && $assignment->paperMaster->number_of_practicals == 1))
         || ($assignment->paperMaster->paper_type == 'AEC' && $assignment->paperMaster->number_of_lectures == 2 && $assignment->paperMaster->number_of_tutorials == 0 && $assignment->paperMaster->number_of_practicals == 0)
     )
-                                                        <th colspan="4" class="px-4 py-3 text-center">Total IA Marks <br>{{ $lectureB["ia_breakup"]["total"] }} </th>
+                                                        <th colspan="4" class="sticky top-0 z-20 bg-gray-100 px-4 py-3 text-center">Total IA Marks <br>{{ $lectureB["ia_breakup"]["total"] }} </th>
                                                     @else
-                                                        <th class="px-4 py-3 text-center">IA (Class Test Marks) <br>{{ $lectureB["ia_breakup"]["class_test"] }} </th>
-                                                        <th class="px-4 py-3 text-center">IA (Assignment Marks) <br> {{ $lectureB["ia_breakup"]["assignment"] }}</th>
-                                                        <th class="px-4 py-3 text-center">IA (Attendance Marks) <br>{{$lectureB["ia_breakup"]["attendance"] }}</th>
-                                                        <th class="px-4 py-3 text-center">Total IA Marks</th>
+                                                        <th class="sticky top-0 z-20 bg-gray-100 px-4 py-3 text-center">IA (Class Test Marks) <br>{{ $lectureB["ia_breakup"]["class_test"] }} </th>
+                                                        <th class="sticky top-0 z-20 bg-gray-100 px-4 py-3 text-center">IA (Assignment Marks) <br> {{ $lectureB["ia_breakup"]["assignment"] }}</th>
+                                                        <th class="sticky top-0 z-20 bg-gray-100 px-4 py-3 text-center">IA (Attendance Marks) <br>{{$lectureB["ia_breakup"]["attendance"] }}</th>
+                                                        <th class="sticky top-0 z-20 bg-gray-100 px-4 py-3 text-center">Total IA Marks</th>
                                                     @endif
                                                     @if($assignment->paperMaster->number_of_tutorials == 1)
-                                                        <th class="px-4 py-3 text-center">Total Tutorial Marks</th>
+                                                        <th class="sticky top-0 z-20 bg-gray-100 px-4 py-3 text-center">Total Tutorial Marks</th>
                                                     @endif
 
-                                                    <th class="px-4 py-3 text-center">Total Assisment</th>
+                                                    <th class="sticky top-0 z-20 bg-gray-100 px-4 py-3 text-center">Total Assisment</th>
 
                                                     </tr>
                                                 </thead>
 
                                                 <tbody class="mFilling divide-y">
                                                 @foreach($students as $i => $s)
-                                                    <tr class="hover:bg-gray-50">
-                                                        <td class="px-4 py-2">{{ $i + 1 }}</td>
-                                                        <td class="px-6 py-2 font-medium">{{ $s->name }}</td>
-                                                        <td class="px-6 py-2 font-medium">{{ optional($s->academic)->roll_number }}</td>
-                                                        <td class="px-6 py-2 font-medium">{{ optional($s->academic)->college_roll_number }}</td>
+                                                    <tr class="group hover:bg-gray-50">
+                                                        <td class="sticky left-0 z-10 bg-white px-4 py-2 group-hover:bg-gray-50" style="width: 3.5rem; min-width: 3.5rem;">{{ $i + 1 }}</td>
+                                                        <td class="sticky z-10 bg-white px-6 py-2 font-medium group-hover:bg-gray-50" style="left: 3.5rem; width: 14rem; min-width: 14rem;">{{ $s->name }}</td>
+                                                        <td class="sticky z-10 bg-white px-6 py-2 font-medium group-hover:bg-gray-50" style="left: 17.5rem; width: 12rem; min-width: 12rem;">{{ optional($s->academic)->roll_number }}</td>
+                                                        <td class="sticky z-10 bg-white px-6 py-2 font-medium group-hover:bg-gray-50" style="left: 29.5rem; width: 14rem; min-width: 14rem;">{{ optional($s->academic)->college_roll_number }}</td>
                                                         <td class="px-2 py-2 text-center space-x-2">
                                                             <div class="relative inline-flex items-center gap-4 out-of-wrapper focus-group">
                                                                 <input type="number"

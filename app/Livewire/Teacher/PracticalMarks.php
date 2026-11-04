@@ -7,6 +7,7 @@ use App\Models\Student;
 use App\Models\Paper;
 use App\Models\PaperTimetable;
 use App\Models\StudentPracticalMark;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 
 class PracticalMarks extends Component
@@ -46,11 +47,8 @@ class PracticalMarks extends Component
     {
         if (!$this->selectedPaper) return;
 
-        $this->students = Student::with(['academic', 'papers'])
-            ->whereHas('papers', function ($q) {
-                $q->where('paper_master_id', $this->selectedPaper);
-            })->orderBy('name','asc')
-            ->get();
+        $this->paper = $this->assignedPracticalPaper();
+        $this->students = $this->studentsForPaper($this->paper->id);
 
         // Preload existing marks
         foreach ($this->students as $student) {
@@ -68,17 +66,80 @@ class PracticalMarks extends Component
             ];
         }
         
-        $credit = optional(Paper::find($this->selectedPaper))->number_of_practicals ?? 0;
+        $credit = $this->paper->number_of_practicals ?? 0;
 
         if($credit == 0){
             session()->flash('error', 'Selected Paper does not has practical');
             return;
         }
-        $this->paper = Paper::where('id',$this->selectedPaper)->first();
       
         $this->practicleBreakup = practicalMarksBreakup($credit);
 
         $this->showStudents = true;
+    }
+
+    public function downloadBlankPdf()
+    {
+        $paper = $this->assignedPracticalPaper();
+        $students = $this->studentsForPaper($paper->id);
+        $breakup = practicalMarksBreakup((int) $paper->number_of_practicals);
+        $onlyTotal = $this->isOnlyTotalForPaper($paper);
+
+        $pdf = Pdf::loadView('pdf.blank-practical-marks', compact(
+            'paper',
+            'students',
+            'breakup',
+            'onlyTotal'
+        ))->setPaper('a4', 'landscape');
+
+        return response()->streamDownload(
+            fn () => print($pdf->output()),
+            'blank-practical-marks-' . $paper->code . '.pdf'
+        );
+    }
+
+    private function assignedPracticalPaper(): Paper
+    {
+        return Paper::query()
+            ->whereKey($this->selectedPaper)
+            ->where('number_of_practicals', '>', 0)
+            ->whereExists(function ($query) {
+                $query->selectRaw('1')
+                    ->from('paper_timetables')
+                    ->whereColumn('paper_timetables.paper_id', 'paper_master.id')
+                    ->where('paper_timetables.teacher_id', Auth::guard('teacher')->id())
+                    ->where('paper_timetables.is_practical', true);
+            })
+            ->firstOrFail();
+    }
+
+    private function studentsForPaper(int $paperId)
+    {
+        return Student::with(['academic.course', 'papers'])
+            ->whereHas('papers', function ($query) use ($paperId) {
+                $query->where('paper_master_id', $paperId);
+            })
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function isOnlyTotalForPaper(Paper $paper): bool
+    {
+        return (
+            (
+                in_array($paper->paper_type, ['SEC', 'VAC']) &&
+                $paper->number_of_lectures == 0 &&
+                $paper->number_of_tutorials == 0 &&
+                $paper->number_of_practicals == 2
+            )
+            ||
+            (
+                in_array($paper->paper_type, ['SEC', 'VAC', 'AEC']) &&
+                $paper->number_of_lectures == 1 &&
+                $paper->number_of_tutorials == 0 &&
+                $paper->number_of_practicals == 1
+            )
+        );
     }
 
 

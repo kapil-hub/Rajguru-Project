@@ -149,6 +149,17 @@ class MenuHelper
                 'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
                 
             ],
+            [
+                'icon' => 'pages',
+                'name' => 'Theory Marks',
+                'path' => '',
+                'subItems' => [
+                    ['name' => 'Fill Theory Marks', 'path' => '/teacher/theory-marks'],
+                    ['name' => 'View Theory Marks', 'path' => '/teacher/theory-marks/view'],
+                ],
+                'permission' => auth('teacher')->check() ? true : false,
+                'class' => request()->routeIs('teacher.theory-marks*') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
            
             [
                 'icon' => 'pages',
@@ -249,6 +260,13 @@ class MenuHelper
                 'path' => '/admin/practical-marks',
                 'permission' => auth('admin')->check() ? true : False,
                 'class' => request()->routeIs('admin.practical-marks') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+            [
+                'icon' => 'pages',
+                'name' => 'Theory Marks',
+                'path' => '/admin/theory-marks',
+                'permission' => auth('admin')->check() ? true : False,
+                'class' => request()->routeIs('admin.theory-marks') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
                 'icon' => 'pages',
