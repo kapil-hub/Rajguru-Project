@@ -99,6 +99,14 @@ Route::middleware('auth:teacher')->prefix('teacher')->group(function () {
         return view('pages.teacher.practical.view-practical-marks');
     })->name('teacher.practical.view');
 
+    Route::get('/theory-marks', function () {
+        return view('pages.teacher.theory-marks');
+    })->name('teacher.theory-marks');
+
+    Route::get('/theory-marks/view', function () {
+        return view('pages.teacher.view-theory-marks');
+    })->name('teacher.theory-marks.view');
+
     Route::get('/attendance/history/{paper}/{month}/{year}', 
         [AttendanceController::class, 'show']
     )->name('teacher.attendance.history.show');
@@ -240,6 +248,9 @@ Route::middleware('auth:admin')->prefix('admin')->group(function(){
     Route::get('practical-marks',function(){
         return view('pages.admin.practical-marks');
     })->name('admin.practical-marks');
+    Route::get('theory-marks', function () {
+        return view('pages.admin.theory-marks');
+    })->name('admin.theory-marks');
 });
 Route::middleware('auth:student')->prefix('students')->group(function(){
     Route::get('/ia-marks', function(){
@@ -371,9 +382,6 @@ Route::middleware('auth:admin')
 
     });
     
-
-
-
 
 
 

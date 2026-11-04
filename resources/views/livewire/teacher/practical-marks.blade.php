@@ -38,6 +38,12 @@
                     Loading...
                 </span>
             </button>
+            <button wire:click="downloadBlankPdf" wire:loading.attr="disabled" wire:target="downloadBlankPdf"
+                @disabled(!$selectedPaper) class="mt-4 ml-2 px-6 py-2 bg-gray-700 text-white
+                    rounded-xl hover:bg-gray-800 transition shadow-md
+                    disabled:opacity-50 disabled:cursor-not-allowed">
+                Download Blank PDF
+            </button>
             @if(session()->has('success'))
                 <div class="mb-4 p-3 bg-green-100 text-green-700 rounded-lg">
                     {{ session('success') }}
