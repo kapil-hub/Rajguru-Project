@@ -138,7 +138,10 @@ class TheoryMarks extends Component
                 ->where('paper_id', $this->selectedPaper))
             ->when($this->selectedTeacher, fn (Builder $query) => $query
                 ->where('teacher_id', $this->selectedTeacher))
-            ->orderByDesc('id');
+            ->leftJoin('student_academic', 'student_academic.student_user_id', '=', 'student_theory_marks.student_id')
+            ->orderBy('student_academic.roll_number')
+            ->orderByDesc('student_theory_marks.id')
+            ->select('student_theory_marks.*');
     }
 
     public function render()

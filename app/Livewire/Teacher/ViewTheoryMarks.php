@@ -83,9 +83,10 @@ class ViewTheoryMarks extends Component
             ->with(['student.academic.course'])
             ->where('teacher_id', (int) Auth::guard('teacher')->id())
             ->where('paper_id', $paperId)
-            ->get()
-            ->sortBy(fn (StudentTheoryMark $mark) => $mark->student?->name ?? '')
-            ->values();
+            ->leftJoin('student_academic', 'student_academic.student_user_id', '=', 'student_theory_marks.student_id')
+            ->orderBy('student_academic.roll_number')
+            ->select('student_theory_marks.*')
+            ->get();
     }
 
     public function render()

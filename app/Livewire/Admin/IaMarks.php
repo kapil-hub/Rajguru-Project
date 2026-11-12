@@ -95,7 +95,10 @@ class IaMarks extends Component
                 ])
                 ->whereIn('paper_master_id', $this->paperMamsterID)
                 ->where('semester_id', $this->selectedSemester)
-                ->orderBy('id', 'DESC');
+                ->leftJoin('student_academic', 'student_academic.student_user_id', '=', 'ia_marks.student_id')
+                ->orderBy('student_academic.roll_number')
+                ->orderByDesc('ia_marks.id')
+                ->select('ia_marks.*');
 
         } else {
 

@@ -37,8 +37,9 @@ class ViewPracticalMarks extends Component
         $this->selectedPaper = $id;
        $this->students = StudentPracticalMark::with(['student.academic'])
             ->join('student_users', 'student_practical_marks.student_id', '=', 'student_users.id')
+           ->leftJoin('student_academic', 'student_academic.student_user_id', '=', 'student_users.id')
             ->where('student_practical_marks.paper_id', $id)
-            ->orderBy('student_users.name', 'asc')
+           ->orderBy('student_academic.roll_number')
             ->select('student_practical_marks.*') // important to avoid column conflicts
             ->get();
         $this->assignment = PaperTimetable::where("teacher_id", Auth::id())->where('paper_id', $id)->first();
