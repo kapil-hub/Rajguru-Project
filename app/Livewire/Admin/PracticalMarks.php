@@ -93,7 +93,10 @@ class PracticalMarks extends Component
                 ])
                 ->whereIn('paper_id', $this->paperMamsterID)
                 //->where('semester_id', $this->selectedSemester)
-                ->orderBy('id', 'DESC');
+                ->leftJoin('student_academic', 'student_academic.student_user_id', '=', 'student_practical_marks.student_id')
+                ->orderBy('student_academic.roll_number')
+                ->orderByDesc('student_practical_marks.id')
+                ->select('student_practical_marks.*');
 
         } else {
 

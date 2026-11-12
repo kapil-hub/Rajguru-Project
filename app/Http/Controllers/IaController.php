@@ -174,7 +174,9 @@ public function loadStudents(Request $request)
             });
 
         })
-        ->orderBy('name')
+        ->leftJoin('student_academic', 'student_academic.student_user_id', '=', 'student_users.id')
+        ->orderBy('student_academic.roll_number')
+        ->select('student_users.*')
         ->get();
       
         $oldAttendences = StudentAttendance::where(
@@ -310,7 +312,8 @@ public function history()
         ->where('ia_marks.semester_id', $semesterId)
         ->where('ia_marks.section', $section)
         ->where('ia_marks.created_by', $teacherId)
-        ->orderBy('student_users.name')
+        ->leftJoin('student_academic', 'student_academic.student_user_id', '=', 'student_users.id')
+        ->orderBy('student_academic.roll_number')
         ->select('ia_marks.*') 
         ->get();
 
@@ -334,7 +337,8 @@ public function history()
             ->where('ia_marks.semester_id', $semesterId)
             ->where('ia_marks.section', $section)
             ->where('ia_marks.created_by', $teacherId)
-            ->orderBy('student_users.name')
+            ->leftJoin('student_academic', 'student_academic.student_user_id', '=', 'student_users.id')
+            ->orderBy('student_academic.roll_number')
             ->select('ia_marks.*')
             ->get();
 

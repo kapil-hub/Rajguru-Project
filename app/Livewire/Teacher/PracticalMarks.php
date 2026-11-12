@@ -119,7 +119,9 @@ class PracticalMarks extends Component
             ->whereHas('papers', function ($query) use ($paperId) {
                 $query->where('paper_master_id', $paperId);
             })
-            ->orderBy('name')
+            ->leftJoin('student_academic', 'student_academic.student_user_id', '=', 'student_users.id')
+            ->orderBy('student_academic.roll_number')
+            ->select('student_users.*')
             ->get();
     }
 

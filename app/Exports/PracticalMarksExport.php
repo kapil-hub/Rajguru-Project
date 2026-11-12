@@ -27,6 +27,10 @@ class PracticalMarksExport implements FromCollection, WithHeadings, ShouldAutoSi
                 'course'
             ])
             ->whereIn('paper_id', $this->paperMamsterID)
+            ->leftJoin('student_academic', 'student_academic.student_user_id', '=', 'student_practical_marks.student_id')
+            ->orderBy('student_academic.roll_number')
+            ->orderByDesc('student_practical_marks.id')
+            ->select('student_practical_marks.*')
             ->get()
             ->map(function ($mark) {
 

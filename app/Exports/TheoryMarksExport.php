@@ -28,6 +28,9 @@ class TheoryMarksExport implements FromCollection, WithHeadings, ShouldAutoSize
             ->where('teacher_id', $this->teacherId)
             ->where('paper_id', $this->paperId)
             ->whereIn('paper_id', $eligiblePaperIds)
+            ->leftJoin('student_academic', 'student_academic.student_user_id', '=', 'student_theory_marks.student_id')
+            ->orderBy('student_academic.roll_number')
+            ->select('student_theory_marks.*')
             ->get()
             ->map(function (StudentTheoryMark $mark) {
                 return [

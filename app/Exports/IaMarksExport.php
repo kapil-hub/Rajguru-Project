@@ -29,6 +29,10 @@ class IaMarksExport implements FromCollection, WithHeadings, ShouldAutoSize
             ])
             ->whereIn('paper_master_id', $this->paperMamsterID)
             ->where('semester_id', $this->semester)
+            ->leftJoin('student_academic', 'student_academic.student_user_id', '=', 'ia_marks.student_id')
+            ->orderBy('student_academic.roll_number')
+            ->orderByDesc('ia_marks.id')
+            ->select('ia_marks.*')
             ->get()
             ->map(function ($mark) {
 
