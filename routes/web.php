@@ -10,6 +10,8 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\StudentAttendanceController;
 use App\Http\Controllers\Admin\AdminFacultyController;
+use App\Http\Controllers\Admin\AparController;
+use App\Http\Controllers\Teacher\AparController as TeacherAparController;
 use App\Http\Controllers\AdminAttendanceSettingController;
 use App\Http\Controllers\DailyAttendanceController;
 use App\Http\Controllers\IaController;
@@ -76,6 +78,15 @@ Route::middleware(['auth:admin,teacher'])->group(function () {
 
 
 Route::middleware('auth:teacher')->prefix('teacher')->group(function () {
+
+    Route::get('/apar', [TeacherAparController::class, 'index'])->name('teacher.apar');
+    Route::get('/apar/create', [TeacherAparController::class, 'create'])->name('teacher.apar.create');
+    Route::post('/apar/create', [TeacherAparController::class, 'selectAcademicYear'])->name('teacher.apar.create.select');
+    Route::get('/apar/create/{academicYear}', [TeacherAparController::class, 'createForm'])
+        ->where('academicYear', '\d{4}-\d{4}')
+        ->name('teacher.apar.create.form');
+    Route::get('/apar/{apar}/resume', [TeacherAparController::class, 'resume'])->name('teacher.apar.resume');
+    Route::get('/apar/{apar}/pdf', [TeacherAparController::class, 'pdf'])->name('teacher.apar.pdf');
 
     Route::get('profile', [AdminFacultyController::class,'edit'])->name('teacher.profile.edit');
     Route::put('profile/{faculty}/update',[AdminFacultyController::class, 'update'])->name('teacher.profile.update');
@@ -242,6 +253,10 @@ Route::middleware('auth:admin')->prefix('admin')->group(function(){
     Route::put('admin/faculty/{faculty}',[AdminFacultyController::class, 'update'])->name('admin.faculty.update');
     Route::patch('faculty/{faculty}/status', [AdminFacultyController::class, 'updateStatus'])->name('admin.faculty.status');
     Route::delete('faculty/{faculty}/delete', [AdminFacultyController::class,'destroy'])->name('admin.faculty.delete');
+    Route::get('apar', [AparController::class, 'index'])->name('admin.apar.index');
+    Route::get('apar/{apar}', [AparController::class, 'show'])->name('admin.apar.show');
+    Route::post('apar/{apar}/review', [AparController::class, 'review'])->name('admin.apar.review');
+    Route::get('apar/{apar}/pdf', [AparController::class, 'pdf'])->name('admin.apar.pdf');
     Route::get('ia-marks',function(){
         return view('pages.admin.ia-marks');
     })->name('admin.ia-marks');
@@ -252,6 +267,12 @@ Route::middleware('auth:admin')->prefix('admin')->group(function(){
         return view('pages.admin.theory-marks');
     })->name('admin.theory-marks');
 });
+
+Route::middleware('auth:admin,teacher')->get(
+    '/apar/{apar}/evidence/{index}',
+    [AparController::class, 'downloadEvidence']
+)->whereNumber('index')->name('apar.evidence.download');
+
 Route::middleware('auth:student')->prefix('students')->group(function(){
     Route::get('/ia-marks', function(){
         return view("pages.ia-marks-show");
