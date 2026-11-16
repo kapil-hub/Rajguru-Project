@@ -922,25 +922,33 @@ pre[class*='language-'] {
     background-image: none;
 }
 
-h1,h2,h3,h4,h5,h6 {
-      color: var(--app-heading);
-      background: transparent;
-}
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--app-heading);
+    background: transparent;
+  }
 
-p {
-      color: var(--app-text-muted);
-      background: transparent;
-}
-th{
-  color: var(--app-heading);
-}
+  p {
+    color: var(--app-text-muted);
+    background: transparent;
+  }
 
-td,
-label,
-legend,
-span,
-li {
+  th {
+    color: var(--app-heading);
+  }
+
+  td,
+  label,
+  legend,
+  span,
+  li {
     color: inherit;
+  }
 }
 fieldset{
     border: 2px solid var(--app-accent);

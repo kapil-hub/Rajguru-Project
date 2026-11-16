@@ -117,6 +117,13 @@ class MenuHelper
                 'permission' => auth('teacher')->check() ? true : false,
                 'class' => request()->routeIs('teacher.timetable.index') ? 'menu-item-active' : 'menu-item-inactive',
             ],
+            [
+                'icon' => 'pages',
+                'name' => 'My APAR',
+                'path' => '/teacher/apar',
+                'permission' => auth('teacher')->check(),
+                'class' => request()->routeIs('teacher.apar') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
             // [
             //     'icon' => 'pages',
             //     'name' => 'IA Marks Breakup',
@@ -224,6 +231,13 @@ class MenuHelper
                 'path' => '/admin/faculty/',
                 'permission' => auth('admin')->check() ? true : False,
                 'class' => request()->routeIs('admin.attendance.monitoring') ? 'menu-item-active' : 'menu-item-inactive',
+            ],
+            [
+                'icon' => 'pages',
+                'name' => 'APAR Review',
+                'path' => '/admin/apar',
+                'permission' => auth('admin')->check(),
+                'class' => request()->routeIs('admin.apar.*') ? 'menu-item-active' : 'menu-item-inactive',
             ],
             [
                 'icon' => 'pages',
