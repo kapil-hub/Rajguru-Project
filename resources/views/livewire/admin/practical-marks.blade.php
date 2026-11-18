@@ -71,7 +71,7 @@
             </div>
 
             {{-- Semester --}}
-            {{-- <div>
+            <div>
                 <label class="block mb-1 font-medium">
                     Select Semester
                 </label>
@@ -95,7 +95,7 @@
                     {{ $message }}
                 </div>
                 @enderror
-            </div> --}}
+            </div>
 
             {{-- Button --}}
             <div class="flex items-end gap-2">
