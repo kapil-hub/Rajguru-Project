@@ -13,9 +13,10 @@ class PracticalMarksExport implements FromCollection, WithHeadings, ShouldAutoSi
     protected $paperMamsterID;
     protected $semester;
 
-    public function __construct($paperMamsterID)
+    public function __construct($paperMamsterID, $semester)
     {
         $this->paperMamsterID = $paperMamsterID;
+        $this->semester = $semester;
     }
 
     public function collection()
@@ -27,6 +28,9 @@ class PracticalMarksExport implements FromCollection, WithHeadings, ShouldAutoSi
                 'course'
             ])
             ->whereIn('paper_id', $this->paperMamsterID)
+            ->whereHas('paper', function ($query) {
+                $query->where('semester', $this->semester);
+            })
             ->leftJoin('student_academic', 'student_academic.student_user_id', '=', 'student_practical_marks.student_id')
             ->orderBy('student_academic.roll_number')
             ->orderByDesc('student_practical_marks.id')

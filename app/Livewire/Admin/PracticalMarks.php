@@ -18,6 +18,7 @@ class PracticalMarks extends Component
     protected $paginationTheme = 'tailwind';
 
     public $selectedDepartment = '';
+    public $selectedSemester = '';
 
     public $departments = [];
     public $semesters = [];
@@ -45,8 +46,13 @@ class PracticalMarks extends Component
     {
         $this->validate([
             'selectedDepartment' => 'required',
+            'selectedSemester' => 'required',
         ]);
-        $this->paperMamsterID = Paper::where('dept_id',$this->selectedDepartment)->where("number_of_practicals",'!=',0)->pluck("id")->toArray();
+        $this->paperMamsterID = Paper::where('dept_id', $this->selectedDepartment)
+            ->where('semester', $this->selectedSemester)
+            ->where('number_of_practicals', '!=', 0)
+            ->pluck('id')
+            ->toArray();
         $this->courseIds = Courses::where('dept_id', $this->selectedDepartment)
             ->pluck('id')
             ->toArray();
@@ -57,22 +63,18 @@ class PracticalMarks extends Component
 {
     $this->validate([
         'selectedDepartment' => 'required',
+        'selectedSemester' => 'required',
     ]);
 
-    if (empty($this->courseIds)) {
-
-        $this->courseIds = Courses::where('dept_id', $this->selectedDepartment)
-            ->pluck('id')
-            ->toArray();
-    }
-    if (empty($this->paperMamsterID)) {
-
-        $this->paperMamsterID = Paper::where('dept_id',$this->selectedDepartment)->pluck("id")->toArray();
-    }
+    $paperIds = Paper::where('dept_id', $this->selectedDepartment)
+        ->where('semester', $this->selectedSemester)
+        ->where('number_of_practicals', '!=', 0)
+        ->pluck('id')
+        ->toArray();
     $departmentName = $this->departments->where('id',$this->selectedDepartment)->first();
-    $filename = "FOR SAMARTH__".$departmentName->name;
+    $filename = "FOR SAMARTH__".$departmentName->name.'__SEM__'.$this->selectedSemester;
     return Excel::download(
-        new PracticalMarksExport($this->paperMamsterID),
+        new PracticalMarksExport($paperIds, $this->selectedSemester),
         $filename.'.xlsx'
     );
 }
@@ -92,7 +94,9 @@ class PracticalMarks extends Component
                     'course'
                 ])
                 ->whereIn('paper_id', $this->paperMamsterID)
-                //->where('semester_id', $this->selectedSemester)
+                ->whereHas('paper', function ($query) {
+                    $query->where('semester', $this->selectedSemester);
+                })
                 ->leftJoin('student_academic', 'student_academic.student_user_id', '=', 'student_practical_marks.student_id')
                 ->orderBy('student_academic.roll_number')
                 ->orderByDesc('student_practical_marks.id')
