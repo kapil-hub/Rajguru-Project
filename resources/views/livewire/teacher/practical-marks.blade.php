@@ -103,7 +103,7 @@
                                                                                 ca: {{ $marks[$student->id]['ca'] ?? 'null' }},
                                                                                 esp: {{ $marks[$student->id]['esp'] ?? 'null' }},
                                                                                 viva: {{ $marks[$student->id]['viva'] ?? 'null' }},
-                                                                                total: {{ $marks[$student->id]['total_marks'] ?? 'null' }},
+                                                                                total: {{ $marks[$student->id]['total'] ?? 'null' }},
                                                                                 get grandTotal() {
                                                                                     return this.total
                                                                                         ? Number(this.total)
@@ -140,7 +140,7 @@
                                 @if($this->isOnlyTotal())
 
                                     <td class="px-4 py-3 text-center">
-                                        <input type="number" min="0" max="{{ $practicleBreakup['total'] }}"
+                                        <input type="number" min="0" step="0.01" max="{{ $practicleBreakup['total'] }}"
                                             wire:model.blur="marks.{{ $student->id }}.total" x-model="total"
                                             class="w-20 p-2 border rounded-lg text-center">
                                     </td>
@@ -149,21 +149,21 @@
                                 @else
 
                                     <td class="px-4 py-3 text-center">
-                                        <input type="number" min="0" max="{{ $practicleBreakup['ca'] }}"
+                                        <input type="number" min="0" step="0.01" max="{{ $practicleBreakup['ca'] }}"
                                             wire:model.blur="marks.{{ $student->id }}.ca" x-model="ca"
                                             class="w-20 p-2 border rounded-lg text-center">
                                     </td>
 
                                     <!-- ESP -->
                                     <td class="px-4 py-3 text-center">
-                                        <input type="number" min="0" max="{{ $practicleBreakup['written_exam'] }}"
+                                        <input type="number" min="0" step="0.01" max="{{ $practicleBreakup['written_exam'] }}"
                                             wire:model.blur="marks.{{ $student->id }}.esp" x-model="esp"
                                             class="w-20 p-2 border rounded-lg text-center">
                                     </td>
 
                                     <!-- Viva -->
                                     <td class="px-4 py-3 text-center">
-                                        <input type="number" min="0" max="{{ $practicleBreakup['viva_voce'] }}"
+                                        <input type="number" min="0" step="0.01" max="{{ $practicleBreakup['viva_voce'] }}"
                                             wire:model.blur="marks.{{ $student->id }}.viva" x-model="viva"
                                             class="w-20 p-2 border rounded-lg text-center">
                                     </td>

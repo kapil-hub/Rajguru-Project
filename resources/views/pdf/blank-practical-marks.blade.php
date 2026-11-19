@@ -16,7 +16,10 @@
 </head>
 <body>
     <h1>{{ $paper->code }} - {{ $paper->name }}</h1>
-    <p class="subtitle">Blank Practical Marks Sheet | Maximum marks: {{ $breakup['total'] }}</p>
+    <p class="subtitle">
+        Blank Practical Marks Sheet | Maximum marks: {{ $breakup['total'] }}
+        <span style="float: right;">Date: ____________________</span>
+    </p>
     <table>
         <thead>
             <tr>

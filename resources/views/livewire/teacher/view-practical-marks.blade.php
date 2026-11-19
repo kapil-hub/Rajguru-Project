@@ -63,14 +63,18 @@
 
                     <div class="mt-2 text-sm text-gray-500 space-x-4">
 
+                        @php
+                            $filledAt = $students->min('created_at');
+                            $lastModifiedAt = $students->max('updated_at');
+                        @endphp
                         <span>
                             <strong>Filled:</strong>
-                            {{ \Carbon\Carbon::parse($selectedSubject->created_at ?? now())->format('d M Y') }}
+                            {{ $filledAt ? \Carbon\Carbon::parse($filledAt)->format('d M Y') : '-' }}
                         </span>
 
                         <span>
                             <strong>Last Modified:</strong>
-                            {{ \Carbon\Carbon::parse($selectedSubject->updated_at ?? now())->format('d M Y') }}
+                            {{ $lastModifiedAt ? \Carbon\Carbon::parse($lastModifiedAt)->format('d M Y') : '-' }}
                         </span>
 
                     </div>

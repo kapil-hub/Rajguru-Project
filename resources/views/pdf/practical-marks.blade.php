@@ -93,9 +93,7 @@
                 Teacher : <strong>{{ auth('teacher')->user()->name }}</strong>
             </div> --}}
             <div class="meta">
-                Filled: {{ \Carbon\Carbon::parse($subject->created_at)->format('d M Y') }}
-                &nbsp;&nbsp;
-                Last Modified: {{ \Carbon\Carbon::parse($subject->updated_at)->format('d M Y') }}
+                Date: ____________________
             </div>
 
 

@@ -191,7 +191,7 @@
                         </td>
 
                         <td class="p-3">
-                            {{ round($mark->total_marks) ?? 0 }}
+                            {{ $mark->total_marks ?? 0 }}
                         </td>
 
                     </tr>

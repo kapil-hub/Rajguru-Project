@@ -47,7 +47,7 @@ class PracticalMarksExport implements FromCollection, WithHeadings, ShouldAutoSi
                     'Program Name'       => $mark->paper->course->name ?? '',
                     'Semester'           => $mark->paper->semester ?? '',
                     'Maximum Marks (PR)' => practicalMarksBreakup($mark->paper->number_of_practicals ?? 0)['total'] ?? 0,
-                    'Obtained Marks (PR)' => round($mark->total_marks) ?? 0,
+                    'Obtained Marks (PR)' => $mark->total_marks ?? 0,
                 ];
             });
     }
