@@ -15,7 +15,7 @@ class StudentAttendanceController extends Controller
 {
     public function index()
     {
-        $student = auth('student')->user()?->load(['academic', 'papers']);
+        $student = auth('student')->user()?->load('academic');
 
         if (!$student || !$student->academic) {
             $attendance = collect();
@@ -25,7 +25,6 @@ class StudentAttendanceController extends Controller
 
         $studentId = $student->id;
         $currentSemester = $student->academic->current_semester;
-        $currentPaperIds = $student->papers->pluck('paper_master_id')->filter()->values();
 
         $attendanceSettings = AttendanceSetting::where('status', 1)->latest()->first();
 
@@ -34,27 +33,28 @@ class StudentAttendanceController extends Controller
             $attendance = \App\Models\StudentDailyAttendance::with('paper')
                 ->where('student_id', $studentId)
                 ->where('semester_id', $currentSemester)
-                ->when($currentPaperIds->isNotEmpty(), fn ($query) => $query->whereIn('paper_master_id', $currentPaperIds))
+                ->orderBy('attendance_date')
                 ->get()
                 ->groupBy('paper_master_id')
                 ->map(function ($records) {
+                    return $records
+                        ->groupBy(fn ($record) => $record->attendance_date->format('Y-n'))
+                        ->map(function ($monthlyRecords) {
+                            $firstRecord = $monthlyRecords->first();
 
-                    return collect([
-                        (object)[
-                            'paper' => $records->first()->paper,
-                            'month' => now()->month,
-                            'year'  => now()->year,
-
-                            'lecture_working_days'   => $records->where('lecture', 1)->count(),
-                            'lecture_present_days'   => $records->where('lecture', 1)->where('lecture_present', 1)->count(),
-
-                            'tute_working_days'      => $records->where('tute', 1)->count(),
-                            'tute_present_days'      => $records->where('tute', 1)->where('tute_present', 1)->count(),
-
-                            'practical_working_days' => $records->where('practical', 1)->count(),
-                            'practical_present_days' => $records->where('practical', 1)->where('practical_present', 1)->count(),
-                        ]
-                    ]);
+                            return (object) [
+                                'paper' => $firstRecord->paper,
+                                'month' => $firstRecord->attendance_date->month,
+                                'year' => $firstRecord->attendance_date->year,
+                                'lecture_working_days' => $monthlyRecords->filter(fn ($record) => $record->lecture !== null)->count(),
+                                'lecture_present_days' => $monthlyRecords->where('lecture', true)->count(),
+                                'tute_working_days' => $monthlyRecords->filter(fn ($record) => $record->tute !== null)->count(),
+                                'tute_present_days' => $monthlyRecords->where('tute', true)->count(),
+                                'practical_working_days' => $monthlyRecords->filter(fn ($record) => $record->practical !== null)->count(),
+                                'practical_present_days' => $monthlyRecords->where('practical', true)->count(),
+                            ];
+                        })
+                        ->values();
                 });
 
         } else {
@@ -62,7 +62,6 @@ class StudentAttendanceController extends Controller
             $attendance = StudentAttendance::with('paper')
                 ->where('student_id', $studentId)
                 ->where('semester_id', $currentSemester)
-                ->when($currentPaperIds->isNotEmpty(), fn ($query) => $query->whereIn('paper_master_id', $currentPaperIds))
                 ->orderBy('year', 'desc')
                 ->orderBy('month', 'desc')
                 ->get()

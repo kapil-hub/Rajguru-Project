@@ -18,13 +18,12 @@ class DashboardController extends Controller
     {
         if (Auth::guard('student')->check()) {
 
-            $student = auth('student')->user()?->load(['academic', 'papers']);
+            $student = auth('student')->user()?->load('academic');
             $studentId = $student?->id;
             $currentSemester = $student?->academic?->current_semester;
-            $currentPaperIds = $student?->papers?->pluck('paper_master_id')->filter()->values() ?? collect();
 
             // Active attendance setting
-            $setting = AttendanceSetting::where('status', 1)->first();
+            $setting = AttendanceSetting::where('status', 1)->latest()->first();
 
             // Total subjects (current semester)
             $totalSubjects = StudentPaper::where('student_user_id', $studentId)->count();
@@ -43,7 +42,6 @@ class DashboardController extends Controller
 
                 $records = StudentAttendance::where('student_id', $studentId)
                     ->where('semester_id', $currentSemester)
-                    ->when($currentPaperIds->isNotEmpty(), fn ($query) => $query->whereIn('paper_master_id', $currentPaperIds))
                     ->get();
 
                 foreach ($records as $row) {
@@ -79,13 +77,12 @@ class DashboardController extends Controller
 
                 $records = StudentDailyAttendance::where('student_id', $studentId)
                     ->where('semester_id', $currentSemester)
-                    ->when($currentPaperIds->isNotEmpty(), fn ($query) => $query->whereIn('paper_master_id', $currentPaperIds))
                     ->get();
 
                 foreach ($records as $row) {
 
                     // Lecture
-                    if ($row->lecture !== null && $row->lecture !== 0) {
+                    if ($row->lecture !== null) {
                         $lectureHeld++;
                         if ($row->lecture == 1) {
                             $lecturePresent++;
@@ -93,7 +90,7 @@ class DashboardController extends Controller
                     }
 
                     // Tute
-                    if ($row->tute !== null && $row->tute !== 0) {
+                    if ($row->tute !== null) {
                         $tuteHeld++;
                         if ($row->tute == 1) {
                             $tutePresent++;
@@ -101,7 +98,7 @@ class DashboardController extends Controller
                     }
 
                     // Practical
-                    if ($row->practical !== null && $row->practical !== 0) {
+                    if ($row->practical !== null) {
                         $practicalHeld++;
                         if ($row->practical == 1) {
                             $practicalPresent++;
