@@ -13,6 +13,8 @@ class StudentattendanceBreakup extends Component
 
     public $year;
 
+    public $semester;
+
     public $papers = [];
 
     public $show = false;
@@ -21,16 +23,17 @@ class StudentattendanceBreakup extends Component
 
     protected $listeners = ['loadBreakup'];
 
-    public function mount($student, $month, $year)
+    public function mount($student, $month, $year, $semester)
     {
         $this->month = (int) $month;
         $this->year = (int) $year;
         $this->student = $student;
+        $this->semester = (int) $semester;
     }
 
-    public function loadBreakup($id = null)
+    public function loadBreakup($id = null, $semester = null)
     {
-        if (! $id || $id != $this->student->student_id) {
+        if (! $id || $id != $this->student->student_id || (int) $semester !== $this->semester) {
             return;
         }
 
@@ -52,6 +55,7 @@ class StudentattendanceBreakup extends Component
             ->where('sa.student_id', $this->student->student_id)
             ->where('month', $this->month)
             ->where('year', $this->year)
+            ->where('sa.semester_id', $this->semester)
             ->whereExists(function ($currentPapers) {
                 $currentPapers->selectRaw('1')
                     ->from('student_papers as sp')

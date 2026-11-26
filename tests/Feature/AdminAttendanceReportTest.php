@@ -108,11 +108,12 @@ function insertAttendanceReportRow(
     int $lectureHeld,
     int $lecturePresent,
     int $section = 1,
-    int $paperId = 1
+    int $paperId = 1,
+    int $semesterId = 1
 ): void {
     DB::table('student_attendances')->insert([
         'student_id' => $studentId,
-        'semester_id' => 1,
+        'semester_id' => $semesterId,
         'paper_master_id' => $paperId,
         'section' => $section,
         'month' => $month,
@@ -147,6 +148,7 @@ test('attendance Excel filters by year and combines duplicate paper rows', funct
     insertAttendanceReportRow(1, 12, 2025, 200, 200);
     insertAttendanceReportRow(1, 7, 2027, 300, 300);
     insertAttendanceReportRow(1, 6, 2026, 1000, 1000, 4, 2);
+    insertAttendanceReportRow(1, 6, 2026, 16, 0, 1, 1, 2);
 
     $monthlyRows = (new StudentAttendanceMasterExport(6, 2026, true))->collection();
     $overallRows = (new StudentAttendanceMasterExport(6, 2026, false))->collection();
@@ -156,5 +158,11 @@ test('attendance Excel filters by year and combines duplicate paper rows', funct
         ->and($monthlyRows[1][6])->toBe(10)
         ->and($monthlyRows[1][7])->toBe(7)
         ->and($overallRows[0][6])->toBe(110)
-        ->and($overallRows[0][7])->toBe(107);
+        ->and($overallRows[0][7])->toBe(107)
+        ->and($monthlyRows[3][3])->toBe(2)
+        ->and($monthlyRows[3][6])->toBe(16)
+        ->and($monthlyRows[3][7])->toBe(0)
+        ->and($overallRows[1][3])->toBe(2)
+        ->and($overallRows[1][6])->toBe(16)
+        ->and($overallRows[1][7])->toBe(0);
 });

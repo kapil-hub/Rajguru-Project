@@ -95,8 +95,9 @@ class StudentAttendanceMasterExport implements FromCollection, ShouldAutoSize, W
             ->when($this->breakup, fn($q) => $q->where('sa.month', $this->month))
             ->when(!$this->breakup, fn($q) => $q->where('sa.month', '>=', $this->month))
             ->orderBy('s.name')
+            ->orderBy('sa.semester_id')
             ->get()
-            ->groupBy('student_id');
+            ->groupBy(fn ($record) => $record->student_id.'_'.$record->semester_id);
 
         foreach ($data as $studentRows) {
 

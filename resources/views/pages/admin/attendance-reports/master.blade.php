@@ -204,7 +204,7 @@
             <div class="bg-white rounded-xl shadow p-4 student-card" style="overflow-x:auto;">
 
                 <div class="grid grid-cols-9 gap-2 items-center cursor-pointer customGrid"
-                    onclick="Livewire.dispatch('loadBreakup', { id: {{ $s->student_id }} })">
+                    onclick="Livewire.dispatch('loadBreakup', { id: {{ $s->student_id }}, semester: {{ $s->current_semester }} })">
 
                     <div class="col-span-2">
                         <div class="font-semibold">{{ $s->student_name }}</div>
@@ -244,9 +244,10 @@
 
                 <livewire:admin.studentattendance-breakup 
                     :student="$s"
-                    :key="'student-'.$s->student_id"
+                    :key="'student-'.$s->student_id.'-'.$s->current_semester"
                     :month="$month ?? now()->format('m')"
                     :year="$year ?? now()->format('Y')"
+                    :semester="$s->current_semester"
                 />
 
             </div>
