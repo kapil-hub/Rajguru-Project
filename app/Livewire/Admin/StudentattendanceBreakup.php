@@ -52,14 +52,16 @@ class StudentattendanceBreakup extends Component
             ->where('sa.student_id', $this->student->student_id)
             ->where('month', $this->month)
             ->where('year', $this->year)
+            ->groupBy('pm.id', 'pm.name')
             ->select(
+                'pm.id as paper_id',
                 'pm.name as paper_name',
-                'sa.lecture_working_days',
-                'sa.lecture_present_days',
-                'sa.tute_working_days',
-                'sa.tute_present_days',
-                'sa.practical_working_days',
-                'sa.practical_present_days'
+                DB::raw('SUM(sa.lecture_working_days) as lecture_working_days'),
+                DB::raw('SUM(sa.lecture_present_days) as lecture_present_days'),
+                DB::raw('SUM(sa.tute_working_days) as tute_working_days'),
+                DB::raw('SUM(sa.tute_present_days) as tute_present_days'),
+                DB::raw('SUM(sa.practical_working_days) as practical_working_days'),
+                DB::raw('SUM(sa.practical_present_days) as practical_present_days')
             )
             ->get();
 

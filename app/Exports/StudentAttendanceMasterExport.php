@@ -75,6 +75,7 @@ class StudentAttendanceMasterExport implements FromCollection, ShouldAutoSize, W
                 'd.name as department_name',
                 'sa.semester_id',
                 'sa.section',
+                'sa.paper_master_id',
                 'p.name as paper_name',
 
                 'sa.lecture_working_days',
@@ -84,6 +85,7 @@ class StudentAttendanceMasterExport implements FromCollection, ShouldAutoSize, W
                 'sa.practical_working_days',
                 'sa.practical_present_days'
             )
+            ->where('sa.year', $this->year)
             ->when($this->breakup, fn($q) => $q->where('sa.month', $this->month))
             ->when(!$this->breakup, fn($q) => $q->where('sa.month', '>=', $this->month))
             ->orderBy('s.name')
@@ -141,31 +143,34 @@ class StudentAttendanceMasterExport implements FromCollection, ShouldAutoSize, W
             /* ===== PAPER ROWS ===== */
             if ($this->breakup) {
 
-                foreach ($studentRows as $r) {
+                foreach ($studentRows->groupBy('paper_master_id') as $paperRows) {
+                    $r = $paperRows->first();
 
-                    $ptch = ($r->lecture_working_days ?? 0)
-                        + ($r->tute_working_days ?? 0)
-                        + ($r->practical_working_days ?? 0);
+                    $lectureWorking = $paperRows->sum('lecture_working_days');
+                    $lecturePresent = $paperRows->sum('lecture_present_days');
+                    $tuteWorking = $paperRows->sum('tute_working_days');
+                    $tutePresent = $paperRows->sum('tute_present_days');
+                    $practicalWorking = $paperRows->sum('practical_working_days');
+                    $practicalPresent = $paperRows->sum('practical_present_days');
 
-                    $ptca = ($r->lecture_present_days ?? 0)
-                        + ($r->tute_present_days ?? 0)
-                        + ($r->practical_present_days ?? 0);
+                    $ptch = $lectureWorking + $tuteWorking + $practicalWorking;
+                    $ptca = $lecturePresent + $tutePresent + $practicalPresent;
 
                     $rows->push([
                         ' → ' . $r->paper_name,
                         '', '', '', '', '',
 
-                        $r->lecture_working_days ?? 0,
-                        $r->lecture_present_days ?? 0,
-                        $this->percent($r->lecture_present_days, $r->lecture_working_days),
+                        $lectureWorking,
+                        $lecturePresent,
+                        $this->percent($lecturePresent, $lectureWorking),
 
-                        $r->tute_working_days ?? 0,
-                        $r->tute_present_days ?? 0,
-                        $this->percent($r->tute_present_days, $r->tute_working_days),
+                        $tuteWorking,
+                        $tutePresent,
+                        $this->percent($tutePresent, $tuteWorking),
 
-                        $r->practical_working_days ?? 0,
-                        $r->practical_present_days ?? 0,
-                        $this->percent($r->practical_present_days, $r->practical_working_days),
+                        $practicalWorking,
+                        $practicalPresent,
+                        $this->percent($practicalPresent, $practicalWorking),
 
                         $ptch, $ptca, ' ',
                     ]);

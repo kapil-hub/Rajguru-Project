@@ -49,27 +49,27 @@ class AdminAttendanceController extends Controller
 
         // Semester filter
         if ($request->filled('semester')) {
-            $query->where('sc.current_semester', $request->semester);
+            $query->where('sa.semester_id', $request->semester);
         }
         if ($request->below75) {
-            $query->havingRaw('AVG(sa.lecture_present_days / NULLIF(sa.lecture_working_days,0)) * 100 < 50');
+            $query->havingRaw('SUM(sa.lecture_present_days) * 100.0 / NULLIF(SUM(sa.lecture_working_days), 0) < 75');
         }
 
         if ($request->above90) {
-            $query->havingRaw('AVG(sa.lecture_present_days / NULLIF(sa.lecture_working_days,0)) * 100 >= 66');
+            $query->havingRaw('SUM(sa.lecture_present_days) * 100.0 / NULLIF(SUM(sa.lecture_working_days), 0) >= 90');
         }
         $students = $query
-            ->groupBy('sa.student_id', 's.name', 'sc.roll_number', 'd.name', 'c.name', 'sc.current_semester')
+            ->groupBy('sa.student_id', 's.name', 'sc.roll_number', 'd.name', 'c.name', 'sa.semester_id')
             ->select(
                 'sa.student_id',
                 's.name as student_name',
                 'sc.roll_number',
                 'd.name as department_name',
                 'c.name as course_name',
-                'sc.current_semester',
-                DB::raw('ROUND(AVG(sa.lecture_present_days / NULLIF(sa.lecture_working_days,0)) * 100,2) as lecture_avg'),
-                DB::raw('ROUND(AVG(sa.tute_present_days / NULLIF(sa.tute_working_days,0)) * 100,2) as tutorial_avg'),
-                DB::raw('ROUND(AVG(sa.practical_present_days / NULLIF(sa.practical_working_days,0)) * 100,2) as practical_avg')
+                'sa.semester_id as current_semester',
+                DB::raw('ROUND(SUM(sa.lecture_present_days) * 100.0 / NULLIF(SUM(sa.lecture_working_days), 0), 2) as lecture_avg'),
+                DB::raw('ROUND(SUM(sa.tute_present_days) * 100.0 / NULLIF(SUM(sa.tute_working_days), 0), 2) as tutorial_avg'),
+                DB::raw('ROUND(SUM(sa.practical_present_days) * 100.0 / NULLIF(SUM(sa.practical_working_days), 0), 2) as practical_avg')
             )
             ->orderBy('s.name')
             ->paginate(25)
@@ -78,13 +78,13 @@ class AdminAttendanceController extends Controller
         $studentIds = $students->pluck('student_id');
         $departments = DB::table('departments')->get();
         $courses = DB::table('courses')->get();
-        $year = date('Y');
-        $next = $year + 1;
-        $prev = $year - 1;
-        $session_1 = $year.'-'.substr($next, -2);
-        $session_2 = $prev.'-'.substr($year, -2);
+        $currentYear = now()->year;
+        $next = $currentYear + 1;
+        $prev = $currentYear - 1;
+        $session_1 = $currentYear.'-'.substr($next, -2);
+        $session_2 = $prev.'-'.substr($currentYear, -2);
         $buttons = AttendanceSetting::whereIn('academic_session', [$session_1, $session_2])->orderBy('id')->get()->last();
-        $markedMonths = StudentAttendance::where('year', now()->year)
+        $markedMonths = StudentAttendance::where('year', $currentYear)
             ->distinct()
             ->select('month', 'year')->get()->keyBy('month')
             ->toArray();
