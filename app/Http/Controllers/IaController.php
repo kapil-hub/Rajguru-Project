@@ -82,11 +82,14 @@ public function loadStudents(Request $request)
             ->where('semester_id', $request->semester_id)
             // ->where('section', $request->section)
             ->where('paper_master_id', $request->paper_id);
-        })->get();
+        })
+            ->whereHas('papers', fn ($query) => $query->where('paper_master_id', $request->paper_id))
+            ->get();
         $attendance = StudentAttendance::where('paper_master_id', $request->paper_id)
+            ->whereIn('student_id', $students->pluck('id'))
             // ->where('attendance_date', $date)
             ->get()
-            ->keyBy('student_user_id');
+            ->keyBy('student_id');
 
         return view('pages.teacher.iaAttendance.partials.student-list',
             compact('students', 'attendance', 'date')
@@ -185,7 +188,10 @@ public function loadStudents(Request $request)
                     'course_id'       => $assignment->course_id,
                     'semester_id'     => $assignment->semester_id,
                 ]
-            )->get()->groupBy('student_id');
+            )
+            ->whereHas('student.papers', fn ($query) => $query->where('paper_master_id', $assignment->paper_master_id))
+            ->get()
+            ->groupBy('student_id');
            
         $oldAttendences = $oldAttendences->map(function ($records) {
 

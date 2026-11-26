@@ -85,6 +85,12 @@ class StudentAttendanceMasterExport implements FromCollection, ShouldAutoSize, W
                 'sa.practical_working_days',
                 'sa.practical_present_days'
             )
+            ->whereExists(function ($currentPapers) {
+                $currentPapers->selectRaw('1')
+                    ->from('student_papers as sp')
+                    ->whereColumn('sp.student_user_id', 'sa.student_id')
+                    ->whereColumn('sp.paper_master_id', 'sa.paper_master_id');
+            })
             ->where('sa.year', $this->year)
             ->when($this->breakup, fn($q) => $q->where('sa.month', $this->month))
             ->when(!$this->breakup, fn($q) => $q->where('sa.month', '>=', $this->month))

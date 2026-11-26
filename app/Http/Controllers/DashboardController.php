@@ -18,9 +18,10 @@ class DashboardController extends Controller
     {
         if (Auth::guard('student')->check()) {
 
-            $student = auth('student')->user()?->load('academic');
+            $student = auth('student')->user()?->load(['academic', 'papers']);
             $studentId = $student?->id;
             $currentSemester = $student?->academic?->current_semester;
+            $currentPaperIds = $student?->papers?->pluck('paper_master_id')->filter()->values() ?? collect();
 
             // Active attendance setting
             $setting = AttendanceSetting::where('status', 1)->latest()->first();
@@ -42,6 +43,7 @@ class DashboardController extends Controller
 
                 $records = StudentAttendance::where('student_id', $studentId)
                     ->where('semester_id', $currentSemester)
+                    ->whereIn('paper_master_id', $currentPaperIds)
                     ->get();
 
                 foreach ($records as $row) {
@@ -77,6 +79,7 @@ class DashboardController extends Controller
 
                 $records = StudentDailyAttendance::where('student_id', $studentId)
                     ->where('semester_id', $currentSemester)
+                    ->whereIn('paper_master_id', $currentPaperIds)
                     ->get();
 
                 foreach ($records as $row) {

@@ -52,6 +52,12 @@ class StudentattendanceBreakup extends Component
             ->where('sa.student_id', $this->student->student_id)
             ->where('month', $this->month)
             ->where('year', $this->year)
+            ->whereExists(function ($currentPapers) {
+                $currentPapers->selectRaw('1')
+                    ->from('student_papers as sp')
+                    ->whereColumn('sp.student_user_id', 'sa.student_id')
+                    ->whereColumn('sp.paper_master_id', 'sa.paper_master_id');
+            })
             ->groupBy('pm.id', 'pm.name')
             ->select(
                 'pm.id as paper_id',

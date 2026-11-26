@@ -51,6 +51,7 @@ class DailyAttendanceController extends Controller
 
         $students = Student::whereHas('academic', function ($q) use ($request) {
                 $q->where('course_id', $request->course_id);
+                $q->where('current_semester', $request->semester_id);
             })
             ->whereHas('papers', function ($q) use ($request) {
                 $q->where('paper_master_id', $request->paper_master_id);

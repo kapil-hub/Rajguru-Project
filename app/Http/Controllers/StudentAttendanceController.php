@@ -15,7 +15,7 @@ class StudentAttendanceController extends Controller
 {
     public function index()
     {
-        $student = auth('student')->user()?->load('academic');
+        $student = auth('student')->user()?->load(['academic', 'papers']);
 
         if (!$student || !$student->academic) {
             $attendance = collect();
@@ -25,6 +25,7 @@ class StudentAttendanceController extends Controller
 
         $studentId = $student->id;
         $currentSemester = $student->academic->current_semester;
+        $currentPaperIds = $student->papers->pluck('paper_master_id')->filter()->values();
 
         $attendanceSettings = AttendanceSetting::where('status', 1)->latest()->first();
 
@@ -33,6 +34,7 @@ class StudentAttendanceController extends Controller
             $attendance = \App\Models\StudentDailyAttendance::with('paper')
                 ->where('student_id', $studentId)
                 ->where('semester_id', $currentSemester)
+                ->whereIn('paper_master_id', $currentPaperIds)
                 ->orderBy('attendance_date')
                 ->get()
                 ->groupBy('paper_master_id')
@@ -62,6 +64,7 @@ class StudentAttendanceController extends Controller
             $attendance = StudentAttendance::with('paper')
                 ->where('student_id', $studentId)
                 ->where('semester_id', $currentSemester)
+                ->whereIn('paper_master_id', $currentPaperIds)
                 ->orderBy('year', 'desc')
                 ->orderBy('month', 'desc')
                 ->get()
@@ -74,14 +77,18 @@ class StudentAttendanceController extends Controller
 
     public function show($paperId, $month, $year)
     {
-        $studentId = auth('student')->id();
+        $student = auth('student')->user();
+        $studentId = $student->id;
+        $currentPaperIds = $student->papers()->pluck('paper_master_id');
 
         $records = StudentAttendance::where([
-            'student_user_id' => $studentId,
+            'student_id' => $studentId,
             'paper_master_id' => $paperId,
             'month' => $month,
             'year' => $year,
-        ])->get();
+        ])
+            ->whereIn('paper_master_id', $currentPaperIds)
+            ->get();
 
         return view('student.attendance.show', compact(
             'records', 'month', 'year'

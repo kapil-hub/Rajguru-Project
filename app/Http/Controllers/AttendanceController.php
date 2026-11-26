@@ -38,12 +38,15 @@ class AttendanceController extends Controller
             ->where('semester_id', $request->semester_id)
             // ->where('section', $request->section)
             ->where('paper_master_id', $request->paper_id);
-        })->get();
+        })
+            ->whereHas('papers', fn ($query) => $query->where('paper_master_id', $request->paper_id))
+            ->get();
        
         $attendance = StudentAttendance::where('paper_master_id', $request->paper_id)
+            ->whereIn('student_id', $students->pluck('id'))
             // ->where('attendance_date', $date)
             ->get()
-            ->keyBy('student_user_id');
+            ->keyBy('student_id');
 
         return view('pages.teacher.attendance.partials.student-list',
             compact('students', 'attendance', 'date')
@@ -52,7 +55,28 @@ class AttendanceController extends Controller
 
     public function storeAttendance(Request $request)
     {
-        foreach ($request->attendance as $studentId => $types) {
+        $attendanceInput = $request->input('attendance', []);
+        $submittedStudentIds = collect(array_keys($attendanceInput))
+            ->map(fn ($studentId) => (int) $studentId)
+            ->unique()
+            ->values();
+        $currentStudentIds = Student::whereIn('id', $submittedStudentIds)
+            ->whereHas('papers', fn ($query) => $query->where('paper_master_id', $request->paper_master_id))
+            ->whereHas('academic', fn ($query) => $query
+                ->where('course_id', $request->course_id)
+                ->where('current_semester', $request->semester_id))
+            ->pluck('id')
+            ->map(fn ($studentId) => (int) $studentId);
+
+        if ($submittedStudentIds->diff($currentStudentIds)->isNotEmpty()) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'attendance' => 'Attendance can only be recorded for students currently enrolled in the selected paper.',
+                ]);
+        }
+
+        foreach ($attendanceInput as $studentId => $types) {
             foreach (['lecture', 'tute', 'practical'] as $type) {
                 if (!isset($types[$type])) {
                     continue;
@@ -254,6 +278,7 @@ class AttendanceController extends Controller
 
         $students = Student::with('academic')
             ->whereIn('id', $studentIds)
+            ->whereHas('papers', fn ($query) => $query->where('paper_master_id', $assignment->paper_master_id))
             ->orderBy('name')
             ->get();
       
@@ -265,7 +290,10 @@ class AttendanceController extends Controller
                     'month'=>$month,
                     'year'=>$year
                 ]
-            )->get()->keyBy('student_id');
+            )
+            ->whereHas('student.papers', fn ($query) => $query->where('paper_master_id', $assignment->paper_master_id))
+            ->get()
+            ->keyBy('student_id');
 
         return view(
             'pages.teacher.attendance.fill',
@@ -390,6 +418,12 @@ public function history()
                 ->get()->last();
         if($attendanceSettings->attendance_type == 'daily'){
             $records = StudentDailyAttendance::with('paper.course')->where('teacher_id', $teacherId)
+            ->whereExists(function ($currentPapers) {
+                $currentPapers->selectRaw('1')
+                    ->from('student_papers as sp')
+                    ->whereColumn('sp.student_user_id', 'student_daily_attendances.student_id')
+                    ->whereColumn('sp.paper_master_id', 'student_daily_attendances.paper_master_id');
+            })
             ->select('paper_master_id',
                 'course_id',
                 'semester_id',
@@ -410,6 +444,12 @@ public function history()
                 ->get();
         }else{
             $records = StudentAttendance::with('paper.course')->where('teacher_id', $teacherId)
+                ->whereExists(function ($currentPapers) {
+                    $currentPapers->selectRaw('1')
+                        ->from('student_papers as sp')
+                        ->whereColumn('sp.student_user_id', 'student_attendances.student_id')
+                        ->whereColumn('sp.paper_master_id', 'student_attendances.paper_master_id');
+                })
                 ->select(
                     'paper_master_id',
                     'course_id',
@@ -441,7 +481,8 @@ public function history()
                 ->get()->last();
         if($attendanceSettings->attendance_type == 'daily'){
 
-            $students = \App\Models\Student::whereHas('dailyAttendances', function ($q) use ($teacherId, $paperId, $month, $year) {
+            $students = \App\Models\Student::whereHas('papers', fn ($query) => $query->where('paper_master_id', $paperId))
+                ->whereHas('dailyAttendances', function ($q) use ($teacherId, $paperId, $month, $year) {
                 $q->where('teacher_id', $teacherId)
                 ->where('paper_master_id', $paperId)
                 ->whereMonth('attendance_date', $month)
@@ -458,11 +499,11 @@ public function history()
                     ->whereYear('attendance_date', $year)
                     ->get();
 
-                $lecture_working_days   = $attendances->where('lecture', 1)->count();
+                $lecture_working_days   = $attendances->filter(fn ($attendance) => $attendance->lecture !== null)->count();
                 $lecture_present_days   = $attendances->where('lecture', 1)->count();
-                $tute_working_days      = $attendances->where('tute', 1)->count();
+                $tute_working_days      = $attendances->filter(fn ($attendance) => $attendance->tute !== null)->count();
                 $tute_present_days      = $attendances->where('tute', 1)->count();
-                $practical_working_days = $attendances->where('practical', 1)->count();
+                $practical_working_days = $attendances->filter(fn ($attendance) => $attendance->practical !== null)->count();
                 $practical_present_days = $attendances->where('practical', 1)->count();
 
                 $records[] = (object)[
@@ -484,7 +525,10 @@ public function history()
                 'paper_master_id' => $paperId,
                 'month' => $month,
                 'year' => $year,
-            ])->with('student')->get();
+            ])
+                ->whereHas('student.papers', fn ($query) => $query->where('paper_master_id', $paperId))
+                ->with('student')
+                ->get();
 
             return view('pages.teacher.attendance.history_show', compact(
                 'records', 'month', 'year'

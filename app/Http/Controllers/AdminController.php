@@ -47,6 +47,12 @@ class AdminController extends Controller
                       AND sa.paper_master_id = thp.paper_master_id
                       AND sa.month = ?
                       AND sa.year = ?
+                      AND EXISTS (
+                          SELECT 1
+                          FROM student_papers sp
+                          WHERE sp.student_user_id = sa.student_id
+                            AND sp.paper_master_id = sa.paper_master_id
+                      )
                 ) as is_marked
             ",
             [$month, $year]
@@ -70,6 +76,12 @@ class AdminController extends Controller
                    AND sa.paper_master_id = thp.paper_master_id
                    AND sa.month = ?
                    AND sa.year = ?
+                   AND EXISTS (
+                       SELECT 1
+                       FROM student_papers sp
+                       WHERE sp.student_user_id = sa.student_id
+                         AND sp.paper_master_id = sa.paper_master_id
+                   )
             )
         ", [$month, $year]);
     }
@@ -84,6 +96,12 @@ class AdminController extends Controller
                    AND sa.paper_master_id = thp.paper_master_id
                    AND sa.month = ?
                    AND sa.year = ?
+                   AND EXISTS (
+                       SELECT 1
+                       FROM student_papers sp
+                       WHERE sp.student_user_id = sa.student_id
+                         AND sp.paper_master_id = sa.paper_master_id
+                   )
             )
         ", [$month, $year]);
     }
@@ -113,7 +131,13 @@ class AdminController extends Controller
               ->whereRaw('sa.section COLLATE utf8mb4_unicode_ci = thp.section COLLATE utf8mb4_unicode_ci')
               ->whereColumn('sa.paper_master_id', 'thp.paper_master_id')
               ->where('sa.month', $month)
-              ->where('sa.year', $year);
+              ->where('sa.year', $year)
+              ->whereExists(function ($currentPapers) {
+                  $currentPapers->select(DB::raw(1))
+                      ->from('student_papers as sp')
+                      ->whereColumn('sp.student_user_id', 'sa.student_id')
+                      ->whereColumn('sp.paper_master_id', 'sa.paper_master_id');
+              });
         })
         ->count();
 

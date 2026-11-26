@@ -28,7 +28,13 @@ class AdminAttendanceController extends Controller
             ->join('departments as d', 'd.id', '=', 'sc.department_id')
             ->join('courses as c', 'c.id', '=', 'sc.course_id')
             ->where('sa.month', $month)
-            ->where('sa.year', $year);
+            ->where('sa.year', $year)
+            ->whereExists(function ($currentPapers) {
+                $currentPapers->selectRaw('1')
+                    ->from('student_papers as sp')
+                    ->whereColumn('sp.student_user_id', 'sa.student_id')
+                    ->whereColumn('sp.paper_master_id', 'sa.paper_master_id');
+            });
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
@@ -85,6 +91,12 @@ class AdminAttendanceController extends Controller
         $session_2 = $prev.'-'.substr($currentYear, -2);
         $buttons = AttendanceSetting::whereIn('academic_session', [$session_1, $session_2])->orderBy('id')->get()->last();
         $markedMonths = StudentAttendance::where('year', $currentYear)
+            ->whereExists(function ($currentPapers) {
+                $currentPapers->selectRaw('1')
+                    ->from('student_papers as sp')
+                    ->whereColumn('sp.student_user_id', 'student_attendances.student_id')
+                    ->whereColumn('sp.paper_master_id', 'student_attendances.paper_master_id');
+            })
             ->distinct()
             ->select('month', 'year')->get()->keyBy('month')
             ->toArray();

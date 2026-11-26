@@ -119,6 +119,14 @@ test('daily attendance is summarized from its flags by the recorded month', func
             'practical' => null,
         ],
     ]);
+    $student->dailyAttendances()->create([
+        'semester_id' => 2,
+        'paper_master_id' => 8,
+        'attendance_date' => '2026-03-13',
+        'lecture' => 1,
+        'tute' => 1,
+        'practical' => 1,
+    ]);
 
     $this->actingAs($student, 'student');
     $view = app(StudentAttendanceController::class)->index();
@@ -136,7 +144,7 @@ test('daily attendance is summarized from its flags by the recorded month', func
         ->and($monthlyRecords[1]->tute_present_days)->toBe(1);
 });
 
-test('monthly dashboard totals include attendance for the whole semester', function () {
+test('monthly dashboard totals include only current papers', function () {
     $student = Student::create([
         'name' => 'Monthly Attendance Student',
         'email' => 'monthly-attendance-student@example.test',
@@ -154,11 +162,23 @@ test('monthly dashboard totals include attendance for the whole semester', funct
     \App\Models\StudentAttendance::create([
         'student_id' => $student->id,
         'semester_id' => 1,
-        'paper_master_id' => 8,
+        'paper_master_id' => 7,
         'lecture_working_days' => 115,
         'lecture_present_days' => 70,
     ]);
+    \App\Models\StudentAttendance::create([
+        'student_id' => $student->id,
+        'semester_id' => 1,
+        'paper_master_id' => 8,
+        'lecture_working_days' => 100,
+        'lecture_present_days' => 100,
+    ]);
 
+    \App\Models\Paper::create([
+        'id' => 7,
+        'name' => 'Current Mathematics',
+        'code' => 'MATH101',
+    ]);
     \App\Models\Paper::create([
         'id' => 8,
         'name' => 'Archived Mathematics',
@@ -174,5 +194,5 @@ test('monthly dashboard totals include attendance for the whole semester', funct
         ->and($data['lecturePresent'])->toBe(70)
         ->and($data['totalHeld'])->toBe(115)
         ->and($data['totalPresent'])->toBe(70)
-        ->and($attendanceView->getData()['attendance']->keys()->all())->toBe([8]);
+        ->and($attendanceView->getData()['attendance']->keys()->all())->toBe([7]);
 });
